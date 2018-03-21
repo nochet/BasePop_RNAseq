@@ -1,3 +1,15 @@
+# Sequence files #
+*.gtf
+*.fastq.gz
+*.ht2
+*.bam
+*.sam
+*.out
+*.err
+*.md5sum
+*.html
+*.fastq.gz.md5sum
+
 # Compiled source #
 ###################
 *.com
@@ -19,6 +31,8 @@
 *.rar
 *.tar
 *.zip
+*.tar.gz
+
 
 # Logs and databases #
 ######################
