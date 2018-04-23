@@ -1,11 +1,12 @@
 #samtools merge -r C-3_O_S9_all.bam C-3_O_S9_R1_001_run2.bam C-3_O_S9_R1_001_run3.bam
-base.cmd <- "samtools merge -rf "
+#base.cmd <- "samtools merge -rf "
 
-sample.ids <-unique(ss$Customer_Code)
+samp.ids <- list.files("../processed/dotbams", pattern="bam$")
 
-for(ff in sample.ids) 
+for(kk in samp.ids) 
 {
-  lanes <- subset(ss, Customer_Code==ff)
+  lanes <- strsplit(kk, ".",fixed=TRUE)[[1[][1]
+  cat(paste("samtools merge -r/" ,cc,"_all.bam ", "../processed/", kk,sep=""), "\n",
   rr <- gsub("_R1_001.fastq", "", lanes$Sequence_Name, fixed=TRUE)
   #foldout,ff,"_aligned_rna-seq.bam
   
