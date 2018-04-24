@@ -26,9 +26,9 @@ for(ii in 1:length(ffs))
 {
 st.s <- "hisat2 --dta -q -x indexes/bdgp6_tran/genome_tran -U " 
 
-st.p <- paste("/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/run",run,"/",sep="")
+st.p <- paste("/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/run",run,"/",sep="")
 
-outf <- paste("/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/processed/dotsams/",strsplit(ffs[ii], ".", fixed=TRUE)[[1]][1],"_run",run,sep="")
+outf <- paste("/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotsams/",strsplit(ffs[ii], ".", fixed=TRUE)[[1]][1],"_run",run,sep="")
 
 cat(paste(st.s, st.p, ffs[ii], " -S ", outf,".sam",sep=""),"\n", file=paste("S01_Align_cmd_run",run,".txt",sep=""),append=TRUE)
 
@@ -47,7 +47,7 @@ ll<- c(ll,paste(strsplit(ffs[ii], ".", fixed=TRUE)[[1]][1],"_run",run,sep=""))
 cat("", file="S02_samtools_all.txt")
 for(ii in ll)
 {
-   cat(paste("samtools sort -@ 8 -o /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/processed/dotbams/",ii,".bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/processed/dotsams/", ii,".sam ",sep=""), "\n", file=paste("S02_samtools_all",".txt",sep=""),append=TRUE)
+   cat(paste("samtools sort -@ 8 -o /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/",ii,".bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotsams/", ii,".sam ",sep=""), "\n", file=paste("S02_samtools_all",".txt",sep=""),append=TRUE)
 
 }
 ```
@@ -66,7 +66,7 @@ cat("", file="S03_samtools_merge.txt")
 for(ii in un.set)
 {
   samp.set <- subset(set, code==ii)
-   cat(paste("samtools merge -r   /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/processed/dotbams/",ii,"_merged.bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/processed/dotbams/", samp.set$sample[1],".bam ","/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/processed/dotbams/", samp.set$sample[2],".bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/processed/dotbams/", samp.set$sample[3],".bam",sep=""), "\n", file=paste("S03_samtools_merge",".txt",sep=""),append=TRUE)
+   cat(paste("samtools merge -r   /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/",ii,"_merged.bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[1],".bam ","/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[2],".bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[3],".bam",sep=""), "\n", file=paste("S03_samtools_merge",".txt",sep=""),append=TRUE)
 
 }
 ```
