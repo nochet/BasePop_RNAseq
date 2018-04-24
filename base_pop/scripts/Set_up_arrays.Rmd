@@ -1,0 +1,73 @@
+---
+title: "Set_up_array_jobs"
+author: "Enoch Ng'oma"
+date: "4/24/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Step 1 Align
+
+```{r}
+ll<-character(length=0)
+
+runs<-c(1,2,3)
+for(run in runs)
+{
+  
+cat("", file=paste("S01_Align_cmd_run",run,".txt",sep=""))
+  
+ffs <- list.files(paste("/home/kingeg/Projects/RNA_SEQ_BasePop/Data/run",run,"/",sep=""), pattern="fastq.gz$")
+
+for(ii in 1:length(ffs))
+{
+st.s <- "hisat2 --dta -q -x indexes/bdgp6_tran/genome_tran -U " 
+
+st.p <- paste("/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/run",run,"/",sep="")
+
+outf <- paste("/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/processed/dotsams/",strsplit(ffs[ii], ".", fixed=TRUE)[[1]][1],"_run",run,sep="")
+
+cat(paste(st.s, st.p, ffs[ii], " -S ", outf,".sam",sep=""),"\n", file=paste("S01_Align_cmd_run",run,".txt",sep=""),append=TRUE)
+
+ll<- c(ll,paste(strsplit(ffs[ii], ".", fixed=TRUE)[[1]][1],"_run",run,sep=""))
+
+}
+
+}
+
+
+```
+
+## Samtools sort
+
+```{r}
+cat("", file="S02_samtools_all.txt")
+for(ii in ll)
+{
+   cat(paste("samtools sort -@ 8 -o /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/processed/dotbams/",ii,".bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/processed/dotsams/", ii,".sam ",sep=""), "\n", file=paste("S02_samtools_all",".txt",sep=""),append=TRUE)
+
+}
+```
+
+
+## Samtools merge
+
+```{r}
+set <- data.frame('code'=unlist(lapply(strsplit(ll, split='_S',fixed=TRUE), function(x) x[1])), 'sample' = ll, stringsAsFactors=FALSE)
+
+un.set <- unique(set$code)
+
+cat("", file="S03_samtools_merge.txt")
+
+
+for(ii in un.set)
+{
+  samp.set <- subset(set, code==ii)
+   cat(paste("samtools merge -r   /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/processed/dotbams/",ii,"_merged.bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/processed/dotbams/", samp.set$sample[1],".bam ","/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/processed/dotbams/", samp.set$sample[2],".bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/processed/dotbams/", samp.set$sample[3],".bam",sep=""), "\n", file=paste("S03_samtools_merge",".txt",sep=""),append=TRUE)
+
+}
+```
+
