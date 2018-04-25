@@ -53,7 +53,7 @@ for(ii in ll)
 ```
 
 
-## Samtools merge
+## Samtools merge: combine transcripts from each run
 
 ```{r}
 set <- data.frame('code'=unlist(lapply(strsplit(ll, split='_S',fixed=TRUE), function(x) x[1])), 'sample' = ll, stringsAsFactors=FALSE)
@@ -66,8 +66,35 @@ cat("", file="S03_samtools_merge.txt")
 for(ii in un.set)
 {
   samp.set <- subset(set, code==ii)
-   cat(paste("samtools merge -r   /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/",ii,"_merged.bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[1],".bam ","/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[2],".bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[3],".bam",sep=""), "\n", file=paste("S03_samtools_merge",".txt",sep=""),append=TRUE)
+   cat(paste("samtools merge -r  /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/",ii,"_merged.bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[1],".bam ","/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[2],".bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[3],".bam",sep=""), "\n", file=paste("S03_samtools_merge",".txt",sep=""),append=TRUE)
 
 }
 ```
+
+# StringTie: Assemble and quantify expressed genes and transcripts
+
+```{r}
+# Assemble transcripts for each sample
+
+cat("", file="S04_stringtie_assemble.txt")
+cat("", file="assembled_file_list.txt")
+
+indir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/" 
+outdir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotgtfs/" 
+
+base.cmd <- "stringtie -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/genes/dmel-all-r6.18.gtf -o "
+
+for(ff in un.set) 
+{
+  samp.set <- paste(base.cmd,outdir,ff,"_assembled.gtf ",indir,ff,"_merged.bam",sep="")
+  cat(samp.set,"\n", file="S04_stringtie_assemble.txt",append=TRUE)
+  #merge  
+  
+  cat(paste(outdir,ff,"_assembled.gtf",sep=""), "\n",file="assembled_file_list.txt",append=TRUE)
+}
+```
+
+
+
+
 
