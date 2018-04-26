@@ -104,7 +104,7 @@ for(ff in un.set)
 # StringTie: transcript abundances and table of counts
 
 ```{r}
-cat("", file="S06_Abundances_LearnMemRNA.txt")
+cat("", file="S06_Abundances.txt")
 
 
 indir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/" 
@@ -118,11 +118,36 @@ for(ff in un.set)
   cmd.cut <- paste(base.cmd,outdir,ff,"_ballgown.gtf ", indir,ff,"_merged.bam",sep="")
   cat(cmd.cut,"\n", file="S06_abundances.txt",append=TRUE)
    
-  
 }
 
 ```
 
+# Differential expression analysis protocol
+
+```{r}
+# Make phenotype data file (csv)
+
+# ref. above where we make un.set
+
+descr.samp <- data.frame('id'=character(length=length(un.set)),
+                        'treatment'=character(length=length(un.set)),
+                        'replicate'=character(length=length(un.set)),stringsAsFactors = FALSE)
+
+descr.samp$id <- sample.ids 
+descr.samp$treatment <- substr(descr.samp$id, 1,(nchar(descr.samp$id)-2))
+descr.samp$replicate <- substr(descr.samp$id, (nchar(descr.samp$id)),(nchar(descr.samp$id)))
+
+write.csv(descr.samp, file="describe_sample.csv", row.names=FALSE, quote=FALSE)
+
+#Ballgown step in the tuxedo pipeline,  
+#load R version R version 3.2.2
+#load R packagees:
+library(ballgown)
+library(genefilter)
+library(dplyr)
+library(devtools)
+
+```
 
 
 
