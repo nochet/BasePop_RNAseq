@@ -9,6 +9,10 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+library(tidyverse)
+```
+
 ## Step 1 Align
 
 ```{r}
@@ -129,16 +133,17 @@ for(ff in un.set)
 
 # ref. above where we make un.set
 
-descr.samp <- data.frame('id'=character(length=length(un.set)),
-                        'treatment'=character(length=length(un.set)),
-                        #'replicate'=character(length=length(un.set),stringsAsFactors = FALSE),
-                        'tissue'=character(length=length(un.set)))
+idd <- as.data.frame(un.set)
+colnames(idd)[colnames(idd)=="un.set"] <- "id"
 
-descr.samp$id <- un.set 
-descr.samp$treatment <- substr(descr.samp$id, 1,(nchar(descr.samp$id)-2))
-descr.samp$replicate <- substr(descr.samp$id, (nchar(descr.samp$id)),(nchar(descr.samp$id)))
+ids <- idd %>% 
+  mutate(id = id,
+         treatment = str_split(id, "-", simplify = TRUE)[, 1])%>%
+  mutate(replic = str_split(id, "_", simplify = TRUE)[, 1],
+         tissue = str_split(id, "_", simplify = TRUE)[, 2]) %>%
+  select(-replic)
 
-write.csv(descr.samp, file="describe_sample.csv", row.names=FALSE, quote=FALSE)
+write.csv(ids, file="describe_samples.csv", row.names=FALSE, quote=FALSE)
 
 #Ballgown step in the tuxedo pipeline,  
 #load R version R version 3.2.2
