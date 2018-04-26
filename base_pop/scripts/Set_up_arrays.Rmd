@@ -88,12 +88,40 @@ for(ff in un.set)
 {
   samp.set <- paste(base.cmd,outdir,ff,"_assembled.gtf ",indir,ff,"_merged.bam",sep="")
   cat(samp.set,"\n", file="S04_stringtie_assemble.txt",append=TRUE)
-  #merge  
-  
-  cat(paste(outdir,ff,"_assembled.gtf",sep=""), "\n",file="assembled_file_list.txt",append=TRUE)
+   
+# For stringtie merge 
+  cat(paste(outdir,ff,"_assembled.gtf",sep=""), "\n",file="mergelist.txt",append=TRUE)
 }
 ```
 
+# Compare transcripts to reference genome (optional)
+
+```{r}
+# gffcompare
+# step skipped
+```
+
+# StringTie: transcript abundances and table of counts
+
+```{r}
+cat("", file="S06_Abundances_LearnMemRNA.txt")
+
+
+indir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/" 
+outdir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/ballG/" 
+
+
+base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotgtfs/stringtie_merged.gtf -o "
+
+for(ff in sample.ids) 
+{
+  cmd.cut <- paste(base.cmd,outdir,ff,"_ballgown.gtf ", indir,ff,"_merged.bam",sep="")
+  cat(cmd.cut,"\n", file="S06_abundances.txt",append=TRUE)
+   
+  
+}
+
+```
 
 
 

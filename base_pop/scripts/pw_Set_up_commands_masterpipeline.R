@@ -117,7 +117,7 @@ for(ff in sample.ids)
   cmd.cut <- paste(base.cmd,foldout,ff,"_assembled.gtf ",foldin,ff,"_merged.bam",sep="")
   cat(cmd.cut,"\n", file="S06_Assemble_LearnMemRNA.txt",append=TRUE)
   #merge  
-  
+
   cat(paste(foldout,ff,"_assembled.gtf",sep=""), "\n",file="assembled_file_list.txt",append=TRUE)
 }
 
