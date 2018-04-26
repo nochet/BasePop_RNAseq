@@ -104,7 +104,7 @@ for(ff in un.set)
 # StringTie: transcript abundances and table of counts
 
 ```{r}
-cat("", file="S06_Abundances.txt")
+cat("", file="S06_abundances.txt")
 
 
 indir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/" 
@@ -115,7 +115,7 @@ base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAse
 
 for(ff in un.set) 
 {
-  cmd.cut <- paste(base.cmd,outdir,ff,"_ballgown.gtf ", indir,ff,"_merged.bam",sep="")
+  cmd.cut <- paste(base.cmd,outdir,ff,"/",ff,"_ballgown.gtf ", indir,ff,"_merged.bam",sep="")
   cat(cmd.cut,"\n", file="S06_abundances.txt",append=TRUE)
    
 }
@@ -131,9 +131,10 @@ for(ff in un.set)
 
 descr.samp <- data.frame('id'=character(length=length(un.set)),
                         'treatment'=character(length=length(un.set)),
-                        'replicate'=character(length=length(un.set)),stringsAsFactors = FALSE)
+                        #'replicate'=character(length=length(un.set),stringsAsFactors = FALSE),
+                        'tissue'=character(length=length(un.set)))
 
-descr.samp$id <- sample.ids 
+descr.samp$id <- un.set 
 descr.samp$treatment <- substr(descr.samp$id, 1,(nchar(descr.samp$id)-2))
 descr.samp$replicate <- substr(descr.samp$id, (nchar(descr.samp$id)),(nchar(descr.samp$id)))
 
