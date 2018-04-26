@@ -113,7 +113,7 @@ outdir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/ballG
 
 base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotgtfs/stringtie_merged.gtf -o "
 
-for(ff in sample.ids) 
+for(ff in un.set) 
 {
   cmd.cut <- paste(base.cmd,outdir,ff,"_ballgown.gtf ", indir,ff,"_merged.bam",sep="")
   cat(cmd.cut,"\n", file="S06_abundances.txt",append=TRUE)
