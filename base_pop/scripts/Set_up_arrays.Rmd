@@ -137,6 +137,7 @@ ids <- idd %>%
          treatment = str_split(id, "-", simplify = TRUE)[, 1])%>%
   mutate(replic = str_split(id, "_", simplify = TRUE)[, 1],
          tissue = str_split(id, "_", simplify = TRUE)[, 2]) %>%
+  unite(col="treat_tissue", c("treatment", "tissue"), sep="_", remove=FALSE)%>%
   select(-replic)
 
 write.csv(ids, file="describe_samples.csv", row.names=FALSE, quote=FALSE)
@@ -153,59 +154,110 @@ library(genefilter)
 library(tidyverse)
 library(devtools)
 
-phenDat <- read.csv("describe_samples.csv")
+phenDat <- read.csv("describe_samples.csv", stringsAsFactors = FALSE)
 ```
 
 ```{r}
-bg_ballG <- ballgown(dataDir = "../processed/ballG", samplePattern = "", pData = phenDat)
+heads_phen <- subset(phenDat, phenDat$tissue=="H")
+soma_phen <- subset(phenDat, phenDat$tissue=="B")
+ovaries_phen <- subset(phenDat, phenDat$tissue=="O")
+
+bg_ballG_heads <- ballgown(dataDir = "../processed/ballG/heads", samplePattern = "", pData = heads_phen)
+bg_ballG_soma <- ballgown(dataDir = "../processed/ballG/soma", samplePattern = "", pData = soma_phen)
+bg_ballG_ovaries <- ballgown(dataDir = "../processed/ballG/ovaries", samplePattern = "", pData = ovaries_phen)
+
+save(bg_ballG_heads, file = "../processed/ballG/heads/bg_ballG_heads.Rda")
+save(bg_ballG_soma, file = "../processed/ballG/soma/bg_ballG_soma.Rda")
+save(bg_ballG_ovaries, file = "../processed/ballG/ovaries/bg_ballG_ovaries.Rda")
+```
+
+
+```{r}
+load("../processed/ballG/heads/bg_ballG_heads.Rda")
+load("../processed/ballG/soma/bg_ballG_soma.Rda")
+load("../processed/ballG/ovaries/bg_ballG_ovaries.Rda")
 ```
 
 # Filter to remove low-abundance genes
 
 ```{r}
-bg_ballG_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TRUE)
+bg_heads_filt <- subset(bg_ballG_heads, "rowVars(texpr(bg_ballG_heads)) >1", genomesubset=TRUE)
+bg_soma_filt <- subset(bg_ballG_soma, "rowVars(texpr(bg_ballG_soma)) >1", genomesubset=TRUE)
+bg_ovaries_filt <- subset(bg_ballG_ovaries, "rowVars(texpr(bg_ballG_ovaries)) >1", genomesubset=TRUE)
 ```
 
 # Identify transcripts that show significant differences between groups
 
 ```{r}
-results_transcripts <- stattest(bg_ballG_filt, feature="transcript",covariate="treatment",adjustvars = c("tissue"), meas="FPKM")
+results_heads_transcripts <- stattest(bg_heads_filt, feature="transcript",covariate="treatment", meas="FPKM")
+results_soma_transcripts <- stattest(bg_soma_filt, feature="transcript",covariate="treatment", meas="FPKM")
+results_ovaries_transcripts <- stattest(bg_ovaries_filt, feature="transcript",covariate="treatment", meas="FPKM")
 ```
 
-# Identify transcripts that show significant differences between groups
+# Identify genes that show statistically significant differences between groups
 
 ```{r}
-results_genes <- stattest(bg_ballG_filt, feature="gene", covariate="treatment", adjustvars = c("tissue"), meas="FPKM")
+results_heads_genes <- stattest(bg_heads_filt, feature="gene", 
+                                covariate="treatment",  meas="FPKM")
+results_soma_genes <- stattest(bg_soma_filt, feature="gene", 
+                               covariate="treatment",  meas="FPKM")
+results_ovaries_genes <- stattest(bg_ovaries_filt, feature="gene", 
+                                  covariate="treatment",  meas="FPKM")
 ```
 
 # Add gene names and gene IDs to the results_transcripts data frame
 
 ```{r}
-results_transcripts <- data.frame(geneNames=ballgown::geneNames(bg_ballG_filt), geneIDs=ballgown::geneIDs(bg_ballG_filt), results_transcripts)
+results_heads_transcripts <- data.frame(geneNames=ballgown::geneNames(bg_heads_filt), geneIDs=ballgown::geneIDs(bg_heads_filt), results_heads_transcripts)
+
+results_soma_transcripts <- data.frame(geneNames=ballgown::geneNames(bg_soma_filt), geneIDs=ballgown::geneIDs(bg_soma_filt), results_soma_transcripts)
+
+results_ovaries_transcripts <- data.frame(geneNames=ballgown::geneNames(bg_ovaries_filt), geneIDs=ballgown::geneIDs(bg_ovaries_filt), results_ovaries_transcripts)
 ```
 
 # Sort results from smallest P value to largest
 
 ```{r}
-results_transcripts = arrange(results_transcripts,pval) 
+results_heads_transcripts = arrange(results_heads_transcripts,pval) 
+results_heads_genes = arrange(results_heads_genes,pval)
 
-results_genes = arrange(results_genes,pval)
+results_soma_transcripts = arrange(results_soma_transcripts,pval) 
+results_soma_genes = arrange(results_soma_genes,pval)
+
+results_ovaries_transcripts = arrange(results_ovaries_transcripts,pval) 
+results_ovaries_genes = arrange(results_ovaries_genes,pval)
 ```
 
 # Write results to csv
 
 ```{r}
-write.csv(results_transcripts, "bg_ballG_transcript_results.csv", row.names=FALSE)
+write.csv(results_heads_transcripts, 
+          "../processed/ballG/results/results_bg_heads_transcript.csv", row.names=FALSE)
+write.csv(results_heads_genes, 
+          "../processed/ballG/results/results_bg_heads_gene.csv", row.names=FALSE)
 
-write.csv(results_genes, "bg_ballG_gene_results.csv", row.names=FALSE)
+write.csv(results_soma_transcripts, 
+          "../processed/ballG/results/results_bg_soma_transcripts.csv", row.names=FALSE)
+write.csv(results_soma_genes, 
+          "../processed/ballG/results/results_bg_soma_gene.csv", row.names=FALSE)
+
+write.csv(results_ovaries_transcripts, 
+          "../processed/ballG/results/results_bg_ovaries_transcripts.csv", row.names=FALSE)
+write.csv(results_ovaries_genes, 
+          "../processed/ballG/results/results_bg_ovaries_gene.csv", row.names=FALSE)
 ```
 
 # Identify transcripts and genes with a q value <0.05
 
 ```{r}
-subset(results_transcripts,results_transcripts$qval<0.05)
+sigQval_heads_transcripts <- subset(results_heads_transcripts,results_heads_transcripts$qval<0.05)
+sigQval_heads_gene <- subset(results_heads_genes,results_heads_genes$qval<0.05)
 
-subset(results_genes,results_genes$qval<0.05)
+sigQval_soma_transcripts <- subset(results_soma_transcripts,results_soma_transcripts$qval<0.05)
+sigQval_soma_gene <- subset(results_soma_genes,results_soma_genes$qval<0.05)
+
+sigQval_ovaries_transcripts <- subset(results_ovaries_transcripts,results_ovaries_transcripts$qval<0.05)
+sigQval_ovaries_gene <- subset(results_ovaries_genes,results_ovaries_genes$qval<0.05)
 ```
 
 # Plotting
@@ -219,11 +271,17 @@ palette(tropical)
 # Show the distribution of gene abundances (measured as FPKM values) across samples, colored by treatment
 
 ```{r}
-fpkm = texpr(bg_ballG,meas="FPKM")
+fpkm_heads = texpr(bg_ballG_heads,meas="FPKM")
+fpkm_heads = log2(fpkm_heads+1) 
+boxplot(fpkm_heads,col=as.numeric(phenDat$treatment),las=2,ylab='log2(FPKM+1: heads)')
 
-fpkm = log2(fpkm+1) 
+fpkm_soma = texpr(bg_ballG_soma,meas="FPKM")
+fpkm_soma = log2(fpkm_soma+1) 
+boxplot(fpkm_soma,col=as.numeric(phenDat$treatment),las=2,ylab='log2(FPKM+1: soma)')
 
-boxplot(fpkm,col=as.numeric(phenDat$treatment),las=2,ylab='log2(FPKM+1)')
+fpkm_ovaries = texpr(bg_ballG_ovaries,meas="FPKM")
+fpkm_ovaries = log2(fpkm_ovaries+1) 
+boxplot(fpkm_ovaries,col=as.numeric(phenDat$treatment),las=2,ylab='log2(FPKM+1: ovaries)')
 ```
 
 # Make plots of individual transcripts across samples
