@@ -165,6 +165,12 @@ bg_ballG_heads <- ballgown(dataDir = "../processed/ballG/heads", samplePattern =
 bg_ballG_soma <- ballgown(dataDir = "../processed/ballG/soma", samplePattern = "", pData = soma_phen)
 bg_ballG_ovaries <- ballgown(dataDir = "../processed/ballG/ovaries", samplePattern = "", pData = ovaries_phen)
 
+# Dispplay a decsription of each tissue
+bg_ballG_heads
+bg_ballG_soma
+bg_ballG_ovaries
+
+# Save .Rda
 save(bg_ballG_heads, file = "../processed/ballG/heads/bg_ballG_heads.Rda")
 save(bg_ballG_soma, file = "../processed/ballG/soma/bg_ballG_soma.Rda")
 save(bg_ballG_ovaries, file = "../processed/ballG/ovaries/bg_ballG_ovaries.Rda")
@@ -177,12 +183,17 @@ load("../processed/ballG/soma/bg_ballG_soma.Rda")
 load("../processed/ballG/ovaries/bg_ballG_ovaries.Rda")
 ```
 
-# Filter to remove low-abundance genes
+# Filter to remove low-abundance genes (i.e. those with variance across samples of <=1)
 
 ```{r}
 bg_heads_filt <- subset(bg_ballG_heads, "rowVars(texpr(bg_ballG_heads)) >1", genomesubset=TRUE)
 bg_soma_filt <- subset(bg_ballG_soma, "rowVars(texpr(bg_ballG_soma)) >1", genomesubset=TRUE)
 bg_ovaries_filt <- subset(bg_ballG_ovaries, "rowVars(texpr(bg_ballG_ovaries)) >1", genomesubset=TRUE)
+
+# See counts for each tissue
+bg_heads_filt
+bg_soma_filt
+bg_ovaries_filt
 ```
 
 # Identify transcripts that show significant differences between groups
@@ -229,8 +240,18 @@ results_soma_transcripts <- data.frame(geneNames=ballgown::transcriptNames(bg_so
 
 results_ovaries_transcripts <- data.frame(geneNames=ballgown::transcriptNames(bg_ovaries_filt), geneIDs=ballgown::geneIDs(bg_ovaries_filt), results_ovaries_transcripts)
 
-#full_table<-texpr(bg_ovaries_filt, 'all')
+full_table.hd<-texpr(bg_heads_filt, 'all')
+full_table.sm<-texpr(bg_soma_filt, 'all')
+full_table.ov<-texpr(bg_ovaries_filt, 'all')
 ```
+
+```{r}
+# pull gene expression data frame from the ballgown object
+#xx.heads <- as.data.frame(gexpr(bg_heads_filt))
+#xx.soma <- as.data.frame(gexpr(bg_soma_filt))
+#xx.ovaries <- as.data.frame(gexpr(bg_ovaries_filt))
+```
+
 
 # Sort results from smallest P value to largest
 
@@ -245,6 +266,7 @@ results_ovaries_transcripts = arrange(results_ovaries_transcripts,pval)
 results_ovaries_genes = arrange(results_ovaries_genes,pval)
 
 # Transfer transcript names fron stringtie (protocol does not output gene names)
+
 indicies.hds <- match(results_heads_genes$id, texpr(bg_heads_filt, "all")$gene_id)
 gene_names_heads <- texpr(bg_heads_filt, "all")$t_name[indicies.hds]
 results_heads_genes$tname <- gene_names_heads
@@ -256,7 +278,6 @@ results_soma_genes$tname <- gene_names_soma
 indicies.ov <- match(results_ovaries_genes$id, texpr(bg_ovaries_filt, "all")$gene_id)
 gene_names_ovaries <- texpr(bg_ovaries_filt, "all")$t_name[indicies.ov]
 results_ovaries_genes$tname <- gene_names_ovaries
-
 ```
 
 # Write results to csv
@@ -336,7 +357,31 @@ plotTranscripts(ballgown::geneIDs(bg_ballG)[128], bg_ballG, main=c('Gene blah-bl
 plotMeans('MSTRG.100', bg_ballG_filt,groupvar="treatment",legend=FALSE)
 ```
 
+# Number of transcripts per gene
+```{r}
+
+# Load transcript gene indexes from ballgown objects
+t.genes_table.hds <- indexes(bg_ballG_heads)$t2g
+t.genes_table.som <- indexes(bg_ballG_soma)$t2g
+t.genes_table.ov <- indexes(bg_ballG_ovaries)$t2g
+
+# Plot # of transcripts per gene
+
+# heads
+counts <- table(indexes(t.genes_table.hds)[,"g_id"])
+h_one <- length(which(counts==1))
+h_more <- length(which(counts>1))
+h_max <- max(counts)
+hist(counts, break=50, col="bisque4", xlab="Transcripts per gene",
+main="Distribution of transcript count per gene")
+legend_text=c(paste("Genes with one transcript =", h_one), paste("Genes with more than one transcript =", h_more), paste("Max transcripts for single gene = ", h_max))
+legend("topright", legend_text, lty=NULL)
+```
+
 ```{r}
 
 ```
+
+
+
 
