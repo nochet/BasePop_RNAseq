@@ -161,7 +161,6 @@ phenDat <- read.csv("describe_samples.csv", stringsAsFactors = FALSE)
 heads_phen <- subset(phenDat, phenDat$tissue=="H")
 soma_phen <- subset(phenDat, phenDat$tissue=="B")
 ovaries_phen <- subset(phenDat, phenDat$tissue=="O")
-
 bg_ballG_heads <- ballgown(dataDir = "../processed/ballG/heads", samplePattern = "", pData = heads_phen)
 bg_ballG_soma <- ballgown(dataDir = "../processed/ballG/soma", samplePattern = "", pData = soma_phen)
 bg_ballG_ovaries <- ballgown(dataDir = "../processed/ballG/ovaries", samplePattern = "", pData = ovaries_phen)
@@ -189,9 +188,20 @@ bg_ovaries_filt <- subset(bg_ballG_ovaries, "rowVars(texpr(bg_ballG_ovaries)) >1
 # Identify transcripts that show significant differences between groups
 
 ```{r}
-results_heads_transcripts <- stattest(bg_heads_filt, feature="transcript",covariate="treatment", meas="FPKM")
-results_soma_transcripts <- stattest(bg_soma_filt, feature="transcript",covariate="treatment", meas="FPKM")
-results_ovaries_transcripts <- stattest(bg_ovaries_filt, feature="transcript",covariate="treatment", meas="FPKM")
+results_heads_transcripts <- stattest(bg_heads_filt, feature="transcript",
+        covariate="treatment", meas="FPKM") 
+#which(results_heads_transcripts$qval<=0.05)
+#hds.qval <- results_heads_transcripts[which(results_heads_transcripts$qval<=0.05),]
+
+results_soma_transcripts <- stattest(bg_soma_filt, feature="transcript",
+        covariate="treatment", meas="FPKM")
+#which(results_soma_transcripts$qval<=0.05) 
+#soma.qval <- results_soma_transcripts[which(results_soma_transcripts$qval<=0.05),]
+  
+results_ovaries_transcripts <- stattest(bg_ovaries_filt, feature="transcript",
+        covariate="treatment", meas="FPKM")
+#which(results_ovaries_transcripts$qval<=0.05) 
+#ova.qval <- results_ovaries_transcripts[which(results_ovaries_transcripts$qval<=0.05),]
 ```
 
 # Identify genes that show statistically significant differences between groups
@@ -199,20 +209,27 @@ results_ovaries_transcripts <- stattest(bg_ovaries_filt, feature="transcript",co
 ```{r}
 results_heads_genes <- stattest(bg_heads_filt, feature="gene", 
                                 covariate="treatment",  meas="FPKM")
+which(results_heads_genes$qval<=0.05)
+
 results_soma_genes <- stattest(bg_soma_filt, feature="gene", 
                                covariate="treatment",  meas="FPKM")
+which(results_soma_transcripts$qval<=0.05)
+
 results_ovaries_genes <- stattest(bg_ovaries_filt, feature="gene", 
                                   covariate="treatment",  meas="FPKM")
+which(results_ovaries_transcripts$qval<=0.05)
 ```
 
 # Add gene names and gene IDs to the results_transcripts data frame
 
 ```{r}
-results_heads_transcripts <- data.frame(geneNames=ballgown::geneNames(bg_heads_filt), geneIDs=ballgown::geneIDs(bg_heads_filt), results_heads_transcripts)
+results_heads_transcripts <- data.frame(geneNames=ballgown::transcriptNames(bg_heads_filt), geneIDs=ballgown::geneIDs(bg_heads_filt), results_heads_transcripts)
 
-results_soma_transcripts <- data.frame(geneNames=ballgown::geneNames(bg_soma_filt), geneIDs=ballgown::geneIDs(bg_soma_filt), results_soma_transcripts)
+results_soma_transcripts <- data.frame(geneNames=ballgown::transcriptNames(bg_soma_filt), geneIDs=ballgown::geneIDs(bg_soma_filt), results_soma_transcripts)
 
-results_ovaries_transcripts <- data.frame(geneNames=ballgown::geneNames(bg_ovaries_filt), geneIDs=ballgown::geneIDs(bg_ovaries_filt), results_ovaries_transcripts)
+results_ovaries_transcripts <- data.frame(geneNames=ballgown::transcriptNames(bg_ovaries_filt), geneIDs=ballgown::geneIDs(bg_ovaries_filt), results_ovaries_transcripts)
+
+#full_table<-texpr(bg_ovaries_filt, 'all')
 ```
 
 # Sort results from smallest P value to largest
@@ -226,6 +243,20 @@ results_soma_genes = arrange(results_soma_genes,pval)
 
 results_ovaries_transcripts = arrange(results_ovaries_transcripts,pval) 
 results_ovaries_genes = arrange(results_ovaries_genes,pval)
+
+# Transfer transcript names fron stringtie (protocol does not output gene names)
+indicies.hds <- match(results_heads_genes$id, texpr(bg_heads_filt, "all")$gene_id)
+gene_names_heads <- texpr(bg_heads_filt, "all")$t_name[indicies.hds]
+results_heads_genes$tname <- gene_names_heads
+
+indicies.som <- match(results_soma_genes$id, texpr(bg_soma_filt, "all")$gene_id)
+gene_names_soma <- texpr(bg_soma_filt, "all")$t_name[indicies.som]
+results_soma_genes$tname <- gene_names_soma
+
+indicies.ov <- match(results_ovaries_genes$id, texpr(bg_ovaries_filt, "all")$gene_id)
+gene_names_ovaries <- texpr(bg_ovaries_filt, "all")$t_name[indicies.ov]
+results_ovaries_genes$tname <- gene_names_ovaries
+
 ```
 
 # Write results to csv
@@ -303,5 +334,9 @@ plotTranscripts(ballgown::geneIDs(bg_ballG)[128], bg_ballG, main=c('Gene blah-bl
 
 ```{r}
 plotMeans('MSTRG.100', bg_ballG_filt,groupvar="treatment",legend=FALSE)
+```
+
+```{r}
+
 ```
 
