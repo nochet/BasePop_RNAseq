@@ -358,6 +358,7 @@ plotMeans('MSTRG.100', bg_ballG_filt,groupvar="treatment",legend=FALSE)
 ```
 
 # Number of transcripts per gene
+
 ```{r}
 
 # Load transcript gene indexes from ballgown objects
@@ -368,18 +369,48 @@ t.genes_table.ov <- indexes(bg_ballG_ovaries)$t2g
 # Plot # of transcripts per gene
 
 # heads
-counts <- table(indexes(t.genes_table.hds)[,"g_id"])
-h_one <- length(which(counts==1))
-h_more <- length(which(counts>1))
-h_max <- max(counts)
-hist(counts, break=50, col="bisque4", xlab="Transcripts per gene",
+counts.h <- table(t.genes_table.hds[,"g_id"])
+h_one <- length(which(counts.h==1))
+h_more <- length(which(counts.h>1))
+h_max <- max(counts.h)
+hist(counts.h, breaks=50, col="bisque4", xlab="Transcripts per gene",
 main="Distribution of transcript count per gene")
 legend_text=c(paste("Genes with one transcript =", h_one), paste("Genes with more than one transcript =", h_more), paste("Max transcripts for single gene = ", h_max))
-legend("topright", legend_text, lty=NULL)
+legend("topright", legend_text, lty = NULL)
+
+# soma
+counts.s <- table(t.genes_table.som[,"g_id"])
+s_one <- length(which(counts.s==1))
+s_more <- length(which(counts.s>1))
+s_max <- max(counts.s)
+hist(counts.s, breaks=50, col="bisque4", xlab="Transcripts per gene",
+main="Distribution of transcript count per gene")
+legend_text=c(paste("Genes with one transcript =", s_one), paste("Genes with more than one transcript =", s_more), paste("Max transcripts for single gene = ", s_max))
+legend("topright", legend_text, lty = NULL)
+
+# ovaries
+counts.o <- table(t.genes_table.ov[,"g_id"])
+o_one <- length(which(counts.o==1))
+o_more <- length(which(counts.o>1))
+o_max <- max(counts.o)
+hist(counts.o, breaks=50, col="bisque4", xlab="Transcripts per gene",
+main="Distribution of transcript count per gene")
+legend_text=c(paste("Genes with one transcript =", o_one), paste("Genes with more than one transcript =", o_more), paste("Max transcripts for single gene = ", o_max))
+legend("topright", legend_text, lty = NULL)
 ```
 
-```{r}
 
+# Distribution of transcript sizes
+
+```{r}
+full_table.hd<-texpr(bg_ballG_heads, 'all')
+hist(full_table.hd$length, breaks=50, xlab="Transcript length (bp)", main="Distribution of transcript lengths", col="steelblue")
+
+full_table.sm<-texpr(bg_ballG_soma, 'all')
+hist(full_table.sm$length, breaks=50, xlab="Transcript length (bp)", main="Distribution of transcript lengths", col="steelblue")
+
+full_table.ov<-texpr(bg_ballG_ovaries, 'all')
+hist(full_table.ov$length, breaks=50, xlab="Transcript length (bp)", main="Distribution of transcript lengths", col="steelblue")
 ```
 
 
