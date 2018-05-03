@@ -19,6 +19,7 @@ library(ballgown)
 library(genefilter)
 library(tidyverse)
 library(devtools)
+library(cowplot)
 
 phenDat <- read.csv("describe_samples.csv", stringsAsFactors = FALSE)
 ```
@@ -86,15 +87,15 @@ results_ovaries_transcripts <- stattest(bg_ovaries_filt, feature="transcript",
 ```{r}
 results_heads_genes <- stattest(bg_heads_filt, feature="gene", 
                                 covariate="treatment",  meas="FPKM")
-which(results_heads_genes$qval<=0.05)
+which(results_heads_genes$qval<0.05)
 
 results_soma_genes <- stattest(bg_soma_filt, feature="gene", 
                                covariate="treatment",  meas="FPKM")
-which(results_soma_transcripts$qval<=0.05)
+which(results_soma_transcripts$qval<0.05)
 
 results_ovaries_genes <- stattest(bg_ovaries_filt, feature="gene", 
                                   covariate="treatment",  meas="FPKM")
-which(results_ovaries_transcripts$qval<=0.05)
+which(results_ovaries_transcripts$qval<0.05)
 ```
 
 # Add gene names and gene IDs to the results_transcripts data frame
@@ -291,47 +292,145 @@ colnames(fpkm_ovaries) <- ios
 str(fpkm_ovaries)
 ```
 
-# Plot
+# Visualize expression across libraries
 
 ```{r}
 tfpkm_hds<-texpr(bg_heads_filt, meas="FPKM")
 tfpkm_hds <-log2(tfpkm_hds+1)
 colnames(tfpkm_hds)<-c("C1","C2","C3","C4","C5","C6","DR1","DR2",
-                      "DR3","DR4","DR5","DR6","HS1","HS2","HS3","HS4","HS5","HS")
+                      "DR3","DR4","DR5","DR6","HS1","HS2","HS3","HS4","HS5","HS6")
 
-gfpkm <-gexpr(bg_heads_filt)
-gfpkm <-log2(gfpkm +1)
-rownames(gfpkm)<-rownames(gfpkm)
+tfpkm_som<-texpr(bg_soma_filt, meas="FPKM")
+tfpkm_som <-log2(tfpkm_som+1)
+colnames(tfpkm_som)<-c("C1","C2","C3","C4","C5","C6","DR1","DR2",
+                      "DR3","DR4","DR5","DR6","HS1","HS2","HS3","HS4","HS5","HS6")
 
-hh<- as.data.frame(fpkm_hds) %>% gather(id, fpkm)
-hh$treatment <- rep(c("C","DR","HS"), each=6*nrow(fpkm_hds))
+tfpkm_ov<-texpr(bg_ovaries_filt, meas="FPKM")
+tfpkm_ov <-log2(tfpkm_ov+1)
+colnames(tfpkm_ov)<-c("C1","C2","C3","C4","C5","C6","DR1","DR2",
+                      "DR3","DR4","DR5","DR6","HS1","HS2","HS3","HS4","HS5","HS6")
+
+gfpkm_hds <-gexpr(bg_heads_filt)
+gfpkm_hds <-log2(gfpkm_hds +1)
+rownames(gfpkm_hds)<-rownames(gfpkm_hds)
+
+gfpkm_som <-gexpr(bg_soma_filt)
+gfpkm_som <-log2(gfpkm_som +1)
+rownames(gfpkm_som)<-rownames(gfpkm_som)
+
+gfpkm_ov <-gexpr(bg_ovaries_filt)
+gfpkm_ov <-log2(gfpkm_ov +1)
+rownames(gfpkm_ov)<-rownames(gfpkm_ov)
+
+hh<- as.data.frame(tfpkm_hds) %>% gather(id, fpkm)
+hh$treatment <- rep(c("C","DR","HS"), each=6*nrow(tfpkm_hds))
+
+sm<- as.data.frame(tfpkm_som) %>% gather(id, fpkm)
+sm$treatment <- rep(c("C","DR","HS"), each=6*nrow(tfpkm_som))
+
+ov<- as.data.frame(tfpkm_ov) %>% gather(id, fpkm)
+ov$treatment <- rep(c("C","DR","HS"), each=6*nrow(tfpkm_ov))
 
 p1 <- ggplot(hh, aes(x=id, y=fpkm,fill=treatment)) +
   geom_boxplot() +
-  ylab(expression("log"[2]*"(FPKM + 1)"))+
-  main="Distribution of FPKMs for all 18 head samples" +
-  xlab="Diet treatment"
-p1
+  ylab(expression("log"[2]*"(FPKM + 1)"))
+p1 +labs(title="Distribution of FPKMs across head samples",
+        x ="Diet treatment")  
+
+p2 <- ggplot(sm, aes(x=id, y=fpkm,fill=treatment)) +
+  geom_boxplot() +
+  ylab(expression("log"[2]*"(FPKM + 1)"))
+p2 +labs(title="Distribution of FPKMs across soma samples",
+        x ="Diet treatment")  
+
+p3 <- ggplot(ov, aes(x=id, y=fpkm,fill=treatment)) +
+  geom_boxplot() +
+  ylab(expression("log"[2]*"(FPKM + 1)"))
+p3 +labs(title="Distribution of FPKMs across ovary samples",
+        x ="Diet treatment")  
+
 #ggsave(p1, filename="../Plots/FPKM_overall.pdf", width=6, height=4)
 ```
 
-#Overall
+
+
 ```{r}
-tfpkm<-texpr(bg_filt, meas="FPKM")
-tlfpkm <-log2(tfpkm+1)
-colnames(tlfpkm)<-c("C1","C2","C3","C4","DR1","DR2","DR3","DR4","HS1","HS2","HS3","HS4")
+# heads
+rx <- which(results_heads_genes$qval<=0.05)
+rowMeans(gfpkm_hds[rx,])
 
-gfpkm <-gexpr(bg_filt)
-glfpkm <-log2(gfpkm +1)
-rownames(glfpkm)<-rownames(gfpkm)
+ff<-5
+phh<-data.frame('FPKM'=gfpkm_hds[rx[ff],], 'Treatment' = rep(c('C','DR','HS'),each=6))
 
-tt<- as.data.frame(tlfpkm) %>% gather(id, fpkm)
-tt$treatment <- rep(c("C","DR","HS"), each=4*nrow(tlfpkm))
-
-p1 <- ggplot(tt, aes(x=id, y=fpkm,fill=treatment)) +
-  geom_boxplot() +
+q1 <- ggplot(phh, aes(x=Treatment, y=FPKM)) +
+  geom_point(position=position_jitter(width = 0.05),color='steelblue', alpha=0.7,size=3) +
   ylab(expression("log"[2]*"(FPKM + 1)"))
-ggsave(p1, filename="../Plots/FPKM_overall.pdf", width=6, height=4)
+q1 +labs(title="Gene expression across diet treatments \n for heads",
+        x ="Diet treatment")
+
+
+# soma
+ry <- which(results_soma_genes$qval<=0.05)
+rowMeans(gfpkm_som[ry,])
+
+gg<-5
+pss<-data.frame('FPKM'=gfpkm_som[rx[gg],], 'Treatment' = rep(c('C','DR','HS'),each=6))
+
+q2 <- ggplot(pss, aes(x=Treatment, y=FPKM)) +
+  geom_point(position=position_jitter(width = 0.05),color='steelblue', alpha=0.7,size=3) +
+  ylab(expression("log"[2]*"(FPKM + 1)"))
+q2 +labs(title="Gene expression across diet treatments \n for soma",
+        x ="Diet treatment")
+
+# ovaries
+rz <- which(results_ovaries_genes$qval<=0.05)
+rowMeans(gfpkm_ov[rz,])
+
+kk<-5
+poo<-data.frame('FPKM'=gfpkm_ov[rz[kk],], 'Treatment' = rep(c('C','DR','HS'),each=6))
+
+q3 <- ggplot(poo, aes(x=Treatment, y=FPKM)) +
+  geom_point(position=position_jitter(width = 0.05),color='steelblue', alpha=0.7,size=3) +
+  ylab(expression("log"[2]*"(FPKM + 1)"))
+q3 +labs(title="Gene expression across diet treatments \n for ovaries",
+        x ="Diet treatment")
+
+```
+
+# Heat maps
+
+```{r}
+rv<- t(scale(t(gfpkm_hds),center=TRUE,scale=FALSE))
+rv<- rowVars(rv)
+## select the top 250 most variable genes for clustering
+idx<- order(-rv)[1:250]
+
+ru<- t(scale(t(gfpkm_som),center=TRUE,scale=FALSE))
+ru<- rowVars(ru)
+idu<- order(-ru)[1:250]
+
+ro<- t(scale(t(gfpkm_ov),center=TRUE,scale=FALSE))
+ro<- rowVars(ro)
+## select the top 250 most variable genes for clustering
+ido<- order(-ro)[1:250]
+
+library(ComplexHeatmap) 
+
+Heatmap(gfpkm_hds[idx,], name = "log2(FPKM+1)", 
+        show_row_names = FALSE, show_column_names = FALSE, 
+        row_dend_reorder = TRUE, column_dend_reorder = TRUE)
+        #clustering_distance_rows = "pearson",
+        #clustering_distance_columns = "euclidean",
+        #clustering_method_rows = "complete",
+        #clustering_method_columns = "complete")
+
+Heatmap(gfpkm_som[idu,], name = "log2(FPKM+1)", 
+        show_row_names = FALSE, show_column_names = FALSE, 
+        row_dend_reorder = TRUE, column_dend_reorder = TRUE)
+
+Heatmap(gfpkm_ov[ido,], name = "log2(FPKM+1)", 
+        show_row_names = FALSE, show_column_names = FALSE, 
+        row_dend_reorder = TRUE, column_dend_reorder = TRUE)
 ```
 
 
