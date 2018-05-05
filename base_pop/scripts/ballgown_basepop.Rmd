@@ -20,6 +20,8 @@ library(genefilter)
 library(tidyverse)
 library(devtools)
 library(cowplot)
+library(reshape)
+
 
 phenDat <- read.csv("describe_samples.csv", stringsAsFactors = FALSE)
 ```
@@ -171,12 +173,19 @@ write.csv(results_ovaries_genes,
 ```{r}
 sigQval_heads_transcripts <- subset(results_heads_transcripts,results_heads_transcripts$qval<0.05)
 sigQval_heads_gene <- subset(results_heads_genes,results_heads_genes$qval<0.05)
+write.csv(sigQval_heads_gene, 
+          "../processed/ballG/results/sigQval_heads_gene.csv", row.names=FALSE)
 
 sigQval_soma_transcripts <- subset(results_soma_transcripts,results_soma_transcripts$qval<0.05)
 sigQval_soma_gene <- subset(results_soma_genes,results_soma_genes$qval<0.05)
+write.csv(sigQval_soma_gene, 
+          "../processed/ballG/results/sigQval_soma_gene.csv", row.names=FALSE)
 
 sigQval_ovaries_transcripts <- subset(results_ovaries_transcripts,results_ovaries_transcripts$qval<0.05)
 sigQval_ovaries_gene <- subset(results_ovaries_genes,results_ovaries_genes$qval<0.05)
+write.csv(sigQval_ovaries_gene, 
+          "../processed/ballG/results/sigQval_ovaries_gene.csv", row.names=FALSE)
+
 ```
 
 # Plotting
@@ -312,7 +321,7 @@ colnames(tfpkm_ov)<-c("C1","C2","C3","C4","C5","C6","DR1","DR2",
 
 gfpkm_hds <-gexpr(bg_heads_filt)
 gfpkm_hds <-log2(gfpkm_hds +1)
-rownames(gfpkm_hds)<-rownames(gfpkm_hds)
+
 
 gfpkm_som <-gexpr(bg_soma_filt)
 gfpkm_som <-log2(gfpkm_som +1)
@@ -382,6 +391,7 @@ q2 <- ggplot(pss, aes(x=Treatment, y=FPKM)) +
 q2 +labs(title="Gene expression across diet treatments \n for soma",
         x ="Diet treatment")
 
+
 # ovaries
 rz <- which(results_ovaries_genes$qval<=0.05)
 rowMeans(gfpkm_ov[rz,])
@@ -414,6 +424,7 @@ ro<- rowVars(ro)
 ## select the top 250 most variable genes for clustering
 ido<- order(-ro)[1:250]
 
+
 library(ComplexHeatmap) 
 
 Heatmap(gfpkm_hds[idx,], name = "log2(FPKM+1)", 
@@ -431,7 +442,162 @@ Heatmap(gfpkm_som[idu,], name = "log2(FPKM+1)",
 Heatmap(gfpkm_ov[ido,], name = "log2(FPKM+1)", 
         show_row_names = FALSE, show_column_names = FALSE, 
         row_dend_reorder = TRUE, column_dend_reorder = TRUE)
+
+
+###################
+# ggplot simple heat map
+# heads
+rx <- as.character(results_heads_genes[which(results_heads_genes$qval<=0.05), 'id'])
+
+gfpkm_hds_diff <-as.data.frame(gfpkm_hds[rx,])
+
+gg <- rowMeans(gfpkm_hds_diff)
+#gfpkm_hds_diff$gname<-rownames(gfpkm_hds_diff)
+gfpkm_hds_diff<-gfpkm_hds_diff[order(gg),]
+gfpkm_hds_diff <- gfpkm_hds_diff[800:900,]
+
+gfpkm_hds_diff$gname<-seq(1,nrow(gfpkm_hds_diff))
+
+hds.long<-melt(gfpkm_hds_diff,id='gname')
+hds.long$variable <- unlist(lapply(strsplit(as.character(hds.long$variable), split=".",fixed=TRUE),function(x) x[2]))
+
+ggplot(hds.long, aes(variable, gname)) +
+  geom_tile(aes(fill = value), colour = "white") + 
+  scale_fill_gradient(low = "red", high = "steelblue") +
+  theme(#axis.text.x = element_blank(),
+        axis.text.y=element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+
+####
+# soma
+ry <- as.character(results_soma_genes[which(results_soma_genes$qval<=0.05), 'id'])
+
+gfpkm_som_diff <-as.data.frame(gfpkm_som[ry,])
+
+yy <- rowMeans(gfpkm_som_diff)
+#gfpkm_hds_diff$gname<-rownames(gfpkm_som_diff)
+gfpkm_som_diff<-gfpkm_som_diff[order(yy),]
+gfpkm_som_diff <- gfpkm_som_diff[1:200,]
+
+gfpkm_som_diff$gname<-seq(1,nrow(gfpkm_som_diff))
+
+som.long<-melt(gfpkm_som_diff,id='gname')
+som.long$variable <- unlist(lapply(strsplit(as.character(som.long$variable), split=".",fixed=TRUE),function(x) x[2]))
+
+ggplot(som.long, aes(variable, gname)) +
+  geom_tile(aes(fill = value), colour = "white") + 
+  scale_fill_gradient(low = "red", high = "steelblue") +
+  theme(#axis.text.x = element_blank(),
+        axis.text.y=element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+
+
+# ovaries
+rz <- as.character(results_ovaries_genes[which(results_ovaries_genes$qval<=0.05), 'id'])
+
+gfpkm_ov_diff <-as.data.frame(gfpkm_ov[rz,])
+
+zz <- rowMeans(gfpkm_ov_diff)
+#gfpkm_ov_diff$gname<-rownames(gfpkm_ov_diff)
+gfpkm_ov_diff<-gfpkm_ov_diff[order(zz),]
+gfpkm_ov_diff <- gfpkm_ov_diff[1:20,]
+
+gfpkm_ov_diff$gname<-seq(1,nrow(gfpkm_ov_diff))
+
+ov.long<-melt(gfpkm_ov_diff,id='gname')
+ov.long$variable <- unlist(lapply(strsplit(as.character(ov.long$variable), split=".",fixed=TRUE),function(x) x[2]))
+
+ggplot(ov.long, aes(variable, gname)) +
+  geom_tile(aes(fill = value), colour = "white") + 
+  scale_fill_gradient(low = "red", high = "steelblue") +
+  theme(#axis.text.x = element_blank(),
+        axis.text.y=element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())
 ```
 
+# Heatmap for whole experiment
 
+```{r}
+bg_ballG_heads <- ballgown(dataDir = "../processed/ballG/heads", samplePattern = "", pData = heads_phen)
+
+```
+
+# PCA
+
+```{r}
+# heads
+X<- t(scale(t(gfpkm_hds),center=TRUE,scale=FALSE))
+sv<- svd(t(X))
+U<- sv$u
+V<- sv$v
+D<- sv$d
+Z<- t(X)%*%V
+
+# put PC1 and PC2 into a dataframe and add the phenotpe info side by side
+pc_dat<- data.frame(heads_phen$id, PC1 = Z[,1], PC2 = Z[,2])
+
+pc_dat$Diet <- unlist(lapply(strsplit(as.character(pc_dat$heads_phen.id), split="-",fixed=TRUE),function(x) x[1]))
+
+## make figure with ggplot2
+library(ggthemes)
+ggplot(pc_dat, aes(x=PC1, y=PC2, col=Diet)) + 
+        geom_point() + 
+        theme_bw() +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(), 
+              axis.line.x = element_line(color="black", size = 0.6),
+              axis.line.y = element_line(color="black", size = 0.6))
+
+# soma
+Y<- t(scale(t(gfpkm_som),center=TRUE,scale=FALSE))
+sk<- svd(t(Y))
+A<- sk$u
+B<- sk$v
+C<- sk$d
+E<-t(Y)%*%B
+
+# put PC1 and PC2 into a dataframe and add the phenotpe info side by side
+pc_dat.som<- data.frame(soma_phen$id, PC1 = E[,1], PC2 = E[,2])
+
+pc_dat.som$Diet <- unlist(lapply(strsplit(as.character(pc_dat.som$soma_phen.id), split="-",fixed=TRUE),function(x) x[1]))
+
+## make figure with ggplot2
+ggplot(pc_dat.som, aes(x=PC1, y=PC2, col=Diet)) + 
+        geom_point() + 
+        theme_bw() +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(), 
+              axis.line.x = element_line(color="black", size = 0.6),
+              axis.line.y = element_line(color="black", size = 0.6))
+
+# ovaries
+W<- t(scale(t(gfpkm_ov),center=TRUE,scale=FALSE))
+#W <- t(scale(t(log2(poo$FPKM+1)),center=TRUE,scale=FALSE))
+sn<- svd(t(W))
+F<- sn$u
+G<- sn$v
+H<- sn$d
+I<-t(W)%*%G
+
+# put PC1 and PC2 into a dataframe and add the phenotpe info side by side
+pc_dat.ov<- data.frame(ovaries_phen$id, PC1 = I[,1], PC2 = I[,2])
+
+pc_dat.ov$Diet <- unlist(lapply(strsplit(as.character(pc_dat.ov$ovaries_phen.id), split="-",fixed=TRUE),function(x) x[1]))
+
+## make figure with ggplot2
+ggplot(pc_dat.ov, aes(x=PC1, y=PC2, col=Diet)) + 
+        geom_point() + 
+        theme_bw() +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(), 
+              axis.line.x = element_line(color="black", size = 0.6),
+              axis.line.y = element_line(color="black", size = 0.6))
+
+```
 
