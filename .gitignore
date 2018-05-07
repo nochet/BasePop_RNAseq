@@ -9,6 +9,8 @@
 *.md5sum
 *.html
 *.fastq.gz.md5sum
+*.ctab
+
 
 # Compiled source #
 ###################
@@ -49,5 +51,9 @@
 .Trashes
 ehthumbs.db
 Thumbs.db
-.Rproj
-.Rproj.user
+
+#R stuff#
+#######
+*.Rda
+*.Rproj
+*.Rproj.user

@@ -1,0 +1,57 @@
+---
+title: "DiffExpr"
+author: "Enoch Ng'oma"
+date: "5/7/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#R
+#load R version R version 3.2.2
+#load R packagees:
+library(ballgown)
+library(genefilter)
+library(tidyverse)
+library(devtools)
+library(cowplot)
+library(reshape)
+
+```
+
+# Differential expression analysis protocol
+
+```{r}
+phenDat <- read.csv("describe_samples.csv", stringsAsFactors = FALSE)
+
+load("../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
+
+# Dispplay a decsription
+bg_ballG
+
+```
+
+# Filter to remove low-abundance genes (i.e. those with variance across samples of <=1)
+
+```{r}
+bg_ballG_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TRUE)
+
+# See counts
+bg_ballG_filt
+```
+
+## Overall expression numbers
+# Distribution of gene abundances (FPKM values) across samples (libraries), colored by treatment
+
+```{r}
+
+tfpkm_bg<-texpr(bg_ballG_filt, meas="FPKM")
+tfpkm_bg <-log2(tfpkm_bg+1)
+colnames(tfpkm_bg)<-phenDat$id
+
+gfpkm_bg <-gexpr(bg_ballG_filt)
+gfpkm_bg <-log2(gfpkm_bg +1)
+
+
+```
+
