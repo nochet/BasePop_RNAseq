@@ -561,7 +561,7 @@ C<- sk$d
 E<-t(Y)%*%B
 
 # put PC1 and PC2 into a dataframe and add the phenotpe info side by side
-pc_dat.som<- data.frame(soma_phen$id, PC1 = E[,1], PC2 = E[,2])
+pc_dat.som<- data.frame(soma_phen$id, PC1 = E[,2], PC2 = E[,3])
 
 pc_dat.som$Diet <- unlist(lapply(strsplit(as.character(pc_dat.som$soma_phen.id), split="-",fixed=TRUE),function(x) x[1]))
 
