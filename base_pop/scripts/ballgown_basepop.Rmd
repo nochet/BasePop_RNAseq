@@ -40,16 +40,16 @@ bg_ballG_soma
 bg_ballG_ovaries
 
 # Save .Rda
-save(bg_ballG_heads, file = "../processed/ballG/results/bg_ballG_heads.Rda")
-save(bg_ballG_soma, file = "../processed/ballG/results/bg_ballG_soma.Rda")
-save(bg_ballG_ovaries, file = "../processed/ballG/results/bg_ballG_ovaries.Rda")
+save(bg_ballG_heads, file = "../processed/results/bg_results_tissues/heads.Rda")
+save(bg_ballG_soma, file = "../processed/results/bg_results_tissues/soma.Rda")
+save(bg_ballG_ovaries, file = "../processed/results/bg_results_tissues/ovaries.Rda")
 ```
 
 
 ```{r}
-load("../processed/ballG/results/bg_ballG_heads.Rda")
-load("../processed/ballG/results/bg_ballG_soma.Rda")
-load("../processed/ballG/results/bg_ballG_ovaries.Rda")
+load("../processed/results/bg_results_tissues/heads.Rda")
+load("../processed/results/bg_results_tissues/soma.Rda")
+load("../processed/results/bg_results_tissues/ovaries.Rda")
 ```
 
 # Filter to remove low-abundance genes (i.e. those with variance across samples of <=1)
@@ -63,6 +63,8 @@ bg_ovaries_filt <- subset(bg_ballG_ovaries, "rowVars(texpr(bg_ballG_ovaries)) >1
 bg_heads_filt
 bg_soma_filt
 bg_ovaries_filt
+
+save(bg_ballG_ovaries, file = "../processed/results/bg_results_tissues/ovaries.Rda")
 ```
 
 # Identify transcripts that show significant differences between groups
@@ -153,19 +155,19 @@ results_ovaries_genes$tname <- gene_names_ovaries
 
 ```{r}
 write.csv(results_heads_transcripts, 
-          "../processed/ballG/results/results_bg_heads_transcript.csv", row.names=FALSE)
+          "../processed/results/bg_results_tissues/results_bg_heads_transcript.csv", row.names=FALSE)
 write.csv(results_heads_genes, 
-          "../processed/ballG/results/results_bg_heads_gene.csv", row.names=FALSE)
+          "../processed/results/bg_results_tissues/results_bg_heads_gene.csv", row.names=FALSE)
 
 write.csv(results_soma_transcripts, 
-          "../processed/ballG/results/results_bg_soma_transcripts.csv", row.names=FALSE)
+          "../processed/results/bg_results_tissues/results_bg_soma_transcripts.csv", row.names=FALSE)
 write.csv(results_soma_genes, 
-          "../processed/ballG/results/results_bg_soma_gene.csv", row.names=FALSE)
+          "../processed/results/bg_results_tissues/results_bg_soma_gene.csv", row.names=FALSE)
 
 write.csv(results_ovaries_transcripts, 
-          "../processed/ballG/results/results_bg_ovaries_transcripts.csv", row.names=FALSE)
+          "../processed/results/bg_results_tissues/results_bg_ovaries_transcripts.csv", row.names=FALSE)
 write.csv(results_ovaries_genes, 
-          "../processed/ballG/results/results_bg_ovaries_gene.csv", row.names=FALSE)
+          "../processed/results/bg_results_tissues/results_bg_ovaries_gene.csv", row.names=FALSE)
 ```
 
 # Identify transcripts and genes with a q value <0.05

@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Global trends analysis of RNA-seq for base population"
 author: "Enoch Ng'oma"
 date: "May 5, 2018"
 output: html_document
@@ -12,19 +12,18 @@ knitr::opts_chunk$set(echo = TRUE)
 # Differential expression analysis protocol
 
 ```{r}
-#R
-#load R version R version 3.2.2
-#load R packagees:
 library(ballgown)
 library(genefilter)
 library(tidyverse)
 library(devtools)
 library(cowplot)
 library(reshape)
+library(ggthemes)
 
 
 phenDat <- read.csv("describe_samples.csv", stringsAsFactors = FALSE)
 ```
+
 
 ```{r}
 bg_ballG <- ballgown(dataDir = "../processed/ballG_all", samplePattern = "", pData = phenDat)
@@ -172,6 +171,8 @@ b1 +labs(title="Distribution of FPKMs across head samples",
 ```
 
 ```{r}
+
+### DOESNT work fix
 rm <- which(results_ballG_genes$qval<=0.05)
 rowMeans(gfpkm_bg[rm,])
 
@@ -231,7 +232,7 @@ ggplot(bg.long, aes(variable, gname)) +
         axis.title.x = element_blank(),
         axis.title.y = element_blank())
 
-
+save(gfpkm_bg_diff, file = "../processed/results/ballG_all_results/gfpkm_bg_ballG_filt_heat.Rda")
 ```
 
 # add labels to heatmap
@@ -286,20 +287,21 @@ pc.dat<- data.frame(phenDat$id, PC1 = Z[,1], PC2 = Z[,2])
 pc.dat$Diet <- unlist(lapply(strsplit(as.character(pc.dat$phenDat.id), split="-",fixed=TRUE),function(x) x[1]))
 
 ## make figure with ggplot2
-library(ggthemes)
+
 #e <- rep(c('B','H','O'),each=18)
-name <- phenDat$tissue
-a <- ggplot(pc.dat, aes(x=PC1, y=PC2, col=Diet, label=name)) + 
+
+ggplot(pc.dat, aes(x=PC1, y=PC2, col=Diet, label=name)) + 
         geom_point() + 
         theme_bw() +
         theme(panel.border = element_blank(), 
               panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(), 
               axis.line.x = element_line(color="black", size = 0.6),
-              axis.line.y = element_line(color="black", size = 0.6))
-a + col 
-#a + geom_label(label = rownames(phenDat$tissue))+
-#a+geom_text()
+              axis.line.y = element_line(color="black", size = 0.6)) +
+  scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9"))
+# #999999 Color Hex Gray60
+# #E69F00 ~ Gamboge or Hex triplet
+# Malibu #56B4E9
 ```
 
 
