@@ -16,6 +16,7 @@ library(tidyverse)
 library(devtools)
 library(cowplot)
 library(reshape)
+library(ggthemes)
 
 ```
 
@@ -24,7 +25,12 @@ library(reshape)
 ```{r}
 phenDat <- read.csv("describe_samples.csv", stringsAsFactors = FALSE)
 
-load("../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
+bg_ballG <- ballgown(dataDir = "../processed/ballG_all", samplePattern = "", pData = phenDat)
+
+# Save .Rda
+save(bg_ballG, file = "../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
+
+load("../processed/ballG/results/ballG_all_results/bg_ballG_all_results.Rda")
 
 # Dispplay a decsription
 bg_ballG
@@ -38,20 +44,79 @@ bg_ballG_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TR
 
 # See counts
 bg_ballG_filt
+
+save(bg_ballG_filt, file = "../processed/results/ballG_all_results/bg_ballG_filt.Rda")
 ```
 
 ## Overall expression numbers
-# Distribution of gene abundances (FPKM values) across samples (libraries), colored by treatment
+# Distribution of gene abundances (FPKM values) across samples (libraries), colored by treatment or tissue and faceted 
 
 ```{r}
 
 tfpkm_bg<-texpr(bg_ballG_filt, meas="FPKM")
 tfpkm_bg <-log2(tfpkm_bg+1)
 colnames(tfpkm_bg)<-phenDat$id
+save(tfpkm_bg, file = "../processed/results/ballG_all_results/tfpkm_bg_ballG_filt.Rda")
 
-gfpkm_bg <-gexpr(bg_ballG_filt)
-gfpkm_bg <-log2(gfpkm_bg +1)
 
+tbg<- as.data.frame(tfpkm_bg) %>% gather(id, fpkm)
+tbg$treatment <- rep(c("C","DR","HS"), each=18*nrow(tfpkm_bg))
+tbg$tissue <- rep(c("B","H","O"),each=nrow(tfpkm_bg),6)
+tbg$replicate <- rep(c(1,2,3,4,5,6),each=nrow(tfpkm_bg)*3)
+tbg$prep <- paste(tbg$treatment,tbg$replicate,sep="_")
+tbg$trep <- paste(tbg$tissue,tbg$replicate,sep="_")
+
+b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,fill=treatment)) +
+  geom_boxplot() +
+  ylab(expression("log"[2]*"(FPKM + 1)")) +
+  facet_grid(tissue~.)
+b1
+
+b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,fill=tissue)) +
+  geom_boxplot() +
+  ylab(expression("log"[2]*"(FPKM + 1)")) +
+  facet_grid(treatment~.)
+b2
 
 ```
 
+## PCA for global patterns
+
+
+```{r}
+
+gfpkm_bg <-gexpr(bg_ballG_filt)
+gfpkm_bg <-log2(gfpkm_bg +1)
+colnames(gfpkm_bg)<-phenDat$id
+save(gfpkm_bg, file = "../processed/results/ballG_all_results/gfpkm_bg_ballG_filt.Rda")
+
+
+# all samples
+X<- t(scale(t(gfpkm_bg),center=TRUE,scale=FALSE))
+sv<- svd(t(X))
+U<- sv$u
+V<- sv$v
+D<- sv$d
+Z<- t(X)%*%V
+
+# put PC1 and PC2 into a dataframe and add the phenotpe info side by side
+pc.dat<- data.frame(phenDat$id, PC1 = Z[,1], PC2 = Z[,2], PC3 = Z[,3],PC4 =Z[,4])
+s.id <- strsplit(as.character(pc.dat$phenDat.id), split="-",fixed=TRUE)
+pc.dat$Diet <-unlist(lapply(s.id, function(x) x[1]))
+pc.dat$Tissue <- unlist(lapply(strsplit(as.character(phenDat$id), split="_", fixed=TRUE), function(x) x[2]))
+## make figure with ggplot2
+
+#e <- rep(c('B','H','O'),each=18)
+#name <- phenDat$tissue
+a <- ggplot(pc.dat, aes(x=PC1, y=PC2, col=Diet, pch=Tissue)) + 
+        geom_point(alpha=0.7, size=3) + 
+        theme_bw() +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(), 
+              axis.line.x = element_line(color="black", size = 0.6),
+              axis.line.y = element_line(color="black", size = 0.6))
+a 
+
+ggsave(filename = "../plots/PCA_overall.pdf",width = 5,height=5)
+```
