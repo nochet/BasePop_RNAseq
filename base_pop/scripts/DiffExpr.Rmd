@@ -67,22 +67,29 @@ tbg$replicate <- rep(c(1,2,3,4,5,6),each=nrow(tfpkm_bg)*3)
 tbg$prep <- paste(tbg$treatment,tbg$replicate,sep="_")
 tbg$trep <- paste(tbg$tissue,tbg$replicate,sep="_")
 
-b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,fill=treatment)) +
-  geom_boxplot() +
+b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
+  geom_boxplot(alpha=0.9) +
+          theme(axis.title = element_text(size = 24)) +
+          theme(text = element_text(size = 20)) +
+  scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
+  xlab("Diet")+
   facet_grid(tissue~.)
 b1
+ggsave(filename = "../plots/Expression_by_sample1.pdf",width = 5,height=5)
 
-b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,fill=tissue)) +
-  geom_boxplot() +
+b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
+  geom_boxplot(alpha=0.9) +
+  scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
+  xlab("Tissue") +
+  scale_fill_discrete(name="Tissue")+
   facet_grid(treatment~.)
 b2
-
+ggsave(filename = "../plots/Expression_by_sample2.pdf",width = 5,height=5)
 ```
 
 ## PCA for global patterns
-
 
 ```{r}
 
@@ -104,19 +111,21 @@ Z<- t(X)%*%V
 pc.dat<- data.frame(phenDat$id, PC1 = Z[,1], PC2 = Z[,2], PC3 = Z[,3],PC4 =Z[,4])
 s.id <- strsplit(as.character(pc.dat$phenDat.id), split="-",fixed=TRUE)
 pc.dat$Diet <-unlist(lapply(s.id, function(x) x[1]))
-pc.dat$Tissue <- unlist(lapply(strsplit(as.character(phenDat$id), split="_", fixed=TRUE), function(x) x[2]))
-## make figure with ggplot2
+pc.dat$Tissue <- unlist(lapply(strsplit(as.character(phenDat$id), 
+                                        split="_", fixed=TRUE), function(x) x[2]))
 
-#e <- rep(c('B','H','O'),each=18)
-#name <- phenDat$tissue
+# plot with ggplot2
 a <- ggplot(pc.dat, aes(x=PC1, y=PC2, col=Diet, pch=Tissue)) + 
-        geom_point(alpha=0.7, size=3) + 
+        geom_point(alpha=0.9, size=5) + 
+        scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
         theme_bw() +
+        theme(axis.title = element_text(size = 24)) +
+        theme(text = element_text(size = 20)) +
         theme(panel.border = element_blank(), 
               panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(), 
-              axis.line.x = element_line(color="black", size = 0.6),
-              axis.line.y = element_line(color="black", size = 0.6))
+              axis.line.x = element_line(color="black", size = 0.8),
+              axis.line.y = element_line(color="black", size = 0.8))
 a 
 
 ggsave(filename = "../plots/PCA_overall.pdf",width = 5,height=5)
