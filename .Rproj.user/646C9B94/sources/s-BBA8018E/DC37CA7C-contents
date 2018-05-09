@@ -1,0 +1,271 @@
+---
+title: "halfsib_fecundity"
+author: "Enoch Ng'oma"
+date: "3/26/2018"
+output:
+  html_document:
+    theme: flatly
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+---
+
+# Function to calculate the mean and the standard deviation for each group
+  
+```{r}
+# data : a data frame
+# varname : name of column to be summarized
+# groupnames : vector of grouping variables
+
+data_summary <- function(data, varname, groupnames){
+  summary_func <- function(x, col){
+    c(mean = mean(x[[col]], na.rm=TRUE),
+      sd = sd(x[[col]], na.rm=TRUE))
+  }
+  data_sum <- data %>%
+    group_by(groupnames) %>% 
+    summarize(summary_func(., varname))
+  data_sum <- rename(data_sum, c("mean" = varname))
+ return(data_sum)
+}
+```
+
+# packages
+
+```{r}
+library(tidyverse) 
+library(cowplot)
+```
+
+# data
+
+```{r}
+h2fec_phenotype <- read.table('../../Data/Processed/eggs_per_vial.txt',
+                     sep = "\t", header = TRUE,
+                     stringsAsFactors = FALSE)
+
+h2fec_phenotype <- as_tibble(h2fec_phenotype)
+h2fec_phenotype <- dplyr::rename(h2fec_phenotype, Diet = treat)
+```
+
+# change LY to DR, STD to C
+```{r}
+h2fec_phenotype <- h2fec_phenotype %>%
+     mutate(Diet=replace(Diet, Diet=="LY", "DR")) %>%
+     mutate(Diet=replace(Diet, Diet=="STD", "C"))
+
+```
+
+##### density (ggplot)
+
+```{r, dens}
+#pdf("../../Data/Figures/density_all-data_ggpl.pdf",width=6,height=4)
+par(mar=c(4.5,4.5,0.5,0.5))
+ ggplot(h2fec_phenotype, aes(egg_total, fill = Diet)) + 
+  geom_density(alpha = 0.8) +
+  #coord_cartesian(xlim=c(0, 1e4), ylim=c(0, 5e4)) + #adjust frame of x-axis
+  scale_x_continuous(expand=c(0, 0), limits=c(0, 5.5e2)) + #limit plot area on x-axix
+  scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+  theme(axis.title = element_text(face="bold", size=16)) +
+  xlab("Total fecundity per female") + ylab("Density") +
+  theme(legend.position=c(0.1, 0.9)) +
+  scale_fill_discrete(name="Diet", labels=c("HS", "DR", "C")) 
+#dev.off()
+```
+
+# summarize data
+
+```{r}
+# h2fec_sum <- data_summary(h2fec_phenotype, varname="egg_total",
+#                     #groupnames=c("supp", "dose")) # if have multiple grouping variables
+#                     groupnames="Diet")
+
+h2fec_sum <- h2fec_phenotype %>% 
+  group_by(Diet) %>% 
+  summarise(egg_total_mean = mean(egg_total, na.rm = TRUE),
+            sd = sd(egg_total)) %>% 
+  rename(egg_total = egg_total_mean)
+
+# Convert dose to a factor variable
+h2fec_sum
+```
+
+
+# Diet groups and error bars
+
+```{r}
+#dot plot
+
+k6 <- ggplot(data=h2fec_phenotype, aes(x=Diet, y=egg_total, fill=Diet)) + #group-sire_trt
+  #geom_point(pch=21) +
+  geom_jitter(position = position_jitter(width = 0.4), alpha = 0.7)+
+  scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9"))+
+  scale_y_continuous(expand = c(0,0)) +
+  xlab("Diet") + ylab("Total eggs") 
+k6 +   expand_limits(y = c(1, 5e2)) 
+
+t <- subset(h2fec_phenotype, h2fec_phenotype$Diet=="HS")
+which.max(t$egg_total)
+t[68,] # S45D134_a_HS has egg_total = 404
+# problem image is IMG_5571.JPG set 2016-03-05 flip 2016-05-24 age 80, 2 females, 48.5 eggs per female
+
+kn <- h2fec_phenotype
+
+``` 
+
+
+```{r}
+# new grouping variable
+h2fec_phenotype <- unite(h2fec_phenotype, "sire_Diet", sireid, Diet, sep = "_", remove=FALSE)  
+
+#h2fec_phenotype <- select(h2fec_phenotype, sire_Diet, Diet, egg_total)
+
+```
+
+```{r}
+
+#with(h2fec_phenotype, reorder(sire_Diet, egg_total)) 
+#pdf("../../Data/Figures/fecundity_family.pdf",width=6,height=4)
+par(mar=c(4.5,4.5,0.5,0.5))
+
+#ascending order
+p <- ggplot(h2fec_phenotype, aes(x= reorder(sire_Diet, egg_total), y=egg_total, fill=Diet)) +
+
+#descending order
+#ggplot(h2fec_phenotype, aes(x= reorder(sire_Diet, -egg_total), y=egg_total, fill=Diet)) + 
+  
+  theme(axis.text.x = element_blank(), legend.position = 'top') +
+    stat_summary(fun.y = mean,
+               position = position_dodge(width = 0.9),
+               geom = "bar", alpha=0.8) +
+  xlab("Sire family") + ylab("Total eggs") +
+  scale_y_continuous(expand = c(0,0))+
+  #scale_fill_discrete(name="Diet")+
+  #guides(fill=guide_legend(title="Diet")) +
+geom_point(aes(color=Diet), position = position_dodge(width = 0.9),size=0.75) 
+
+p +   expand_limits(y = c(1, 5e2)) 
+#tt + guides(fill=guide_legend(title="Diet"))
+
+#dev.off()
+```
+
+
+# reaction norms for sire families
+
+```{r}
+# prep each treatment into its own column
+
+#pull HS and compute median
+HS <- subset(h2fec_phenotype, Diet == "HS")
+hs_trim <- cbind.data.frame(HS$sireid, HS$egg_total)
+hs_med <- aggregate(. ~ HS$sireid, data=hs_trim, FUN=median)
+hs_med[,2] <- NULL
+colnames(hs_med) <- c("sireid","eggs")
+hs_med$diet<-"HS"
+
+#pull LY and compute median
+DR <- subset(h2fec_phenotype, Diet == "DR")
+dr_trim <- cbind.data.frame(DR$sireid, DR$egg_total)
+dr_med <- aggregate(. ~ DR$sireid, data=dr_trim, FUN=median)
+dr_med[,2] <- NULL
+colnames(dr_med) <- c("sireid","eggs")
+dr_med$diet<-"DR"
+
+#pull STD and compute median
+C <- subset(h2fec_phenotype, Diet == "C")
+c_trim <- cbind.data.frame(C$sireid, C$egg_total)
+c_med <- aggregate(. ~ C$sireid, data=c_trim, FUN=median)
+c_med[,2] <- NULL
+colnames(c_med) <- c("sireid","eggs")
+c_med$diet<-"C"
+```
+
+# join data frames
+
+```{r}
+B <- rbind(hs_med, c_med, dr_med)
+#B<-B[!(B$sireid=="S39"),]
+#attach a column of diet to each data frame before joining; use that as fill
+
+#reorder x-axis (ggplot default is alphabetical)
+B$diet <- as.character(B$diet) #turn diet col into a char vector
+B$diet <- factor(B$diet, levels=unique(B$diet)) #back to ordered factor
+#save(B, file = "/Users/ngomae/Documents/H2_Analysis/h2lifespan/Evo17_Portland/h2reacts.Rda")
+```
+
+# plot reaction norms for sire families
+
+```{r}
+#pdf("../../Data/Figures/h2life_reaction_norms.pdf",width=6,height=4)
+par(mar=c(4.5,4.5,0.5,0.5))
+ggplot(B, aes(x = B$diet, y = B$eggs)) +
+  geom_point(size = 2)+
+  geom_line(aes(group = paste(sireid), alpha = 0.2)) +
+  xlab("Dietary condition") + ylab("Total eggs") +
+  theme(legend.position="none") +
+  scale_fill_discrete(name="Diet", labels=c("HS", "DR", "C"))
+  
+  #expand_limits(x = "diet") + scale_x_continuous(expand = c(0, 0))
+  #expand_limits(x = 0, y = 0)
+  #expand_limits(y = c(0, 4.5e2))
+  
+
+#dev.off()
+```
+
+
+# per female analysis
+
+```{r}
+AA <- read.table('../../Data/Processed/eggs_per_female.txt',
+                     sep = "\t", header = TRUE,
+                     stringsAsFactors = FALSE)
+
+AA <- AA %>%
+   select(flipDate,id,fID,treat,age,sireid,damid,n_females,eggs_per_female)
+#AA
+AA <- as_tibble(AA)
+```
+
+# Prepare data
+
+```{r}
+AA <- AA %>%
+  rename(Diet = treat) %>%
+  mutate(Diet=replace(Diet, Diet=="LY", "DR")) %>%
+  mutate(Diet=replace(Diet, Diet=="STD", "C"))
+#AA
+
+AA$flipDate <- as.Date(AA$flipDate)
+
+AA <- AA[!is.na(AA$eggs_per_female), ]
+
+# a new grouping variable
+AA <- unite(AA, "sire_trt", sireid, Diet, sep = "_", remove=FALSE)
+A2 <- aggregate(AA["eggs_per_female"], by=AA["sire_trt"], sum)
+```
+
+# Plot mean age per female per day
+
+```{r, fig.height=4, fig.width=12}
+#pdf("../../Figures/h2_avg_fecundity_per_female_per_day.pdf",width=12,height=4)
+
+lml <- ggplot(data=AA, aes(x=age, y=eggs_per_female, color=Diet)) +
+geom_point(position = position_jitter(width = 0.4), alpha = 0.8) +
+scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9"))+
+xlab("Age (days)") + ylab("Mean eggs/female/day") +
+scale_y_continuous(limits = c(-1,100), expand = c(0, 0)) +
+geom_smooth(method = "lm", se = TRUE, color="black")+
+facet_grid(.~Diet)
+lml
+#dev.off()
+```
+
+
+
+
+
+
+

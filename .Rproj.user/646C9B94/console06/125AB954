@@ -1,0 +1,57 @@
+]0;~/MyGithub/BasePop_RNAseq[?1034hBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git pull
+fatal: unable to access 'https://github.com/nochet/BasePop_RNAseq.git/': Could not resolve host: github.com
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ getw[K[K[K[Kpwd
+/Users/ngomae/MyGithub/BasePop_RNAseq
+git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	[31mmodified:   .gitignore[m
+	[31mdeleted:    base_pop/scripts/ballgown_baseP_allTussues-Together.Rmd[m
+	[31mdeleted:    rna-seq/base_pop/indexes/bdgp6_tran/make_bdgp6_tran.sh[m
+	[31mdeleted:    rna-seq/base_pop/samples/error47.txt[m
+	[31mdeleted:    rna-seq/base_pop/samples/run1/H25TLBGX2Samplesheet.with_lanes.csvH25TLBGX2Samplesheet.with_lanes.csv[m
+	[31mdeleted:    rna-seq/base_pop/samples/run1/all_gz_md5sum.e_37400all_gz_md5sum.e_37400[m
+	[31mdeleted:    rna-seq/base_pop/samples/run1/all_gz_md5sum.o_37400all_gz_md5sum.o_37400[m
+	[31mdeleted:    rna-seq/base_pop/samples/run1/all_gz_md5sum.sbatchall_gz_md5sum.sbatch[m
+	[31mdeleted:    rna-seq/base_pop/samples/run1/links.txtlinks.txt[m
+	[31mdeleted:    rna-seq/base_pop/samples/run2/HVNH5BGXYSampleSheet.csvHVNH5BGXYSampleSheet.csv[m
+	[31mdeleted:    rna-seq/base_pop/samples/run2/links.txtlinks.txt[m
+	[31mdeleted:    rna-seq/base_pop/samples/run3/HVJNVBGXYSampleSheet.csvHVJNVBGXYSampleSheet.csv[m
+	[31mdeleted:    rna-seq/base_pop/samples/run3/links.txtlinks.txt[m
+	[31mdeleted:    rna-seq/base_pop/samples/temp47.txt[m
+	[31mdeleted:    rna-seq/base_pop/scripts/Align_cmd_run1.txt[m
+	[31mdeleted:    rna-seq/base_pop/scripts/Align_cmd_run2.txt[m
+	[31mdeleted:    rna-seq/base_pop/scripts/Align_cmd_run3.txt[m
+	[31mdeleted:    rna-seq/base_pop/scripts/alig_one-sample.sh[m
+	[31mdeleted:    rna-seq/base_pop/scripts/alig_setup.sh[m
+	[31mdeleted:    rna-seq/base_pop/scripts/alig_setup.txt[m
+	[31mdeleted:    rna-seq/base_pop/scripts/samtools_all.R[m
+	[31mdeleted:    rna-seq/base_pop/scripts/samtools_all.sh[m
+	[31mdeleted:    rna-seq/base_pop/scripts/samtools_all.txt[m
+	[31mdeleted:    rna-seq/base_pop/scripts/samtools_one-sample.sh[m
+	[31mdeleted:    rna-seq/base_pop/scripts/samtools_setup.sh[m
+	[31mdeleted:    rna-seq/base_pop/scripts/samtools_txt[m
+	[31mdeleted:    rna-seq/base_pop/scripts/sarray_setup_run1.sh[m
+	[31mdeleted:    rna-seq/base_pop/scripts/sarray_setup_run2.sh[m
+	[31mdeleted:    rna-seq/base_pop/scripts/sarray_setup_run3.sh[m
+	[31mdeleted:    rna-seq/base_pop/scripts/stringmerg_one-sample.sh[m
+	[31mdeleted:    rna-seq/base_pop/scripts/stringt_one-sample.sh[m
+	[31mdeleted:    rna-seq/base_pop/tempfiles/error45.txt[m
+	[31mdeleted:    rna-seq/base_pop/tempfiles/temp45.txt[m
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	[31m.Rhistory[m
+	[31mbase_pop/scripts/ballgown_baseP_allTissues-Together.Rmd[m
+
+no changes added to commit (use "git add" and/or "git commit -a")
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git pull
+fatal: unable to access 'https://github.com/nochet/BasePop_RNAseq.git/': Could not resolve host: github.com
+[KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git pull
+Already up-to-date.
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ 

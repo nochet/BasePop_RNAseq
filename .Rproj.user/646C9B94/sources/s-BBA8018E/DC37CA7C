@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1525737143966.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "DC37CA7C",
+    "lastKnownWriteTime" : 1524168335,
+    "last_content_update" : 1524168335,
+    "path" : "~/MyGithub/h2lifespan/Code/heritability/h2fec_visualization.Rmd",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "257,0",
+        "scrollLine" : "249"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
