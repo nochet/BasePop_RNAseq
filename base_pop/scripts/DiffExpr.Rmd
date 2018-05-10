@@ -69,21 +69,26 @@ tbg$trep <- paste(tbg$tissue,tbg$replicate,sep="_")
 
 b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
   geom_boxplot(alpha=0.9) +
-          theme(axis.title = element_text(size = 24)) +
-          theme(text = element_text(size = 20)) +
+          theme(axis.title = element_text(size = 24),
+                axis.text.x  = element_text(angle=90, vjust=0.5),
+                text = element_text(size = 20)) +
   scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
-  xlab("Diet")+
+  xlab("Samples")+
   facet_grid(tissue~.)
-b1
+b1 
+  
 ggsave(filename = "../plots/Expression_by_sample1.pdf",width = 5,height=5)
 
 b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
   geom_boxplot(alpha=0.9) +
+          theme(axis.title = element_text(size = 24),
+                axis.text.x  = element_text(angle=90, vjust=0.5),
+                text = element_text(size = 20)) +
   scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
   xlab("Tissue") +
-  scale_fill_discrete(name="Tissue")+
+  scale_fill_discrete(name="Samples")+
   facet_grid(treatment~.)
 b2
 ggsave(filename = "../plots/Expression_by_sample2.pdf",width = 5,height=5)
@@ -138,9 +143,12 @@ load("/home/engoma/MyGithub/BasePop_RNAseq/base_pop/processed/results/bg_results
 bg_ballG_heads_filt <- subset(bg_ballG_heads, "rowVars(texpr(bg_ballG_heads)) >1", genomesubset=TRUE)
 
 load("/home/engoma/MyGithub/BasePop_RNAseq/base_pop/processed/results/bg_results_tissues/soma.Rda")
-bg_ballG_ovaries_filt <- subset(bg_ballG_ovaries, "rowVars(texpr(bg_ballG_ovaries)) >1", genomesubset=TRUE)
-load("/home/engoma/MyGithub/BasePop_RNAseq/base_pop/processed/results/bg_results_tissues/ovaries.Rda")
 bg_ballG_soma_filt <- subset(bg_ballG_soma, "rowVars(texpr(bg_ballG_soma)) >1", genomesubset=TRUE)
+
+load("/home/engoma/MyGithub/BasePop_RNAseq/base_pop/processed/results/bg_results_tissues/ovaries.Rda")
+bg_ballG_ovaries_filt <- subset(bg_ballG_ovaries, "rowVars(texpr(bg_ballG_ovaries)) >1", genomesubset=TRUE)
+
+phenDat <- read.csv("describe_samples.csv", stringsAsFactors = FALSE)
 
 heads_phen <- subset(phenDat, phenDat$tissue=="H")
 soma_phen <- subset(phenDat, phenDat$tissue=="B")
@@ -189,16 +197,22 @@ h_ord$gname<-seq(1,nrow(h_ord))
 hds.long<-melt(h_ord,id='gname')
 #hds.long$variable <- unlist(lapply(strsplit(as.character(hds.long$variable), split="-",fixed=TRUE),function(x) x[1]))
 
-ggplot(hds.long, aes(variable, gname)) +
+ids_h <- strsplit(as.character(hds.long$variable), split=".",fixed=TRUE)
+hds.long$sampl <-unlist(lapply(ids_h, function(x) x[2]))
+
+ggplot(hds.long, aes(sampl, gname)) +
   geom_tile(aes(fill = value), colour = "white") + 
   scale_fill_gradient(low = "white", high = "steelblue") +
+  scale_y_continuous(expand = c(0, 0)) +
   theme(#axis.text.x = element_blank(),
         axis.text.y=element_blank(),
         axis.title.x = element_blank(),
         axis.text.x  = element_text(angle=90, vjust=0.5),
         axis.title.y = element_blank())
+ggsave(filename = "../plots/Heatmap_heads.pdf",width = 5,height=5)
 
 ######################
+
 #SOMA
 
 rx <- as.character(so.r[which(so.r$qval<=0.05), 'id'])
@@ -224,14 +238,19 @@ s_ord$gname<-seq(1,nrow(s_ord))
 so.long<-melt(s_ord,id='gname')
 #so.long$variable <- unlist(lapply(strsplit(as.character(so.long$variable), split="-",fixed=TRUE),function(x) x[1]))
 
-ggplot(so.long, aes(variable, gname)) +
+ids_so <- strsplit(as.character(so.long$variable), split=".",fixed=TRUE)
+so.long$sampl <-unlist(lapply(ids_so, function(x) x[2]))
+
+ggplot(so.long, aes(sampl, gname)) +
   geom_tile(aes(fill = value), colour = "white") + 
   scale_fill_gradient(low = "white", high = "steelblue") +
+  scale_y_continuous(expand = c(0, 0)) +
   theme(#axis.text.x = element_blank(),
         axis.text.y=element_blank(),
         axis.title.x = element_blank(),
         axis.text.x  = element_text(angle=90, vjust=0.5),
         axis.title.y = element_blank())
+ggsave(filename = "../plots/Heatmap_soma.pdf",width = 5,height=5)
 
 ######################
 #OVARY
@@ -260,14 +279,19 @@ o_ord$gname<-seq(1,nrow(o_ord))
 ov.long<-melt(o_ord,id='gname')
 #ov.long$variable <- unlist(lapply(strsplit(as.character(ov.long$variable), split="-",fixed=TRUE),function(x) x[1]))
 
-ggplot(ov.long, aes(variable, gname)) +
+ids_ov <- strsplit(as.character(ov.long$variable), split=".",fixed=TRUE)
+ov.long$sampl <-unlist(lapply(ids_ov, function(x) x[2]))
+
+ggplot(ov.long, aes(sampl, gname)) +
   geom_tile(aes(fill = value), colour = "white") + 
   scale_fill_gradient(low = "white", high = "steelblue") +
+  scale_y_continuous(expand = c(0, 0)) +
   theme(#axis.text.x = element_blank(),
         axis.text.y=element_blank(),
         axis.title.x = element_blank(),
         axis.text.x  = element_text(angle=90, vjust=0.5),
         axis.title.y = element_blank())
+ggsave(filename = "../plots/Heatmap_ovaries.pdf",width = 5,height=5)
 
 ```
 
