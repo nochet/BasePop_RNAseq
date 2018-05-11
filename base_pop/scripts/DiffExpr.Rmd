@@ -326,7 +326,7 @@ q05_soma <- read.csv(file="../processed/results/bg_results_tissues/DEs_sig_q05_I
 
 q05_ovaries <- read.csv(file="../processed/results/bg_results_tissues/DEs_sig_q05_IDsConverted_ovaries.csv", header=TRUE, stringsAsFactors = FALSE)
 
-# head
+# heads
 qh <- q05_heads%>%
   select(X.SUBMITTED.ID,ANNOTATION_SYMBOL,LOCATION_ARM,LOCATION_MAX,LOCATION_MIN,SYMBOL)
 
@@ -337,7 +337,56 @@ qtl3l_heads <- subset(sub.3L_hds, sub.3L_hds$LOCATION_MIN >= low3L)
 qtl3r_heads <- subset(sub.3R_hds, sub.3R_hds$LOCATION_MIN <= high3R)
 #99 genes total!!!
 
+qtl3l_heads
+qtl3r_heads
+qtl_heads <- rbind(qtl3l_heads,qtl3r_heads)
+write.csv(qtl_ova, 
+          "../processed/results/bg_results_tissues/qtlDiff_genes_heads.csv", row.names=FALSE)
 
+
+# soma
+qs <- q05_soma%>%
+  select(X.SUBMITTED.ID,ANNOTATION_SYMBOL,LOCATION_ARM,LOCATION_MAX,LOCATION_MIN,SYMBOL)
+
+sub.3L_som <- subset(qs, qs$LOCATION_ARM=="3L")
+sub.3R_som <- subset(qs, qs$LOCATION_ARM=="3R")
+
+qtl3l_soma <- subset(sub.3L_som, sub.3L_som$LOCATION_MIN >= low3L)
+qtl3r_soma <- subset(sub.3R_som, sub.3R_som$LOCATION_MIN <= high3R)
+
+qtl3l_soma
+qtl3r_soma
+qtl_soma <- rbind(qtl3l_soma,qtl3r_soma)
+write.csv(qtl_soma, 
+          "../processed/results/bg_results_tissues/qtlDiff_genes_soma.csv", row.names=FALSE)
+
+
+# ovaries
+qo <- q05_ovaries%>%
+  select(X.SUBMITTED.ID,ANNOTATION_SYMBOL,LOCATION_ARM,LOCATION_MAX,LOCATION_MIN,SYMBOL)
+
+sub.3L_ova <- subset(qo, qo$LOCATION_ARM=="3L")
+sub.3R_ova <- subset(qo, qo$LOCATION_ARM=="3R")
+
+qtl3l_ova <- subset(sub.3L_ova, sub.3L_ova$LOCATION_MIN >= low3L)
+qtl3r_ova <- subset(sub.3R_ova, sub.3R_ova$LOCATION_MIN <= high3R)
+
+qtl3l_ova
+qtl3r_ova
+qtl_ova <- rbind(qtl3l_ova,qtl3r_ova)
+write.csv(qtl_ova, 
+          "../processed/results/bg_results_tissues/qtlDiff_genes_ovaries.csv", row.names=FALSE)
+
+# combine the 3 data frames
+qtl_heads$coder <- "heads"
+qtl_soma$coder <- "soma"
+qtl_ova$coder <- "ovaries"
+qtl.genes <- rbind(qtl_heads, qtl_soma, qtl_ova)  
+
+# Find the rows which have duplicates in a different group.
+n_occur <- data.frame(table(qtl.genes$SYMBOL))
+n_occur[n_occur$Freq > 1,]
+qtl.genes[qtl.genes$SYMBOL %in% n_occur$Var1[n_occur$Freq > 1],]
 ```
 
 
