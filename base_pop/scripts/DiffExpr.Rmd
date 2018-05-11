@@ -125,7 +125,7 @@ pc.dat$Tissue <- unlist(lapply(strsplit(as.character(phenDat$id),
 
 # plot with ggplot2
 a <- ggplot(pc.dat, aes(x=PC1, y=PC2, col=Diet, pch=Tissue)) + 
-        geom_point(alpha=0.9, size=5) + 
+        geom_point(alpha=0.5, size=5) + 
         scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
         theme_bw() +
         theme(axis.title = element_text(size = 24)) +
@@ -191,6 +191,8 @@ m.set <- rowMeans(cbind(t1,t2,t3))
 ss <- which(res.sub$qval<0.009)
 h_ord<-h_ord[ss,]
 h_ord <- h_ord[order(rowMeans(h_ord[,1:6])),]
+write.csv(res.sub, 
+          "../processed/results/bg_results_tissues/DEs_sig_q05_heads.csv", row.names=FALSE)
 
 #h_ord <- h_ord[order(res.sub$qval),]
 #h_ord <- h_ord[1:20,]
@@ -232,6 +234,9 @@ m.set <- rowMeans(cbind(t1,t2,t3))
 ss <- which(res.sub$qval<0.009 & m.set <7 & m.set >3)
 s_ord<-s_ord[ss,]
 s_ord <- s_ord[order(rowMeans(s_ord[,1:6])),]
+
+write.csv(res.sub, 
+          "../processed/results/bg_results_tissues/DEs_sig_q05_soma.csv", row.names=FALSE)
 
 #s_ord <- s_ord[order(res.sub$qval),]
 #s_ord <- s_ord[1:20,]
@@ -283,6 +288,9 @@ o_ord$gname<-seq(1,nrow(o_ord))
 ov.long<-melt(o_ord,id='gname')
 #ov.long$variable <- unlist(lapply(strsplit(as.character(ov.long$variable), split="-",fixed=TRUE),function(x) x[1]))
 
+write.csv(res.sub, 
+          "../processed/results/bg_results_tissues/DEs_sig_q05_ovaries.csv", row.names=FALSE)
+
 ids_ov <- strsplit(as.character(ov.long$variable), split=".",fixed=TRUE)
 ov.long$sampl <-unlist(lapply(ids_ov, function(x) x[2]))
 
@@ -311,7 +319,24 @@ ggsave(filename = "../plots/Heatmap_ovaries.pdf",width = 5,height=5)
 low3L <- 17350000
 high3R <- 10740000
 
+# read in CSVs with converted gene ids (DEGs @ qval=0.05)
+q05_heads <- read.csv(file="../processed/results/bg_results_tissues/DEs_sig_q05_IDsConverted_heads.csv", header=TRUE, stringsAsFactors = FALSE)
+
+q05_soma <- read.csv(file="../processed/results/bg_results_tissues/DEs_sig_q05_IDsConverted_soma.csv", header=TRUE, stringsAsFactors = FALSE)
+
+q05_ovaries <- read.csv(file="../processed/results/bg_results_tissues/DEs_sig_q05_IDsConverted_ovaries.csv", header=TRUE, stringsAsFactors = FALSE)
+
 # head
+qh <- q05_heads%>%
+  select(X.SUBMITTED.ID,ANNOTATION_SYMBOL,LOCATION_ARM,LOCATION_MAX,LOCATION_MIN,SYMBOL)
+
+sub.3L_hds <- subset(qh, qh$LOCATION_ARM=="3L")
+sub.3R_hds <- subset(qh, qh$LOCATION_ARM=="3R")
+
+qtl3l_heads <- subset(sub.3L_hds, sub.3L_hds$LOCATION_MIN >= low3L)
+qtl3r_heads <- subset(sub.3R_hds, sub.3R_hds$LOCATION_MIN <= high3R)
+#99 genes total!!!
+
 
 ```
 
