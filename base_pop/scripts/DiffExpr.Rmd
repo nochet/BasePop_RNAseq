@@ -69,28 +69,32 @@ tbg$trep <- paste(tbg$tissue,tbg$replicate,sep="_")
 
 b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
   geom_boxplot(alpha=0.9) +
-          theme(axis.title = element_text(size = 24),
+          theme(axis.title.y = element_text(size = 24),
+                axis.title.x=element_blank(),
                 axis.text.x  = element_text(angle=90, vjust=0.5),
-                text = element_text(size = 20)) +
+                text = element_text(size = 20))+
+                
   scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
   xlab("Samples")+
   facet_grid(tissue~.)
-b1 
+b1 + theme(legend.position="none")
   
 ggsave(filename = "../plots/Expression_by_sample1.pdf",width = 5,height=5)
 
 b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
   geom_boxplot(alpha=0.9) +
-          theme(axis.title = element_text(size = 24),
+          theme(axis.title.y = element_text(size = 24),
+                axis.title.x=element_blank(),
                 axis.text.x  = element_text(angle=90, vjust=0.5),
                 text = element_text(size = 20)) +
   scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
   xlab("Tissue") +
-  scale_fill_discrete(name="Samples")+
+  #scale_fill_discrete(name="Samples")+
   facet_grid(treatment~.)
-b2
+b2 + theme(legend.position="none")
+
 ggsave(filename = "../plots/Expression_by_sample2.pdf",width = 5,height=5)
 ```
 
@@ -292,6 +296,22 @@ ggplot(ov.long, aes(sampl, gname)) +
         axis.text.x  = element_text(angle=90, vjust=0.5),
         axis.title.y = element_blank())
 ggsave(filename = "../plots/Heatmap_ovaries.pdf",width = 5,height=5)
+
+```
+
+# Potential candidate genes under past QTL
+
+```{r}
+# Lifespan difference (C vs DR) QTL in Stanley et al (2017)
+# Position coordinates FB6: 3L 17.35 - 3R 10.74 Mb
+# 3L: 10.76 Mbp from 3L:17,350,000..28,110,227
+# 3R: 10.74 Mbp from 3R:1..10,740,000
+
+# coordinates across
+low3L <- 17350000
+high3R <- 10740000
+
+# head
 
 ```
 

@@ -63,8 +63,6 @@ bg_ovaries_filt <- subset(bg_ballG_ovaries, "rowVars(texpr(bg_ballG_ovaries)) >1
 bg_heads_filt
 bg_soma_filt
 bg_ovaries_filt
-
-save(bg_ballG_ovaries, file = "../processed/results/bg_results_tissues/ovaries.Rda")
 ```
 
 # Identify transcripts that show significant differences between groups
