@@ -1,0 +1,25 @@
+
+Identify sources of potential batch effects
+
+A. PROCCESSING TIME AND PROCESSING GROUP
+
+1. Husbandry time: Flies were reared, dissected in 6 staggered groups
+	- treatments equally spread across groups
+	Group 1: released 6.6.16; dissected 6.16.16; RNA 8.4.16
+	Group 2: released 0.7.16; dissected 6.17.16; RNA 8.7.16
+	Group 3: released 6.13.16 dissected 6.23.16; RNA 8.8.16
+	Group 4: released 6.14.16 dissected 6.24.16; RNA 8.10.16
+	Group 5: released 6.20.16 dissected 6.30.16; RNA 8.11.16
+	Group 6: released 6.21.16 dissected 7.1.16; RNA 8.12.16
+	
+2. Sequencing: 3 runs (which groups in which run?)
+
+3. Several persons involved:
+	Husbandry: EN, EGK, AP, MR,
+	Dissection: EN, AR, MR, AP
+	RNA: AR
+	RNA equilibration: EN
+	
+B. UNKNOWN SOURCES
+	Unknown (latent)
+	
