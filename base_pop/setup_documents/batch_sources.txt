@@ -38,7 +38,7 @@ C. QUESTIONS TO BE ANSWERED
 	- global patterns - all tissues together vs diet
 	- within each tissue - each tissue vs diet
 
-2. What genes/gene groups are regulated by diet change
+2. What genes/gene groups are regulated by diet change - heat maps
 	- whole fly effects as in (1)
 	- tissue-specific diet effects as in (1)
 	- gene Ontology categories
