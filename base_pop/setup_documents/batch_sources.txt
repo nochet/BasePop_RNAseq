@@ -21,5 +21,70 @@ A. PROCCESSING TIME AND PROCESSING GROUP
 	RNA equilibration: EN
 	
 B. UNKNOWN SOURCES
+
 	Unknown (latent)
+
+######
+
+Likely sources:
+date of extraction vs cleanup, 
+replicate (i.e. week effect - those 6 weeks)
+
+######
+
+C. QUESTIONS TO BE ANSWERED
+
+1. How does gene expression respond to diet changes?
+	- global patterns - all tissues together vs diet
+	- within each tissue - each tissue vs diet
+
+2. What genes/gene groups are regulated by diet change
+	- whole fly effects as in (1)
+	- tissue-specific diet effects as in (1)
+	- gene Ontology categories
 	
+3. Do tissues respond differently to diet change?
+	- pair-wise tissue comparisons?? Volcano plots??
+
+4. What does pattern of expression imply in terms of resource allocation?
+	- discussion theme
+	
+5. How do these results compare with our previous studies - IIS, h^2
+	- discussion theme
+
+#####
+
+D. ROADMAP FOR ANALYSIS
+
+1. Sequence assembly and normalization - done
+	(outstanding: do we need a DSPR transcript index? Here we used 'bdpg6_tran')
+
+2. Quantify effect of non-biological variables 
+	a) PCA. compare each PCA (1-5) to known surrogate variable (SV). If PC do not correlate with batch variable, indicate effect of unknown variable effect.
+	b) Simple linear models - to measure level of confounding between a SV and outcome variable
+
+3. Summarize susceptibility to batch effects for genes 
+	- ANOVA - to quantify association between observed values and SVs
+	- If the association p-value is <0.01, feature is susceptible to batch effects
+	- Identify PCs that are most correlated with SV and with outcome variable (using ANOVA models)
+	- Identify associations between gene expression levels and outcome variable
+
+4. Correcting for batch effects
+	- model with known batch variables: replicate, RNA clean-up date
+	- surrogate variable analysis (SVA)
+	- Qu.: merit of pair-wise comparisons???
+	
+E. NOTES
+
+1. PCs should ideally correlate with the biological variables of interest, as the PC represents the largest sources of signal in the data. If SV for batch is strongly correlated with one of the top (say 5), PCs, batch effects should be controlled for.
+2. If PCs don't correlate well with bio-variables - there are BEs. If neither bio-variables nor SVs correlate well with top PCs, then there are unknown sources of BEs. 
+
+
+
+
+
+
+
+
+
+
