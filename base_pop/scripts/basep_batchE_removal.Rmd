@@ -1,0 +1,62 @@
+---
+title: "Removing batch effects in Base Population RNA-seq data"
+author: "Enoch Ng'oma"
+date: "6/14/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(sva)
+library(pamr)
+library(limma)
+```
+
+# Load data - all transcripts across tissues and diets
+
+```{r}
+
+```
+
+# Set up data for sva
+
+```{r}
+# 1. create model matrices using model.matrix()
+
+  # variable of interest: treatment
+  # data stored in bg_ballG_filt
+2
+# Obtain phenotype variables 
+phen = pData(bg_ballG_filt)
+
+# Obtain expression variables
+edat = expr(bg_ballG_filt)
+
+# Create a full model matrix
+# at this point we have only var of interest, no adj. vars
+# since treatment has multiple levels, treat it as factor
+mod.bg = model.matrix(~as.factor(treatment) + as.factor(tissue), data=phen)
+```
+
+# Apply sva() to estimate batch and other artifacts
+
+```{r}
+# Null model (i.e. only adj. vars)
+# Since we are not adj. for any vars now, only an intercept is included
+mod0.bg = model.matrix(~1, data=phen)
+
+# a) get number of latent factors
+n.sv_bg = num.sv(edat, mod.bg, method = "leek")
+n.sv_bg
+
+# b) estimage surrogate variables
+svobj.bg = sva(edat, mod.bg, mod0.bg, n.sv=n.sv_bg)
+```
+
+
+
+
+
+
+

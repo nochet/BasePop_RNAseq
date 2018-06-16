@@ -1,0 +1,75 @@
+---
+title: "Prepare expression data for batch effect analysis"
+author: "Enoch Ng'oma"
+date: "6/15/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ballgown)
+library(tidyverse)
+```
+
+# Load data: all transcripts across tissues and diets 
+# made by: ballgown_baseP_allTissues-Together.Rmd
+
+```{r}
+load("../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
+
+# Dispplay a decsription
+bg_ballG
+```
+
+# Filter to remove low-abundance genes (i.e. those with variance across samples of <=1)
+
+```{r}
+bg_ballG_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TRUE)
+
+# See counts
+#bg_ballG_filt
+```
+
+# Extract expression data
+# Ref: https://github.com/alyssafrazee/ballgown
+
+```{r}
+  # syntax: expr(ballgown_object_name, <EXPRESSION_MEASUREMENT>)
+
+transcript_fpkm = texpr(bg_ballG_filt, 'FPKM')
+#transcript_cov = texpr(bg, 'cov')
+#whole_tx_table = texpr(bg_ballG_filt, 'all')
+#exon_mcov = eexpr(bg, 'mcov')
+#junction_rcount = iexpr(bg)
+#whole_intron_table = iexpr(bg, 'all')
+gene_expression = gexpr(bg_ballG_filt)
+
+# Note: expr functions return matrices unless meas = 'all', 
+# in which case some additional feature metadata is returned and the result is a data.frame
+```
+
+# Add gene names and gene IDs to the results_transcripts data frame
+
+```{r}
+transcript_fpkm <- data.frame(geneNames=ballgown::transcriptNames(bg_ballG_filt), geneIDs=ballgown::geneIDs(bg_ballG_filt), transcript_fpkm)
+
+
+
+# Sort results from smallest P value to largest
+
+transcript_fpkm = arrange(transcript_fpkm,pval) 
+results_heads_genes = arrange(results_heads_genes,pval)
+
+```
+
+# Obtain phenotype information for the samples (data frame)
+
+```{r}
+pData(bg_ballG_filt) = data.frame(id=sampleNames(bg_ballG_filt), group=rep(c(0,1,2), each=18))
+```
+
+
+
+
+
