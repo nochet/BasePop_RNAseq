@@ -37,7 +37,10 @@ bg_ballG_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TR
 ```{r}
   # syntax: expr(ballgown_object_name, <EXPRESSION_MEASUREMENT>)
 
-transcript_fpkm = texpr(bg_ballG_filt, 'FPKM')
+transcript_fpkm = texpr(bg_ballG_filt, meas = "FPKM")
+transcript_fpkm <-log2(transcript_fpkm+1)
+# colnames(transcript_fpkm)<-phenDat$id
+
 #transcript_cov = texpr(bg, 'cov')
 #whole_tx_table = texpr(bg_ballG_filt, 'all')
 #exon_mcov = eexpr(bg, 'mcov')
@@ -60,17 +63,9 @@ transcript_fpkm$tname <- gene_names_bg
 
 write.csv(transcript_fpkm, 
           "../processed/results/ballG_all_results/gene_associated_texpr.csv", row.names=FALSE)
-# how to do this for gexpr()
 
-transcript_fpkm[,c(1:2,57)] # not matching!
+transcript_fpkm[,c(1:2,57)]
 ```
-
-# Obtain phenotype information for the samples (data frame)
-
-```{r}
-pData(bg_ballG_filt) = data.frame(id=sampleNames(bg_ballG_filt), group=rep(c(0,1,2), each=18))
-```
-
 
 
 

@@ -11,11 +11,17 @@ knitr::opts_chunk$set(echo = TRUE)
 library(sva)
 library(pamr)
 library(limma)
+library(dplyr)
 ```
 
 # Load data - all transcripts across tissues and diets
 
 ```{r}
+# read extracted table
+basep_all <- read.csv("../processed/results/ballG_all_results/gene_associated_texpr.csv", 
+                    stringsAsFactors = FALSE)
+
+phenDat <- read.csv("describe_samples.csv", stringsAsFactors = FALSE)
 
 ```
 
@@ -26,35 +32,63 @@ library(limma)
 
   # variable of interest: treatment
   # data stored in bg_ballG_filt
-2
-# Obtain phenotype variables 
-phen = pData(bg_ballG_filt)
 
-# Obtain expression variables
-edat = expr(bg_ballG_filt)
+# Phenotype variables 
+phenDat = phenDat 
+
+# Expression variables
+basep_all = basep_all %>%
+  select(-geneNames, -geneIDs) %>%
+  select(tname, everything())
+
+nams <- basep_all$tname
+rownames(basep_all) = make.names(nams, unique=TRUE) 
+basep_all$tname <- NULL
+
+basep_all <- as.matrix(basep_all)
 
 # Create a full model matrix
 # at this point we have only var of interest, no adj. vars
 # since treatment has multiple levels, treat it as factor
-mod.bg = model.matrix(~as.factor(treatment) + as.factor(tissue), data=phen)
+mod = model.matrix(~as.factor(treatment) + as.factor(tissue), data=phenDat)
 ```
 
 # Apply sva() to estimate batch and other artifacts
 
 ```{r}
 # Null model (i.e. only adj. vars)
-# Since we are not adj. for any vars now, only an intercept is included
-mod0.bg = model.matrix(~1, data=phen)
+# with no adjustment - just the intercept included
+mod0 = model.matrix(~1, data=phenDat)
 
 # a) get number of latent factors
-n.sv_bg = num.sv(edat, mod.bg, method = "leek")
-n.sv_bg
+n.sv = num.sv(basep_all, mod, method = "leek")
+n.sv
 
 # b) estimage surrogate variables
-svobj.bg = sva(edat, mod.bg, mod0.bg, n.sv=n.sv_bg)
+svobj = sva(basep_all, mod, mod0, n.sv=n.sv) # 49 SVs plus error
+
+svobj = sva(basep_all, mod, mod0) # 1 SV!!! 
+# see https://www.biostars.org/p/198820/
+
 ```
 
+# Adjusting for surrogate variables - f.pvalue()
 
+```{r}
+# 1) First, calculate F-test p-values for DE wrt diet, without adjusting for SVs
+pValues = f.pvalue(basep_all, mod, mod0)
+qValues = p.adjust(pValues, method = "BH") 
+
+# 2) Adjust for surrogates
+
+# a) include surrogates in both full and null models, then get p-vals and q-vals
+modSv = cbind(mod, svobj$sv) # sv is matrix whose columns are estimated SVs
+mod0Sv = cbind(mod0, svobj$sv)
+pValuesSv = f.pvalue(edata, modSv, mod0Sv)
+qValuesSv = p.adjust(pValuesSv, method = "BH")
+
+# These are the adjusted P-values and Q-values accounting for surrogate variables.
+```
 
 
 
