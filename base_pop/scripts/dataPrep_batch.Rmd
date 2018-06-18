@@ -54,13 +54,15 @@ gene_expression = gexpr(bg_ballG_filt)
 ```{r}
 transcript_fpkm <- data.frame(geneNames=ballgown::transcriptNames(bg_ballG_filt), geneIDs=ballgown::geneIDs(bg_ballG_filt), transcript_fpkm)
 
+indicies.bg <- match(transcript_fpkm$geneIDs, texpr(bg_ballG_filt, "all")$gene_id)
+gene_names_bg <- texpr(bg_ballG_filt, "all")$t_name[indicies.bg]
+transcript_fpkm$tname <- gene_names_bg
 
+write.csv(transcript_fpkm, 
+          "../processed/results/ballG_all_results/gene_associated_texpr.csv", row.names=FALSE)
+# how to do this for gexpr()
 
-# Sort results from smallest P value to largest
-
-transcript_fpkm = arrange(transcript_fpkm,pval) 
-results_heads_genes = arrange(results_heads_genes,pval)
-
+transcript_fpkm[,c(1:2,57)] # not matching!
 ```
 
 # Obtain phenotype information for the samples (data frame)
