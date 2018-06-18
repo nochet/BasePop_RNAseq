@@ -65,10 +65,13 @@ n.sv = num.sv(basep_all, mod, method = "leek")
 n.sv
 
 # b) estimage surrogate variables
-svobj = sva(basep_all, mod, mod0, n.sv=n.sv) # 49 SVs plus error
+svobj = sva(basep_all, mod, mod0, n.sv=n.sv)
 
-svobj = sva(basep_all, mod, mod0) # 1 SV!!! 
-# see https://www.biostars.org/p/198820/
+svobj = sva(basep_all, mod, mod0) 
+# errors, see:
+# https://www.biostars.org/p/198820/
+# What does this error mean? - issue implementing SVA
+# https://stackoverflow.com/questions/43101585/error-when-generating-the-sva-object-using-package-sva-in-r
 
 ```
 
@@ -84,13 +87,38 @@ qValues = p.adjust(pValues, method = "BH")
 # a) include surrogates in both full and null models, then get p-vals and q-vals
 modSv = cbind(mod, svobj$sv) # sv is matrix whose columns are estimated SVs
 mod0Sv = cbind(mod0, svobj$sv)
-pValuesSv = f.pvalue(edata, modSv, mod0Sv)
+pValuesSv = f.pvalue(basep_all, modSv, mod0Sv)
 qValuesSv = p.adjust(pValuesSv, method = "BH")
 
 # These are the adjusted P-values and Q-values accounting for surrogate variables.
 ```
 
+# Adjusting for surrogate variables using the limma package
 
+```{r}
+# 1) fit a linear model with surrogate variables
+fit = lmFit(basep_all, modSv)
+
+#From here, you can use the limma functions to perform the usual analyses.
+```
+
+# Suppose we want to calculate DE wrt diet ( with limma package)
+
+
+```{r}
+# 1) compute contrasts between pairs of diet terms
+    # no surrogates included here since SVs are only useful for adjustment
+contrast.matrix <- cbind("C1"=c(-1,1,0,rep(0,svobj$n.sv)),
+                         "C2"=c(0,-1,1,rep(0,svobj$n.sv)),
+                         "C3"=c(-1,0,1,rep(0,svobj$n.sv)))
+
+fitContrasts = contrasts.fit(fit,contrast.matrix) 
+
+# 2) calculate the test statistic using eBayes()
+eb = eBayes(fitContrasts)
+topTable(eb, adjust="BH")
+
+```
 
 
 
