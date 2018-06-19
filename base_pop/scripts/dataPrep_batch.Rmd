@@ -12,14 +12,29 @@ library(ballgown)
 library(tidyverse)
 ```
 
-# Load data: all transcripts across tissues and diets 
-# made by: ballgown_baseP_allTissues-Together.Rmd
+# Data
 
 ```{r}
+# phenotype data
+phenDat <- read.csv("describe_samples.csv", stringsAsFactors = FALSE)
+
+#bg_ballG <- ballgown(dataDir = "../processed/ballG_all", samplePattern = "", pData = phenDat)
+
+# Save all transcripts across tissues and diets as .Rda
+#save(bg_ballG, file = "../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
+
 load("../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
 
 # Dispplay a decsription
 bg_ballG
+```
+
+# Filter to remove low-abundance genes (i.e. those with variance across samples of <=1)
+
+```{r}
+bg_ballG_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TRUE)
+
+save(bg_ballG_filt, file = "../processed/results/ballG_all_results/bg_ballG_filt.Rda")
 ```
 
 # Filter to remove low-abundance genes (i.e. those with variance across samples of <=1)

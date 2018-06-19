@@ -62,6 +62,7 @@ mod0 = model.matrix(~1, data=phenDat)
 
 # a) get number of latent factors
 n.sv = num.sv(basep_all, mod, method = "leek")
+n.sv = num.sv(basep_all, mod, method = "be", B=20, seed = 48)
 n.sv
 
 # b) estimage surrogate variables

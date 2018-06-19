@@ -1,0 +1,97 @@
+
+Identify sources of potential batch effects
+
+A. PROCCESSING TIME AND PROCESSING GROUP
+
+1. Husbandry time: Flies were reared, dissected in 6 staggered groups
+	- treatments equally spread across groups
+	Group 1: released 6.6.16; dissected 6.16.16; RNA 8.4.16
+	Group 2: released 0.7.16; dissected 6.17.16; RNA 8.7.16
+	Group 3: released 6.13.16 dissected 6.23.16; RNA 8.8.16
+	Group 4: released 6.14.16 dissected 6.24.16; RNA 8.10.16
+	Group 5: released 6.20.16 dissected 6.30.16; RNA 8.11.16
+	Group 6: released 6.21.16 dissected 7.1.16; RNA 8.12.16
+	
+2. RNA & Sequencing: Clean-up dates; 3 runs (which groups in which run?)
+
+3. Several persons involved:
+	Husbandry: EN, EGK, AP, MR,
+	Dissection: EN, AR, MR, AP
+	RNA: AR
+	RNA equilibration: EN
+	
+B. UNKNOWN SOURCES
+
+	Unknown (latent)
+
+######
+
+Likely sources:
+date of extraction vs cleanup, 
+replicate (i.e. week effect - those 6 weeks)
+
+######
+
+C. QUESTIONS TO BE ANSWERED
+
+1. What's the effect of diet on gene expression?
+	- global patterns - all tissues together vs diet
+	- within each tissue - each tissue vs diet
+
+2. What genes/gene groups/processes are regulated by diet change? (what genes are enriched in tissue/diet combinations): DE tables, heat maps
+	- whole fly gene expression vs diet
+	- tissue-specific gene expression vs diet
+	- gene ontology categories
+	
+3. Do tissues respond differently to diet change?
+	- pair-wise tissue comparisons?? Volcano plots??
+
+4. What does pattern of expression tell about resource allocation patterns?
+	- discussion theme
+	
+5. How do these results compare with our previous studies - IIS, h^2, literature
+	- discussion theme
+
+#####
+
+D. ROADMAP FOR ANALYSIS
+
+1. Sequence assembly and normalization - done
+	(outstanding: do we need a DSPR transcript index? Here we used 'bdpg6_tran')
+
+2. Quantify effect of non-biological variables 
+	a) PCA. compare each PCA (1-5) to known surrogate variable (SV). If PC do not correlate with batch variable, indicate effect of unknown variable effect.
+	b) Simple linear models - to measure level of confounding between a SV and outcome variable
+
+3. Summarize susceptibility to batch effects for genes 
+	- ANOVA - to quantify association between observed values and SVs
+	- If the association p-value is <0.01, feature is susceptible to batch effects
+	- Identify PCs that are most correlated with SV and with outcome variable (using ANOVA models)
+	- Identify associations between gene expression levels and outcome variable
+
+4. Correcting for batch effects
+	- model with known batch variables: replicate, RNA clean-up date
+	- surrogate variable analysis (SVA)
+
+5. Downstream DE analysis
+  - Repeat transcript abundance plot, PCA on bio-variables only, heat maps
+  - Tables of up- and down- regulated genes
+  - Pair-wise diet comparisons (e.g. foldC against diet pair, volcano plots)
+  - Expression against diet for top regulated genes
+  - Gene ontology - functional classes, functions of single genes, etc
+  
+  
+E. NOTES
+
+1. PCs should ideally correlate with the biological variables of interest, as the PC represents the largest sources of signal in the data. If SV for batch is strongly correlated with one of the top (say 5), PCs, batch effects should be controlled for.
+2. If PCs don't correlate well with bio-variables - there are BEs. If neither bio-variables nor SVs correlate well with top PCs, then there are unknown sources of BEs. 
+
+
+
+
+
+
+
+
+
+
