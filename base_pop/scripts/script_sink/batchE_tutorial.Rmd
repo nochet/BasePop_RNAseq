@@ -129,7 +129,7 @@ modcombat = model.matrix(~1, data=pheno) # i.e. mod0 above
 ```
 
 # Important
-# Note that adjustment variables will be treated as given to the ComBat function. This means if you are trying to adjust for a categorical variable with p di erent levels, you will need to give p-1 indicator variables for this covariate. We recommend using the     function to set these up. For continuous adjustment variables, just give a vector in the containing the covariate values in a single column of the model matrix.
+# Note that adjustment variables will be treated as given to the ComBat function. This means if you are trying to adjust for a categorical variable with p di erent levels, you will need to give p-1 indicator variables for this covariate. We recommend using the model.matrix function to set these up. For continuous adjustment variables, just give a vector in the containing the covariate values in a single column of the model matrix.
 
 ```{r}
 # 2) Adjust for batch
