@@ -45,7 +45,7 @@ save(bg_ballG_filt, file = "../processed/results/ballG_all_results/bg_ballG_filt
   # syntax: expr(ballgown_object_name, <EXPRESSION_MEASUREMENT>)
 
 transcript_fpkm = texpr(bg_ballG_filt, meas = "FPKM")
-transcript_fpkm <-log2(transcript_fpkm+1)
+log_transcript_fpkm <-log2(transcript_fpkm+1)
 # colnames(transcript_fpkm)<-phenDat$id
 
 #transcript_cov = texpr(bg, 'cov')
@@ -59,9 +59,31 @@ gene_expression = gexpr(bg_ballG_filt)
 # in which case some additional feature metadata is returned and the result is a data.frame
 ```
 
-# Add gene names and gene IDs to the results_transcripts data frame
+# Add gene names and gene IDs to log-transformed data
 
 ```{r}
+log_transcript_fpkm <- data.frame(geneNames=ballgown::transcriptNames(bg_ballG_filt), geneIDs=ballgown::geneIDs(bg_ballG_filt), log_transcript_fpkm)
+
+indicies.bg <- match(log_transcript_fpkm$geneIDs, texpr(bg_ballG_filt, "all")$gene_id)
+gene_names_bg <- texpr(bg_ballG_filt, "all")$t_name[indicies.bg]
+log_transcript_fpkm$tname <- gene_names_bg
+
+write.csv(log_transcript_fpkm, 
+          "../processed/results/ballG_all_results/logGene_associated_texpr.csv", row.names=FALSE)
+
+log_transcript_fpkm[,c(1:2,57)]
+```
+
+# Add gene names and gene IDs to non log-transformed data
+
+```{r}
+load("../processed/results/ballG_all_results/bg_ballG_filt.Rda")
+# filtered for low abundance transcripts
+
+# Extract expression data with no transformation
+transcript_fpkm = texpr(bg_ballG_filt, meas = "FPKM")
+
+# Add and match gene names
 transcript_fpkm <- data.frame(geneNames=ballgown::transcriptNames(bg_ballG_filt), geneIDs=ballgown::geneIDs(bg_ballG_filt), transcript_fpkm)
 
 indicies.bg <- match(transcript_fpkm$geneIDs, texpr(bg_ballG_filt, "all")$gene_id)
@@ -73,7 +95,4 @@ write.csv(transcript_fpkm,
 
 transcript_fpkm[,c(1:2,57)]
 ```
-
-
-
 

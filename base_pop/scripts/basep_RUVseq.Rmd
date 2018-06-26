@@ -1,0 +1,88 @@
+title: "Remove batch effects in base population RNA-seq data with RUVseq"
+author: "Enoch Ng'oma"
+date: "6/22/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(RSkittleBrewer)
+library(genefilter)
+library(polyester)
+library(RUVSeq)
+library(edgeR)
+library(sva)
+#library(ffpe)
+library(RColorBrewer)
+library(corrplot)
+library(limma)
+library(dplyr)
+trop = RSkittleBrewer('tropical')
+set.seed(3532333)
+```
+
+# STEP 1: Data - all transcripts across tissues and diets
+# Genes in rows and samples/variables in columns
+# Phenotype data as a separate file
+
+```{r}
+# read extracted table
+basep_all <- read.csv("../processed/results/ballG_all_results/gene_associated_texpr.csv",
+                    stringsAsFactors = FALSE)
+
+phenDat <- read.csv("../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
+```
+
+```{r}
+# Phenotype variables 
+phenDat = phenDat 
+
+# Only expression variables needed and should be in matrix form
+basep_all = basep_all %>%
+  select(-geneNames, -geneIDs) %>%
+  select(tname, everything())
+
+nams <- basep_all$tname
+rownames(basep_all) = make.names(nams, unique=TRUE) 
+basep_all$tname <- NULL
+
+basep_all <- as.matrix(basep_all)
+```
+
+# Look at mean variance relationship
+
+```{r}
+
+plot(rowMeans(basep_all),rowVars(basep_all),pch=19, col=trop[1])
+```
+
+# Estimate zero inflated negative binomial parameters from the zebrafish data
+
+```{r}
+params = get_params(basep_all)
+
+plot(rowMeans(basep_all),rowVars(basep_all),pch=19,col=trop[1],main= "w/fit")
+lines(params$fit,col=trop[2])
+```
+
+# Generate an equal sized simulated data set and compare
+
+```{r}
+## Create some data from the model
+
+dat0 = create_read_numbers(params$mu,params$fit,
+                          params$p0,m=dim(basep_all)[1],n=dim(basep_all)[2],
+                          seed=5353)
+
+## Generating data from baseline model.
+
+par(mfrow=c(1,2))
+plot(rowMeans(log(dat0+1)),rowVars(log(dat0+1)),pch=19,col=trop[2],main="simulated data",xlim=c(0,15),xlab="Mean(Count)", ylab="Var(Count)")
+plot(rowMeans(log(counts+1)),rowVars(log(counts+1)),pch=19,col=trop[1],main="zebrafish data",xlim=c(0,15),xlab="Mean(Count)", ylab="Var(Count)")
+```
+
+
+
+
+

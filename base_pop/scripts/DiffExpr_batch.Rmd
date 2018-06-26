@@ -1,0 +1,307 @@
+---
+title: "DiffExpr_batchRemove"
+author: "Enoch Ng'oma"
+date: "5/7/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#load R packagees:
+library(ballgown)
+library(genefilter)
+library(tidyverse)
+library(devtools)
+library(cowplot)
+library(reshape)
+#library(ggthemes)
+library(sva)
+library(pamr)
+library(limma)
+
+set.seed(3537633)
+```
+
+# Differential expression analysis protocol
+
+```{r}
+phenDat <- read.csv("../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
+
+#bg_ballG <- ballgown(dataDir = "../processed/ballG_all", samplePattern = "", pData = phenDat)
+
+# Save .Rda
+#save(bg_ballG, file = "../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
+
+load("../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
+
+# Dispplay a decsription
+bg_ballG
+
+```
+
+# Filter to remove low-abundance genes (i.e. those with variance across samples of <=1)
+
+```{r}
+bg_ballG_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TRUE)
+
+# See counts
+bg_ballG_filt
+
+save(bg_ballG_filt, file = "../processed/results/ballG_all_results/bg_ballG_filt.Rda")
+```
+
+## Overall expression numbers
+# Distribution of gene abundances (FPKM values) across samples (libraries), colored by treatment or tissue and faceted 
+
+```{r}
+load(file = "../processed/results/ballG_all_results/bg_ballG_filt.Rda")
+
+tfpkm_bg<-texpr(bg_ballG_filt, meas="FPKM")
+tfpkm_bg <-log2(tfpkm_bg+1)
+colnames(tfpkm_bg)<-phenDat$id
+save(tfpkm_bg, file = "../processed/results/ballG_all_results/tfpkm_bg_ballG_filt.Rda")
+
+
+tbg<- as.data.frame(tfpkm_bg) %>% gather(id, fpkm)
+tbg$treatment <- rep(c("C","DR","HS"), each=18*nrow(tfpkm_bg))
+tbg$tissue <- rep(c("B","H","O"),each=nrow(tfpkm_bg),6)
+tbg$replicate <- rep(c(1,2,3,4,5,6),each=nrow(tfpkm_bg)*3)
+tbg$prep <- paste(tbg$treatment,tbg$replicate,sep="_")
+tbg$trep <- paste(tbg$tissue,tbg$replicate,sep="_")
+
+b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
+  geom_boxplot(alpha=0.9) +
+          theme(axis.title.y = element_text(size = 24),
+                axis.title.x=element_blank(),
+                axis.text.x  = element_text(angle=90, vjust=0.5),
+                text = element_text(size = 20))+
+                
+  scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+  ylab(expression("log"[2]*"(FPKM + 1)")) +
+  xlab("Samples")+
+  facet_grid(tissue~.)
+b1 + theme(legend.position="none")
+  
+ggsave(filename = "../plots/Expression_by_sample1.pdf",width = 5,height=5)
+
+b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
+  geom_boxplot(alpha=0.9) +
+          theme(axis.title.y = element_text(size = 24),
+                axis.title.x=element_blank(),
+                axis.text.x  = element_text(angle=90, vjust=0.5),
+                text = element_text(size = 20)) +
+  scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+  ylab(expression("log"[2]*"(FPKM + 1)")) +
+  xlab("Tissue") +
+  #scale_fill_discrete(name="Samples")+
+  facet_grid(treatment~.)
+b2 + theme(legend.position="none")
+
+ggsave(filename = "../plots/Expression_by_sample2.pdf",width = 5,height=5)
+```
+
+## PCA for global patterns
+
+```{r}
+
+gfpkm_bg <-gexpr(bg_ballG_filt)
+gfpkm_bg <-log2(gfpkm_bg +1)
+colnames(gfpkm_bg)<-phenDat$id
+save(gfpkm_bg, file = "../processed/results/ballG_all_results/gfpkm_bg_ballG_filt.Rda")
+
+
+# all samples
+X<- t(scale(t(gfpkm_bg),center=TRUE,scale=FALSE))
+sv<- svd(t(X))
+U<- sv$u
+V<- sv$v
+D<- sv$d
+Z<- t(X)%*%V
+
+# put PC1 and PC2 into a dataframe and add the phenotpe info side by side
+pc.dat<- data.frame(phenDat$id, PC1 = Z[,1], PC2 = Z[,2], PC3 = Z[,3],PC4 =Z[,4])
+s.id <- strsplit(as.character(pc.dat$phenDat.id), split="-",fixed=TRUE)
+pc.dat$Diet <-unlist(lapply(s.id, function(x) x[1]))
+pc.dat$Tissue <- unlist(lapply(strsplit(as.character(phenDat$id), 
+                                        split="_", fixed=TRUE), function(x) x[2]))
+
+# plot with ggplot2
+a <- ggplot(pc.dat, aes(x=PC1, y=PC2, col=Diet, pch=Tissue)) + 
+        geom_point(alpha=0.5, size=5) + 
+        scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+        theme_bw() +
+        theme(axis.title = element_text(size = 24)) +
+        theme(text = element_text(size = 20)) +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(), 
+              axis.line.x = element_line(color="black", size = 0.8),
+              axis.line.y = element_line(color="black", size = 0.8))
+a 
+
+ggsave(filename = "../plots/PCA_overall.pdf",width = 5,height=5)
+```
+
+# Control for batch effects
+
+```{r}
+# read table prepped from the ballgown `bg_ballG_all_results.Rda` object
+
+basep_all <- read.csv("../processed/results/ballG_all_results/logGene_associated_texpr.csv",
+                    stringsAsFactors = FALSE)
+
+phenDat <- read.csv("../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
+```
+
+# Set up data for sva
+
+```{r}
+# sample data 
+phenDat = phenDat 
+
+# Only expression variables needed in matrix form
+basep_all = basep_all %>%
+  select(-geneNames, -geneIDs) %>%
+  select(tname, everything())
+
+nams <- basep_all$tname
+rownames(basep_all) = make.names(nams, unique=TRUE) 
+basep_all$tname <- NULL
+
+basep_all <- as.matrix(basep_all)
+
+# Create a full model matrix without adjustment variables
+  # since treatment has multiple levels, treat it as factor
+mod = model.matrix(~as.factor(treatment) + as.factor(tissue), data=phenDat)
+
+# Create null model (i.e. only adj. vars)
+  # with no adjustment - just the intercept included (unsupervised)
+mod0 = model.matrix(~1, data=phenDat)
+
+# Get number of batch variables
+#n.sv = num.sv(basep_all, mod, method = "leek")
+n.sv = num.sv(basep_all, mod, method = "be", B = 20) # B are iterations
+n.sv
+
+# Note: B should be used only when method = "be"
+
+# b) Estimage surrogate variables
+svobj = sva(basep_all, mod, mod0, n.sv=n.sv, B = 20)
+```
+
+# svaseq: Moderated log link sva
+# Note: log(g + c; c=1) was performed in the creation of "basep_all"
+
+```{r}
+# without specifying batch factors
+svaseq_basep_all <- svaseq(basep_all, mod, mod0 , n.sv, controls = NULL,
+                          method = c("irw", "two-step"),  B = 20,
+                          ) # compare with vfilter inluded
+svaseq_basep_all$sv
+n.sv
+plot(svaseq_basep_all$sv)
+
+# NOTE on sva output:
+# pprob.gam: A vector of the posterior probabilities each gene is affected by heterogeneity
+# pprob.b: A vector of the posterior probabilities each gene is affected by mod n.sv
+
+# Set null and alternative models
+mod1 = model.matrix(~as.factor(treatment) + as.factor(tissue) + as.factor(group), data=phenDat)
+mod0 = cbind(mod1[,1]) # i.e. intercept
+
+# Number of significan surrogate variables
+svaseq_basep_all1 = svaseq(basep_all, mod1, mod0, n.sv=n.sv)$sv
+svaseq_basep_all1
+
+plot(svaseq_basep_all1, pch=19,col="red")
+```
+
+# Remove batch effects
+
+```{r}
+# 1) First, calculate F-test p-values for DE wrt diet, without adjusting for SVs
+pValues_svaseq = f.pvalue(basep_all, mod1, mod0)
+qValues_svaseq = p.adjust(pValues_svaseq, method = "BH") 
+
+# 2) Second, adjust for surrogates
+  # include surrogates in both full and null models, then get p-vals and q-vals
+modSv_svaseq = cbind(mod1, svaseq_basep_all$sv) 
+# sv is matrix whose columns are estimated SVs
+
+mod0Sv_svaseq = cbind(mod0, svaseq_basep_all$sv)
+
+pValuesSv_svaseq = f.pvalue(basep_all, modSv_svaseq, mod0Sv_svaseq)
+qValuesSv_svaseq = p.adjust(pValuesSv_svaseq, method = "BH")
+
+# These are the adjusted P-values and Q-values accounting for surrogate variables.
+# BUT, how to get adjusted expression values for downstream analysis?
+```
+
+# Ajusting with limma package
+
+```{r}
+# 1) fit a linear model with surrogate variables
+fit = lmFit(basep_all, modSv_svaseq)
+
+# Can now use limma functions to perform the usual analyses.
+# Suppose we want to calculate DE wrt diet:
+
+# 1) compute contrasts between pairs of diet terms
+    # no surrogates included here since SVs are only useful for adjustment
+contrast.matrix <- cbind("C1"=c(-1,1,0,rep(0,svobj$n.sv)),
+                         "C2"=c(0,-1,1,rep(0,svobj$n.sv)),
+                         "C3"=c(-1,0,1,rep(0,svobj$n.sv)))
+
+fitContrasts = contrasts.fit(fit,contrast.matrix) 
+
+# 2) calculate the test statistic using eBayes()
+eb = eBayes(fitContrasts)
+topTable(eb, adjust="BH")
+```
+
+# Expression pattern for batch-controlled data
+
+```{r}
+tfpkm_bg<-texpr(bg_ballG_filt, meas="FPKM")
+tfpkm_bg <-log2(tfpkm_bg+1)
+colnames(tfpkm_bg)<-phenDat$id
+save(tfpkm_bg, file = "../processed/results/ballG_all_results/tfpkm_bg_ballG_filt.Rda")
+
+
+tbg<- as.data.frame(tfpkm_bg) %>% gather(id, fpkm)
+tbg$treatment <- rep(c("C","DR","HS"), each=18*nrow(tfpkm_bg))
+tbg$tissue <- rep(c("B","H","O"),each=nrow(tfpkm_bg),6)
+tbg$replicate <- rep(c(1,2,3,4,5,6),each=nrow(tfpkm_bg)*3)
+tbg$prep <- paste(tbg$treatment,tbg$replicate,sep="_")
+tbg$trep <- paste(tbg$tissue,tbg$replicate,sep="_")
+
+b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
+  geom_boxplot(alpha=0.9) +
+          theme(axis.title.y = element_text(size = 24),
+                axis.title.x=element_blank(),
+                axis.text.x  = element_text(angle=90, vjust=0.5),
+                text = element_text(size = 20))+
+                
+  scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+  ylab(expression("log"[2]*"(FPKM + 1)")) +
+  xlab("Samples")+
+  facet_grid(tissue~.)
+b1 + theme(legend.position="none")
+  
+ggsave(filename = "../plots/Expression_by_sample1.pdf",width = 5,height=5)
+
+b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
+  geom_boxplot(alpha=0.9) +
+          theme(axis.title.y = element_text(size = 24),
+                axis.title.x=element_blank(),
+                axis.text.x  = element_text(angle=90, vjust=0.5),
+                text = element_text(size = 20)) +
+  scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+  ylab(expression("log"[2]*"(FPKM + 1)")) +
+  xlab("Tissue") +
+  #scale_fill_discrete(name="Samples")+
+  facet_grid(treatment~.)
+b2 + theme(legend.position="none")
+```
+
