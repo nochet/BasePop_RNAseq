@@ -154,7 +154,7 @@ basep_all <- read.csv("../processed/results/ballG_all_results/logGene_associated
 phenDat <- read.csv("../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
 ```
 
-# Set up data for sva
+# Prepare up data for sva
 
 ```{r}
 # sample data 
@@ -170,7 +170,12 @@ rownames(basep_all) = make.names(nams, unique=TRUE)
 basep_all$tname <- NULL
 
 basep_all <- as.matrix(basep_all)
+```
 
+# model without known batch
+
+```{r}
+# 1. sva
 # Create a full model matrix without adjustment variables
   # since treatment has multiple levels, treat it as factor
 mod = model.matrix(~as.factor(treatment) + as.factor(tissue), data=phenDat)
@@ -188,43 +193,49 @@ n.sv
 
 # b) Estimage surrogate variables
 svobj = sva(basep_all, mod, mod0, n.sv=n.sv, B = 20)
-```
 
+
+# 2. svaseq
 # svaseq: Moderated log link sva
 # Note: log(g + c; c=1) was performed in the creation of "basep_all"
 
-```{r}
-# without specifying batch factors
-svaseq_basep_all <- svaseq(basep_all, mod, mod0 , n.sv, controls = NULL,
+svaseq_basep_all <- svaseq(basep_all, mod, mod0 , n.sv=n.sv, controls = NULL,
                           method = c("irw", "two-step"),  B = 20,
                           ) # compare with vfilter inluded
 svaseq_basep_all$sv
-n.sv
 plot(svaseq_basep_all$sv)
 
 # NOTE on sva output:
 # pprob.gam: A vector of the posterior probabilities each gene is affected by heterogeneity
 # pprob.b: A vector of the posterior probabilities each gene is affected by mod n.sv
+```
 
+# Model with batch (i.e. 6 groups/replicates)
+
+```{r}
 # Set null and alternative models
 mod1 = model.matrix(~as.factor(treatment) + as.factor(tissue) + as.factor(group), data=phenDat)
 mod0 = cbind(mod1[,1]) # i.e. intercept
 
-# Number of significan surrogate variables
-svaseq_basep_all1 = svaseq(basep_all, mod1, mod0, n.sv=n.sv)$sv
-svaseq_basep_all1
+# Get number of batch variables
+n.svb = num.sv(basep_all, mod1, B = 20) # B are iterations
+n.svb
 
-plot(svaseq_basep_all1, pch=19,col="red")
+# Estimate significant surrogate variables
+svaseq_basep_sigvars = svaseq(basep_all, mod1, mod0, n.sv=n.svb)$sv
+svaseq_basep_sigvars
+
+plot(svaseq_basep_sigvars, pch=19,col="red")
 ```
 
 # Remove batch effects
 
 ```{r}
-# 1) First, calculate F-test p-values for DE wrt diet, without adjusting for SVs
+# 1) Calculate F-test p-values for DE wrt diet, without adjusting for SVs
 pValues_svaseq = f.pvalue(basep_all, mod1, mod0)
 qValues_svaseq = p.adjust(pValues_svaseq, method = "BH") 
 
-# 2) Second, adjust for surrogates
+# 2) Adjust for surrogates
   # include surrogates in both full and null models, then get p-vals and q-vals
 modSv_svaseq = cbind(mod1, svaseq_basep_all$sv) 
 # sv is matrix whose columns are estimated SVs
@@ -236,28 +247,6 @@ qValuesSv_svaseq = p.adjust(pValuesSv_svaseq, method = "BH")
 
 # These are the adjusted P-values and Q-values accounting for surrogate variables.
 # BUT, how to get adjusted expression values for downstream analysis?
-```
-
-# Ajusting with limma package
-
-```{r}
-# 1) fit a linear model with surrogate variables
-fit = lmFit(basep_all, modSv_svaseq)
-
-# Can now use limma functions to perform the usual analyses.
-# Suppose we want to calculate DE wrt diet:
-
-# 1) compute contrasts between pairs of diet terms
-    # no surrogates included here since SVs are only useful for adjustment
-contrast.matrix <- cbind("C1"=c(-1,1,0,rep(0,svobj$n.sv)),
-                         "C2"=c(0,-1,1,rep(0,svobj$n.sv)),
-                         "C3"=c(-1,0,1,rep(0,svobj$n.sv)))
-
-fitContrasts = contrasts.fit(fit,contrast.matrix) 
-
-# 2) calculate the test statistic using eBayes()
-eb = eBayes(fitContrasts)
-topTable(eb, adjust="BH")
 ```
 
 # Expression pattern for batch-controlled data
