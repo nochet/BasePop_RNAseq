@@ -23,6 +23,23 @@ library(limma)
 set.seed(3537633)
 ```
 
+```{r}
+# Function to extract batch-corrected expression values from a sva object
+
+# Ref:
+# https://support.bioconductor.org/p/87508/
+# https://support.bioconductor.org/p/47350/
+
+cleaningY = function(y, mod, svaobj) {
+  X = cbind(mod, svaobj$sv)
+  Hat = solve(t(X)%*%X)%*%t(X)
+  beta = (Hat%*%t(y))
+  P = ncol(mod)
+  cleany = y-t(as.matrix(X[,-c(1:P)])%*%beta[-c(1:P),]) 
+  return(cleany)
+}
+```
+
 # Differential expression analysis protocol
 
 ```{r}
@@ -200,7 +217,7 @@ svobj = sva(basep_all, mod, mod0, n.sv=n.sv, B = 20)
 # Note: log(g + c; c=1) was performed in the creation of "basep_all"
 
 svaseq_basep_all <- svaseq(basep_all, mod, mod0 , n.sv=n.sv, controls = NULL,
-                          method = c("irw", "two-step"),  B = 20,
+                          method = c("irw", "two-step","supervised"),  B = 20,
                           ) # compare with vfilter inluded
 svaseq_basep_all$sv
 plot(svaseq_basep_all$sv)
@@ -249,16 +266,32 @@ qValuesSv_svaseq = p.adjust(pValuesSv_svaseq, method = "BH")
 # BUT, how to get adjusted expression values for downstream analysis?
 ```
 
-# Expression pattern for batch-controlled data
+# Extract corrected expression values from svaseq object
 
 ```{r}
-tfpkm_bg<-texpr(bg_ballG_filt, meas="FPKM")
-tfpkm_bg <-log2(tfpkm_bg+1)
-colnames(tfpkm_bg)<-phenDat$id
-save(tfpkm_bg, file = "../processed/results/ballG_all_results/tfpkm_bg_ballG_filt.Rda")
+# a) can use function
+svaseq.dat <- cleaningY(basep_all, mod = mod1, svaobj = svaseq_basep_all)
 
+# compare plots
+plot(basep_all[,c("FPKM.C.1_H","FPKM.C.2_H")])  # before sva
+plot(svaseq.dat[,c("FPKM.C.1_H","FPKM.C.2_H")]) # after sva
 
-tbg<- as.data.frame(tfpkm_bg) %>% gather(id, fpkm)
+# b) can use sva & limma
+svaseq_basep_all <- svaseq(basep_all, mod1, mod0 , n.sv)
+covv <- cbind(svaseq_basep_all$sv[,1:n.sv])
+svaseq_basep_all2 <- removeBatchEffect(basep_all, covariates = covv)
+plot(svaseq_basep_all2)
+```
+
+# Expression pattern for batch-controlled data
+
+#   svaseq.dat = expr values using f(x); 
+#   svaseq_basep_all2 = expr values using limma
+
+```{r}
+tfpkm_bg <-log2(svaseq.dat+1)
+colnames(svaseq.dat) <- phenDat$id
+tbg<- as.data.frame(svaseq.dat) %>% gather(id, fpkm)
 tbg$treatment <- rep(c("C","DR","HS"), each=18*nrow(tfpkm_bg))
 tbg$tissue <- rep(c("B","H","O"),each=nrow(tfpkm_bg),6)
 tbg$replicate <- rep(c(1,2,3,4,5,6),each=nrow(tfpkm_bg)*3)
@@ -278,7 +311,7 @@ b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
   facet_grid(tissue~.)
 b1 + theme(legend.position="none")
   
-ggsave(filename = "../plots/Expression_by_sample1.pdf",width = 5,height=5)
+#ggsave(filename = "../plots/Expression_by_sample_batchControlled.pdf",width = 5,height=5)
 
 b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
   geom_boxplot(alpha=0.9) +
@@ -292,5 +325,47 @@ b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
   #scale_fill_discrete(name="Samples")+
   facet_grid(treatment~.)
 b2 + theme(legend.position="none")
+```
+
+## PCA for global patterns - batch controlled data
+
+```{r}
+
+gfpkm_bg <-gexpr(bg_ballG_filt)
+gfpkm_bg <-log2(gfpkm_bg +1)
+colnames(gfpkm_bg)<-phenDat$id
+save(gfpkm_bg, file = "../processed/results/ballG_all_results/gfpkm_bg_ballG_filt.Rda")
+
+
+# all samples
+X<- t(scale(t(gfpkm_bg),center=TRUE,scale=FALSE))
+sv<- svd(t(X))
+U<- sv$u
+V<- sv$v
+D<- sv$d
+Z<- t(X)%*%V
+
+# put PC1 and PC2 into a dataframe and add the phenotpe info side by side
+pc.dat<- data.frame(phenDat$id, PC1 = Z[,1], PC2 = Z[,2], PC3 = Z[,3],PC4 =Z[,4])
+s.id <- strsplit(as.character(pc.dat$phenDat.id), split="-",fixed=TRUE)
+pc.dat$Diet <-unlist(lapply(s.id, function(x) x[1]))
+pc.dat$Tissue <- unlist(lapply(strsplit(as.character(phenDat$id), 
+                                        split="_", fixed=TRUE), function(x) x[2]))
+
+# plot with ggplot2
+a <- ggplot(pc.dat, aes(x=PC1, y=PC2, col=Diet, pch=Tissue)) + 
+        geom_point(alpha=0.5, size=5) + 
+        scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+        theme_bw() +
+        theme(axis.title = element_text(size = 24)) +
+        theme(text = element_text(size = 20)) +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(), 
+              axis.line.x = element_line(color="black", size = 0.8),
+              axis.line.y = element_line(color="black", size = 0.8))
+a 
+
+ggsave(filename = "../plots/PCA_overall.pdf",width = 5,height=5)
 ```
 

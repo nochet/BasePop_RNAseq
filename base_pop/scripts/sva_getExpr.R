@@ -39,7 +39,7 @@ basep_all <- as.matrix(basep_all)
 
 # Get a matrix of batch-corrected values from svaseq
 
-# 1. Perform svaseq
+# 1. Perform svaseq - known batch = group
 group <- as.factor(rep(c("C", "DR", "HS"), each=18))
 
 modd1 <- model.matrix(~group)
