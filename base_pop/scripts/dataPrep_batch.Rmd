@@ -36,63 +36,28 @@ bg_ballG
 bg_ballG_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TRUE)
 
 save(bg_ballG_filt, file = "../processed/results/ballG_all_results/bg_ballG_filt.Rda")
+
+## Qu.1 Both sva and RUVseq tutorials filter out non-expressed genes by requiring >5 reads in at least 2 samples for each gene
+# i.e. `filter <- apply(zfGenes, 1, function(x) lengthx[x>5]) >2`
 ```
 
 # Extract expression data
 # Ref: https://github.com/alyssafrazee/ballgown
 
 ```{r}
-  # syntax: expr(ballgown_object_name, <EXPRESSION_MEASUREMENT>)
-
-transcript_fpkm = texpr(bg_ballG_filt, meas = "FPKM")
-log_transcript_fpkm <-log2(transcript_fpkm+1)
-# colnames(transcript_fpkm)<-phenDat$id
-
-#transcript_cov = texpr(bg, 'cov')
-#whole_tx_table = texpr(bg_ballG_filt, 'all')
-#exon_mcov = eexpr(bg, 'mcov')
-#junction_rcount = iexpr(bg)
-#whole_intron_table = iexpr(bg, 'all')
-gene_expression = gexpr(bg_ballG_filt)
-
-# Note: expr functions return matrices unless meas = 'all', 
-# in which case some additional feature metadata is returned and the result is a data.frame
-```
-
-# Add gene names and gene IDs to log-transformed data
-
-```{r}
-log_transcript_fpkm <- data.frame(geneNames=ballgown::transcriptNames(bg_ballG_filt), geneIDs=ballgown::geneIDs(bg_ballG_filt), log_transcript_fpkm)
-
-indicies.bg <- match(log_transcript_fpkm$geneIDs, texpr(bg_ballG_filt, "all")$gene_id)
-gene_names_bg <- texpr(bg_ballG_filt, "all")$t_name[indicies.bg]
-log_transcript_fpkm$tname <- gene_names_bg
-
-write.csv(log_transcript_fpkm, 
-          "../processed/results/ballG_all_results/logGene_associated_texpr.csv", row.names=FALSE)
-
-log_transcript_fpkm[,c(1:2,57)]
-```
-
-# Add gene names and gene IDs to non log-transformed data
-
-```{r}
 load("../processed/results/ballG_all_results/bg_ballG_filt.Rda")
-# filtered for low abundance transcripts
 
-# Extract expression data with no transformation
-transcript_fpkm = texpr(bg_ballG_filt, meas = "FPKM")
+#results_all_transcripts = texpr(transcript_ballG_filt, meas = "FPKM")
+results_all_genes = gexpr(bg_ballG_filt)
 
-# Add and match gene names
-transcript_fpkm <- data.frame(geneNames=ballgown::transcriptNames(bg_ballG_filt), geneIDs=ballgown::geneIDs(bg_ballG_filt), transcript_fpkm)
+gfpkm_gene <-log2(results_all_genes +1)
+colnames(results_all_genes)<-phenDat$id
+save(results_all_genes, file = "../processed/results/ballG_all_results/gfpkm_gene_ballG_filt.csv")
 
-indicies.bg <- match(transcript_fpkm$geneIDs, texpr(bg_ballG_filt, "all")$gene_id)
-gene_names_bg <- texpr(bg_ballG_filt, "all")$t_name[indicies.bg]
-transcript_fpkm$tname <- gene_names_bg
-
-write.csv(transcript_fpkm, 
-          "../processed/results/ballG_all_results/gene_associated_texpr.csv", row.names=FALSE)
-
-transcript_fpkm[,c(1:2,57)]
 ```
+
+
+
+
+
 

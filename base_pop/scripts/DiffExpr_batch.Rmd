@@ -330,15 +330,13 @@ b2 + theme(legend.position="none")
 ## PCA for global patterns - batch controlled data
 
 ```{r}
-
+# all samples
 gfpkm_bg <-gexpr(bg_ballG_filt)
 gfpkm_bg <-log2(gfpkm_bg +1)
 colnames(gfpkm_bg)<-phenDat$id
 save(gfpkm_bg, file = "../processed/results/ballG_all_results/gfpkm_bg_ballG_filt.Rda")
 
-
-# all samples
-X<- t(scale(t(gfpkm_bg),center=TRUE,scale=FALSE))
+X<- t(scale(t(tbg),center=TRUE,scale=FALSE))
 sv<- svd(t(X))
 U<- sv$u
 V<- sv$v
