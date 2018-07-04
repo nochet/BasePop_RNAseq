@@ -23,7 +23,7 @@ library(cowplot)
 library(reshape)
 
 
-phenDat <- read.csv("describe_samples.csv", stringsAsFactors = FALSE)
+phenDat <- read.csv("../processed/describe_samples.csv", stringsAsFactors = FALSE)
 ```
 
 ```{r}

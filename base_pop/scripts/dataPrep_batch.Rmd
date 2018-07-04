@@ -9,11 +9,17 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(ballgown)
+library(genefilter)
+library(RSkittleBrewer)
 library(tidyverse)
 library(genefilter)
+library(devtools)
+#library(calibrate)
 ```
 
-# Data
+# Extract expression data: https://github.com/alyssafrazee/ballgown
+
+# Load data
 
 ```{r}
 # phenotype data
@@ -33,7 +39,7 @@ bg_ballG
 # Filter to remove low-abundance genes (i.e. those with variance across samples of <=1)
 
 ```{r}
-bg_ballG_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TRUE)
+bg_ballG_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TRUE) 
 
 save(bg_ballG_filt, file = "../processed/results/ballG_all_results/bg_ballG_filt.Rda")
 
@@ -41,20 +47,35 @@ save(bg_ballG_filt, file = "../processed/results/ballG_all_results/bg_ballG_filt
 # i.e. `filter <- apply(zfGenes, 1, function(x) lengthx[x>5]) >2`
 ```
 
-# Extract expression data
-# Ref: https://github.com/alyssafrazee/ballgown
 
 ```{r}
 load("../processed/results/ballG_all_results/bg_ballG_filt.Rda")
 
-#results_all_transcripts = texpr(transcript_ballG_filt, meas = "FPKM")
-results_all_genes = gexpr(bg_ballG_filt)
+gfpkm_all = gexpr(bg_ballG_filt)
 
-gfpkm_gene <-log2(results_all_genes +1)
-colnames(results_all_genes)<-phenDat$id
-save(results_all_genes, file = "../processed/results/ballG_all_results/gfpkm_gene_ballG_filt.csv")
+#get gene names
+Gindicies <- match(rownames(gfpkm_all), texpr(bg_ballG_filt, 'all')$gene_id)
+Gnames <- texpr(bg_ballG_filt, "all")$t_name[Gindicies]
+#gfpkm_all$tname <- Gnames
 
+rownames(gfpkm_all) <- Gnames
+
+# log2 transform expr values, rename columns
+gfpkm_all <- log2(gfpkm_all+1)
+colnames(gfpkm_all) <- phenDat$id
+
+# Extract row names as a column
+gfpkm_all <- cbind(GeneName = rownames(gfpkm_all), gfpkm_all)
+rownames(gfpkm_all) <- NULL
+
+# Write results to csv
+write.csv(gfpkm_all, 
+          "../processed/results/ballG_all_results/log2_gfpkm_all.csv", row.names=FALSE)
 ```
+
+
+
+
 
 
 
