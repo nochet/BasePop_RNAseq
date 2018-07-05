@@ -56,7 +56,6 @@ gfpkm_all = gexpr(bg_ballG_filt)
 #get gene names
 Gindicies <- match(rownames(gfpkm_all), texpr(bg_ballG_filt, 'all')$gene_id)
 Gnames <- texpr(bg_ballG_filt, "all")$t_name[Gindicies]
-#gfpkm_all$tname <- Gnames
 
 rownames(gfpkm_all) <- Gnames
 
@@ -65,7 +64,7 @@ log_gfpkm_all <- log2(gfpkm_all+1)
 colnames(log_gfpkm_all) <- phenDat$id
 
 # Extract row names as a column
-log_gfpkm_all <- cbind(GeneName = rownames(log_gfpkm_all), log_gfpkm_all)
+#log_gfpkm_all <- cbind(GeneName = rownames(log_gfpkm_all), log_gfpkm_all)
 
 # Write results to csv
 write.csv(log_gfpkm_all, 
@@ -78,10 +77,10 @@ write.csv(log_gfpkm_all,
 colnames(gfpkm_all) <- phenDat$id
 
 # Extract row names as a column
-nolog_gfpkm_all <- cbind(GeneName = rownames(gfpkm_all), gfpkm_all)
+#nolog_gfpkm_all <- cbind(GeneName = rownames(gfpkm_all), gfpkm_all)
 #rownames(gfpkm_all) <- NULL
 
-write.csv(nolog_gfpkm_all, 
+write.csv(gfpkm_all, 
           "../processed/results/ballG_all_results/nolog_gfpkm_all.csv",
           row.names=FALSE)
 ```
