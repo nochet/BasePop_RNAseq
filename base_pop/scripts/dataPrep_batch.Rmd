@@ -60,17 +60,30 @@ Gnames <- texpr(bg_ballG_filt, "all")$t_name[Gindicies]
 
 rownames(gfpkm_all) <- Gnames
 
-# log2 transform expr values, rename columns
-gfpkm_all <- log2(gfpkm_all+1)
+# log2 transform expr values, rename columns for sva
+log_gfpkm_all <- log2(gfpkm_all+1)
+colnames(log_gfpkm_all) <- phenDat$id
+
+# Extract row names as a column
+log_gfpkm_all <- cbind(GeneName = rownames(log_gfpkm_all), log_gfpkm_all)
+
+# Write results to csv
+write.csv(log_gfpkm_all, 
+          "../processed/results/ballG_all_results/log_gfpkm_all.csv",
+          row.names=FALSE)
+
+
+
+# For svaseq - untransformed
 colnames(gfpkm_all) <- phenDat$id
 
 # Extract row names as a column
-gfpkm_all <- cbind(GeneName = rownames(gfpkm_all), gfpkm_all)
-rownames(gfpkm_all) <- NULL
+nolog_gfpkm_all <- cbind(GeneName = rownames(gfpkm_all), gfpkm_all)
+#rownames(gfpkm_all) <- NULL
 
-# Write results to csv
-write.csv(gfpkm_all, 
-          "../processed/results/ballG_all_results/log2_gfpkm_all.csv", row.names=FALSE)
+write.csv(nolog_gfpkm_all, 
+          "../processed/results/ballG_all_results/nolog_gfpkm_all.csv",
+          row.names=FALSE)
 ```
 
 
