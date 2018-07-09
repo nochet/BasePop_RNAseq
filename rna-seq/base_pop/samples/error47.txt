@@ -1,5 +1,0 @@
-Could not locate a HISAT2 index corresponding to basename "indexes/bdgp6_tran/genome_tran"
-Error: Encountered internal HISAT2 exception (#1)
-Command: /usr/local/bin/hisat2-align-s --wrapper basic-0 --dta -q -x indexes/bdgp6_tran/genome_tran -S ../proc_data/HS-4_H_S45_R1_001_run1.sam -U /tmp/17284.unp 
-(ERR): hisat2-align exited with value 1
-gzip: samples/run1/HS-4_H_S45_R1_001.fastq.gzHS-4_H_S45_R1_001.fastq.gz: No such file or directory

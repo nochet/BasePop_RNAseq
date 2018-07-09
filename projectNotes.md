@@ -1,3 +1,15 @@
+
+---
+title: "RNAseq Base Population Project Record & Notes"
+author: "Enoch Ng'oma (EN), and Elizabeth King (EK)"
+date: "7/9/2018"
+---
+
+
+## Project Record
+
+
+
 Genome-wide expression (RNA-seq) of base population
 
 A. download reference files (EN)
@@ -81,17 +93,19 @@ STEP8: BallGown (Differential expression)
 
 `bg_basep_allData.Rmd`
 
+## Project Notes 
 
-2018-06-19 (EN)
-# Tested for batch effects using SVA package. The "be" and "leek" methods applied ns.v() produced 11 and 0 SVs, respectively.Wondering why the difference we read:
-  # Leek_2014_ svaseq: removing batch effects and other unwanted noise from sequencing data, 
-  # Leek_2011_Asymptotic Conditional Singular Value Decomposition for High-Dimensional Genomic Data,
-  # https://support.bioconductor.org/p/97469/,
-  # Jaffe et al_2015_ Practical impacts of genomic data “cleaning” on biological discovery using surrogate variable analysis
-  # Found that methods can produce diferent results
 
-2018-06-20 (EN & EGK)
-# Decided: 1) check that known batches in our case have effect on expression (a. include batch in PCA, b. test with sva or linear model) 2) run svaseq without known bathes
+### 2018-06-19 (EN)
+- Tested for batch effects using SVA package. The "be" and "leek" methods applied ns.v() produced 11 and 0 SVs, respectively.Wondering why the difference we read:
+  - Leek_2014_ svaseq: removing batch effects and other unwanted noise from sequencing data, 
+  - Leek_2011_Asymptotic Conditional Singular Value Decomposition for High-Dimensional Genomic Data,
+  - https://support.bioconductor.org/p/97469/,
+  - Jaffe et al_2015_ Practical impacts of genomic data “cleaning” on biological discovery using surrogate variable analysis
+  - Found that methods can produce diferent results
+
+### 2018-06-20 (EN & EGK)
+- Decided: 1) check that known batches in our case have effect on expression (a. include batch in PCA, b. test with sva or linear model) 2) run svaseq without known bathes
 
 
 
