@@ -165,7 +165,7 @@ ggsave(filename = "../plots/PCA_overall.pdf",width = 5,height=5)
 ```{r}
 # read table prepped from the ballgown `bg_ballG_all_results.Rda` object
 
-log_gfpkm_all <- read.csv("../processed/results/ballG_all_results/log_gfpkm_all.csv",
+log_gfpkm_sva <- read.csv("../processed/results/ballG_all_results/log_gfpkm_all.csv",
                     stringsAsFactors = FALSE)
 
 # sample data 
@@ -173,9 +173,14 @@ phenDat <- read.csv("../processed/describe_samples_batch.csv", stringsAsFactors 
 
 # Prepare up data for sva
 # Only expression variables needed in matrix form - log2-transformed for sva
-log_gfpkm_sva = log_gfpkm_all %>%
-  select(-GeneName)
-log_gfpkm_sva <- as.matrix(log_gfpkm_sva)
+#log_gfpkm_sva = log_gfpkm_all %>%
+  #select(-GeneName)
+
+rownames(log_gfpkm_sva) <- log_gfpkm_sva[,1]
+log_gfpkm_sva[,1] <- NULL
+
+log_gfpkm_sva <- as.matrix(as.data.frame(log_gfpkm_sva))
+
 ```
 
 # sva model without known batch
@@ -199,7 +204,8 @@ n.sv
 
 # b) Estimage surrogate variables
 svobj = sva(log_gfpkm_sva, mod, mod0, n.sv=n.sv, B = 5)
-svobj$sv
+
+#svobj$sv
 ```
 
 # sva model with a known batch
@@ -211,10 +217,11 @@ mod.sva_adj <- model.matrix(~as.factor(treatment) +
                               data=phenDat)
 
 n.sv_adj = num.sv(log_gfpkm_sva, mod.sva_adj, method = "be", B = 5) # B are iterations
-n.sv_adj
+#n.sv_adj
 
 svobj.adj = sva(log_gfpkm_sva, mod.sva_adj, mod0, n.sv=n.sv, B = 5)
-svobj.adj$sv
+
+#svobj.adj$sv
 ```
 
 # svaseq
@@ -223,16 +230,22 @@ svobj.adj$sv
 
 ```{r}
 # use untransformed data - svaseq takes care
-nolog_gfpkm_all <- read.csv("../processed/results/ballG_all_results/nolog_gfpkm_all.csv",
+nolog_gfpkm_svaseq <- read.csv("../processed/results/ballG_all_results/nolog_gfpkm_all.csv",
                     stringsAsFactors = FALSE)
 
+rownames(nolog_gfpkm_svaseq) <- nolog_gfpkm_svaseq[,1]
+nolog_gfpkm_svaseq[,1] <- NULL
+
 # Only expression variables needed in matrix form - untransformed for svaseq
-nolog_gfpkm_svaseq = nolog_gfpkm_all %>%
-  select(-GeneName) 
+#nolog_gfpkm_svaseq = nolog_gfpkm_all %>%
+  #select(-GeneName) 
 nolog_gfpkm_svaseq <- as.matrix(nolog_gfpkm_svaseq)
 
+n.sv_svaseq = num.sv(nolog_gfpkm_svaseq, mod, method = "be", B = 5) # B are iterations
+n.sv_svaseq
+
 # models
-svaseqobj <- svaseq(nolog_gfpkm_svaseq, mod, mod0 , n.sv=n.sv, controls = NULL,
+svaseqobj <- svaseq(nolog_gfpkm_svaseq, mod, mod0 , n.sv=n.sv_svaseq, controls = NULL,
                           method = c("irw", "two-step","supervised"),  B = 5,
                           ) # compare with vfilter inluded
 svaseqobj$sv
@@ -265,17 +278,17 @@ plot(svaseqobj.known, pch=19,col="red")
 
 ```{r}
 # 1) Calculate F-test p-values for DE wrt diet, without adjusting for SVs
-pValues_svaseq = f.pvalue(basep_all, mod1, mod0)
+pValues_svaseq = f.pvalue(nolog_gfpkm_svaseq, mod, mod0) #note mod used, not mod1
 qValues_svaseq = p.adjust(pValues_svaseq, method = "BH") 
 
 # 2) Adjust for surrogates
   # include surrogates in both full and null models, then get p-vals and q-vals
-modSv_svaseq = cbind(mod1, svaseq_basep_all$sv) 
+modSv_svaseq = cbind(mod, svaseqobj$sv) 
 # sv is matrix whose columns are estimated SVs
 
-mod0Sv_svaseq = cbind(mod0, svaseq_basep_all$sv)
+mod0Sv_svaseq = cbind(mod0, svaseqobj$sv)
 
-pValuesSv_svaseq = f.pvalue(basep_all, modSv_svaseq, mod0Sv_svaseq)
+pValuesSv_svaseq = f.pvalue(nolog_gfpkm_svaseq, modSv_svaseq, mod0Sv_svaseq)
 qValuesSv_svaseq = p.adjust(pValuesSv_svaseq, method = "BH")
 
 # These are the adjusted P-values and Q-values accounting for surrogate variables.
@@ -286,17 +299,17 @@ qValuesSv_svaseq = p.adjust(pValuesSv_svaseq, method = "BH")
 
 ```{r}
 # a) can use function
-svaseq.dat <- cleaningY(basep_all, mod = mod1, svaobj = svaseq_basep_all)
+svaseq.dat <- cleaningY(nolog_gfpkm_svaseq, mod = mod, svaobj = svaseqobj)
 
 # compare plots
-plot(basep_all[,c("FPKM.C.1_H","FPKM.C.2_H")])  # before sva
-plot(svaseq.dat[,c("FPKM.C.1_H","FPKM.C.2_H")]) # after sva
+plot(nolog_gfpkm_svaseq[,c("C.1_H","C.2_H")])  # before sva
+plot(svaseq.dat[,c("C.1_H","C.2_H")]) # after sva
 
 # b) can use sva & limma
-svaseq_basep_all <- svaseq(basep_all, mod1, mod0 , n.sv)
-covv <- cbind(svaseq_basep_all$sv[,1:n.sv])
-svaseq_basep_all2 <- removeBatchEffect(basep_all, covariates = covv)
-plot(svaseq_basep_all2)
+#nolog_gfpkm_svaseq <- svaseq(nolog_gfpkm_svaseq, mod, mod0 , n.sv_svaseq)
+#Covar <- as.factor(cbind(nolog_gfpkm_svaseq$sv))
+#nolog_gfpkm_svaseq2 <- removeBatchEffect(nolog_gfpkm_svaseq, covariates = Covar)
+#plot(nolog_gfpkm_svaseq2)
 ```
 
 # Expression pattern for batch-controlled data
@@ -305,12 +318,12 @@ plot(svaseq_basep_all2)
 #   svaseq_basep_all2 = expr values using limma
 
 ```{r}
-tfpkm_bg <-log2(svaseq.dat+1)
+#tfpkm_bg <-log2(svaseq.dat+1)
 colnames(svaseq.dat) <- phenDat$id
 tbg<- as.data.frame(svaseq.dat) %>% gather(id, fpkm)
-tbg$treatment <- rep(c("C","DR","HS"), each=18*nrow(tfpkm_bg))
-tbg$tissue <- rep(c("B","H","O"),each=nrow(tfpkm_bg),6)
-tbg$replicate <- rep(c(1,2,3,4,5,6),each=nrow(tfpkm_bg)*3)
+tbg$treatment <- rep(c("C","DR","HS"), each=18*nrow(svaseq.dat))
+tbg$tissue <- rep(c("B","H","O"),each=nrow(svaseq.dat),6)
+tbg$replicate <- rep(c(1,2,3,4,5,6),each=nrow(svaseq.dat)*3)
 tbg$prep <- paste(tbg$treatment,tbg$replicate,sep="_")
 tbg$trep <- paste(tbg$tissue,tbg$replicate,sep="_")
 
@@ -347,10 +360,10 @@ b2 + theme(legend.position="none")
 
 ```{r}
 # all samples
-gfpkm_bg <-gexpr(bg_ballG_filt)
-gfpkm_bg <-log2(gfpkm_bg +1)
-colnames(gfpkm_bg)<-phenDat$id
-save(gfpkm_bg, file = "../processed/results/ballG_all_results/gfpkm_bg_ballG_filt.Rda")
+#gfpkm_bg <-gexpr(bg_ballG_filt)
+#gfpkm_bg <-log2(gfpkm_bg +1)
+#colnames(gfpkm_bg)<-phenDat$id
+#save(svaseq.dat, file = "../processed/results/ballG_all_results/svaseq_dat.Rda")
 
 X<- t(scale(t(tbg),center=TRUE,scale=FALSE))
 sv<- svd(t(X))
