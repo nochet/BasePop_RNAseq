@@ -95,6 +95,20 @@ STEP8: BallGown (Differential expression)
 
 ## Project Notes 
 
+### 2018-07-09 
+
+Plan for analysis:
+
+Compare ballgown and sva differential expression analyses
+ 
+- Ballgown done in ballgown_basepop.Rmd
+- Prep data for sva - dataPrep_batch.Rmd
+- Do sva - DiffExpr_batch.Rmd
+- Compare sva & ballgown
+
+### 2018-06-20 (EN & EGK)
+- Decided: 1) check that known batches in our case have effect on expression (a. include batch in PCA, b. test with sva or linear model) 2) run svaseq without known bathes
+
 
 ### 2018-06-19 (EN)
 - Tested for batch effects using SVA package. The "be" and "leek" methods applied ns.v() produced 11 and 0 SVs, respectively.Wondering why the difference we read:
@@ -104,8 +118,6 @@ STEP8: BallGown (Differential expression)
   - Jaffe et al_2015_ Practical impacts of genomic data “cleaning” on biological discovery using surrogate variable analysis
   - Found that methods can produce diferent results
 
-### 2018-06-20 (EN & EGK)
-- Decided: 1) check that known batches in our case have effect on expression (a. include batch in PCA, b. test with sva or linear model) 2) run svaseq without known bathes
 
 
 

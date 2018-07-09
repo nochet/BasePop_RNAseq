@@ -166,7 +166,7 @@ ggsave(filename = "../plots/PCA_overall.pdf",width = 5,height=5)
 # read table prepped from the ballgown `bg_ballG_all_results.Rda` object
 
 log_gfpkm_sva <- read.csv("../processed/results/ballG_all_results/log_gfpkm_all.csv",
-                    stringsAsFactors = FALSE)
+                    stringsAsFactors = FALSE,row.names=1)
 
 # sample data 
 phenDat <- read.csv("../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
@@ -176,10 +176,10 @@ phenDat <- read.csv("../processed/describe_samples_batch.csv", stringsAsFactors 
 #log_gfpkm_sva = log_gfpkm_all %>%
   #select(-GeneName)
 
-rownames(log_gfpkm_sva) <- log_gfpkm_sva[,1]
-log_gfpkm_sva[,1] <- NULL
+#rownames(log_gfpkm_sva) <- log_gfpkm_sva[,1]
+#log_gfpkm_sva[,1] <- NULL
 
-log_gfpkm_sva <- as.matrix(as.data.frame(log_gfpkm_sva))
+log_gfpkm_sva <- as.matrix(log_gfpkm_sva)
 
 ```
 
