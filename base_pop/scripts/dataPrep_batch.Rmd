@@ -68,6 +68,7 @@ colnames(log_gfpkm_all) <- phenDat$id
 #log_gfpkm_all <- cbind(GeneName = rownames(log_gfpkm_all), log_gfpkm_all)
 
 # Write results to csv
+save(log_gfpkm_all, file = "../processed/results/ballG_all_results/log_gfpkm_all.Rda")
 write.csv(log_gfpkm_all, 
           "../processed/results/ballG_all_results/log_gfpkm_all.csv",
           row.names=TRUE)
@@ -81,6 +82,7 @@ colnames(gfpkm_all) <- phenDat$id
 #nolog_gfpkm_all <- cbind(GeneName = rownames(gfpkm_all), gfpkm_all)
 #rownames(gfpkm_all) <- NULL
 
+save(gfpkm_all, file = "../processed/results/ballG_all_results/nolog_gfpkm_all.Rda")
 write.csv(gfpkm_all, 
           "../processed/results/ballG_all_results/nolog_gfpkm_all.csv",
           row.names=TRUE)
