@@ -164,7 +164,6 @@ ggsave(filename = "../plots/PCA_overall.pdf",width = 5,height=5)
 
 ```{r}
 # read table prepped from the ballgown `bg_ballG_all_results.Rda` object
-
 log_gfpkm_sva <- read.csv("../processed/results/ballG_all_results/log_gfpkm_all.csv",
                     stringsAsFactors = FALSE,row.names=1)
 
@@ -180,10 +179,9 @@ phenDat <- read.csv("../processed/describe_samples_batch.csv", stringsAsFactors 
 #log_gfpkm_sva[,1] <- NULL
 
 log_gfpkm_sva <- as.matrix(log_gfpkm_sva)
-
 ```
 
-# sva model without known batch
+# sva model 1: without known batch
 
 ```{r}
 # 1. sva
@@ -205,28 +203,40 @@ n.sv
 # b) Estimage surrogate variables
 svobj = sva(log_gfpkm_sva, mod, mod0, n.sv=n.sv, B = 5)
 
-#svobj$sv
+plot(svobj$sv)
 ```
 
-# sva model with a known batch
+# sva model 2: known batch included only in full model
 
 ```{r}
-mod.sva_adj <- model.matrix(~as.factor(treatment) + 
+mod2 <- model.matrix(~as.factor(treatment) + 
                               as.factor(tissue) + 
                               as.factor(group), 
                               data=phenDat)
 
-n.sv_adj = num.sv(log_gfpkm_sva, mod.sva_adj, method = "be", B = 5) # B are iterations
+n.sv2 = num.sv(log_gfpkm_sva, mod2, method = "be", B = 5)
 #n.sv_adj
 
-svobj.adj = sva(log_gfpkm_sva, mod.sva_adj, mod0, n.sv=n.sv, B = 5)
+svobj2 = sva(log_gfpkm_sva, mod2, mod0, n.sv=n.sv2, B = 5)
 
-#svobj.adj$sv
+plot(svobj2$sv)
 ```
 
+# sva model 3: include known batch in both full and null models
+# ref: https://support.bioconductor.org/p/54719/
+
+```{r}
+mod03 = model.matrix(~as.factor(group), data=phenDat) 
+mod3 = mod2 
+svobj3 = sva(log_gfpkm_sva, mod3, mod03) 
+plot(svobj3$sv)
+```
+
+
+
+
 # svaseq
-# svaseq: Moderated log link sva
-# Note: log(g + c; c=1) was performed in the creation of "basep_all"
+# svaseq: Moderated log link sva (i.e. log(g + c; c=1)
 
 ```{r}
 # use untransformed data - svaseq takes care
@@ -235,6 +245,19 @@ nolog_gfpkm_svaseq <- read.csv("../processed/results/ballG_all_results/nolog_gfp
 
 rownames(nolog_gfpkm_svaseq) <- nolog_gfpkm_svaseq[,1]
 nolog_gfpkm_svaseq[,1] <- NULL
+```
+
+```{r}
+# svaseq model 4: without known batch (ref: Love et al 2016, bottom page 31-page 33)
+mod4 = model.matrix(~as.factor(treatment) + 
+                              as.factor(tissue),
+                    data=phenDat)
+mod04 = mod0
+n.sv4 = num.sv(nolog_gfpkm_svaseq, mod4, method = "be", B = 5)
+svaseq4 = svaseq(nolog_gfpkm_svaseq, mod4, mod04, n.sv = n.sv4)
+```
+
+```{r}
 
 # Only expression variables needed in matrix form - untransformed for svaseq
 #nolog_gfpkm_svaseq = nolog_gfpkm_all %>%
