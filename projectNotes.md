@@ -91,9 +91,24 @@ Output: `describe_samples.csv`
 
 STEP8: BallGown (Differential expression)
 
-`bg_basep_allData.Rmd`
+STEP9: Control for batch effects using SVAseq package
+- `dataPrep_batch.Rmd` - data prep for sva
+	- input1: `/processed/describe_samples_batch.csv` 
+	- input2: `/processed/results/ballG_all_results/bg_ballG_all_results.Rda`
+	- output1: `/processed/results/ballG_all_results/log_gfpkm_all.Rda` log-transformed data for sva
+	- output2: `/processed/results/ballG_all_results/nolog_gfpkm_all.Rda` untransformed data for svaseq
+- `DiffExpr_batch.Rmd` - identify and remove batch effects
+	- input: `/processed/results/ballG_all_results/nolog_gfpkm_all.Rda`
+	- output: `svaseq.dat` - an object containing batch-corrected expression data from the sva package
+	
+
 
 ## Project Notes 
+
+### 2018-07-11 (EN)
+- Move all ballgown stuff from `DiffExpr_batch.Rmd` to `DiffExpr.Rmd`
+- clean redundant code (i.e. same code in multiple scripts)
+- change column `group` in `phenDat` to `batch`
 
 ### 2018-07-09 
 
@@ -101,9 +116,9 @@ Plan for analysis:
 
 Compare ballgown and sva differential expression analyses
  
-- Ballgown done in ballgown_basepop.Rmd
-- Prep data for sva - dataPrep_batch.Rmd
-- Do sva - DiffExpr_batch.Rmd
+- Ballgown done in `DiffExpr.Rmd`
+- Prep data for sva - `dataPrep_batch.Rmd`
+- Do sva - `DiffExpr_batch.Rmd`
 - Compare sva & ballgown
 
 ### 2018-06-20 (EN & EGK)
