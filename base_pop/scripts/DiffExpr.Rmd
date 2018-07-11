@@ -23,8 +23,10 @@ library(reshape)
 # Differential expression analysis protocol
 
 ```{r}
+# sample descriprions
 phenDat <- read.csv("../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
 
+# The next commented line will combine StringTie outputs with sample descriptions
 #bg_ballG <- ballgown(dataDir = "../processed/ballG_all", samplePattern = "", pData = phenDat)
 
 # Save .Rda

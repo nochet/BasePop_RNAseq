@@ -9,10 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 #load R packagees:
-library(ballgown)
-library(genefilter)
 library(tidyverse)
-library(devtools)
 library(cowplot)
 library(reshape)
 #library(ggthemes)
@@ -40,143 +37,17 @@ cleaningY = function(y, mod, svaobj) {
 }
 ```
 
-# Differential expression analysis protocol
-
-```{r}
-phenDat <- read.csv("../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
-
-#bg_ballG <- ballgown(dataDir = "../processed/ballG_all", samplePattern = "", pData = phenDat)
-
-# Save .Rda
-#save(bg_ballG, file = "../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
-
-load("../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
-
-# Dispplay a decsription
-bg_ballG
-
-```
-
-# Filter to remove low-abundance genes (i.e. those with variance across samples of <=1)
-
-```{r}
-bg_ballG_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TRUE)
-
-# See counts
-bg_ballG_filt
-
-save(bg_ballG_filt, file = "../processed/results/ballG_all_results/bg_ballG_filt.Rda")
-```
-
-## Overall expression numbers
-# Distribution of gene abundances (FPKM values) across samples (libraries), colored by treatment or tissue and faceted 
-
-```{r}
-load(file = "../processed/results/ballG_all_results/bg_ballG_filt.Rda")
-
-tfpkm_bg<-texpr(bg_ballG_filt, meas="FPKM")
-tfpkm_bg <-log2(tfpkm_bg+1)
-colnames(tfpkm_bg)<-phenDat$id
-save(tfpkm_bg, file = "../processed/results/ballG_all_results/tfpkm_bg_ballG_filt.Rda")
-
-
-tbg<- as.data.frame(tfpkm_bg) %>% gather(id, fpkm)
-tbg$treatment <- rep(c("C","DR","HS"), each=18*nrow(tfpkm_bg))
-tbg$tissue <- rep(c("B","H","O"),each=nrow(tfpkm_bg),6)
-tbg$replicate <- rep(c(1,2,3,4,5,6),each=nrow(tfpkm_bg)*3)
-tbg$prep <- paste(tbg$treatment,tbg$replicate,sep="_")
-tbg$trep <- paste(tbg$tissue,tbg$replicate,sep="_")
-
-b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
-  geom_boxplot(alpha=0.9) +
-          theme(axis.title.y = element_text(size = 24),
-                axis.title.x=element_blank(),
-                axis.text.x  = element_text(angle=90, vjust=0.5),
-                text = element_text(size = 20))+
-                
-  scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
-  ylab(expression("log"[2]*"(FPKM + 1)")) +
-  xlab("Samples")+
-  facet_grid(tissue~.)
-b1 + theme(legend.position="none")
-  
-ggsave(filename = "../plots/Expression_by_sample1.pdf",width = 5,height=5)
-
-b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
-  geom_boxplot(alpha=0.9) +
-          theme(axis.title.y = element_text(size = 24),
-                axis.title.x=element_blank(),
-                axis.text.x  = element_text(angle=90, vjust=0.5),
-                text = element_text(size = 20)) +
-  scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
-  ylab(expression("log"[2]*"(FPKM + 1)")) +
-  xlab("Tissue") +
-  #scale_fill_discrete(name="Samples")+
-  facet_grid(treatment~.)
-b2 + theme(legend.position="none")
-
-ggsave(filename = "../plots/Expression_by_sample2.pdf",width = 5,height=5)
-```
-
-## PCA for global patterns
-
-```{r}
-
-gfpkm_bg <-gexpr(bg_ballG_filt)
-gfpkm_bg <-log2(gfpkm_bg +1)
-colnames(gfpkm_bg)<-phenDat$id
-save(gfpkm_bg, file = "../processed/results/ballG_all_results/gfpkm_bg_ballG_filt.Rda")
-
-
-# all samples
-X<- t(scale(t(gfpkm_bg),center=TRUE,scale=FALSE))
-sv<- svd(t(X))
-U<- sv$u
-V<- sv$v
-D<- sv$d
-Z<- t(X)%*%V
-
-# put PC1 and PC2 into a dataframe and add the phenotpe info side by side
-pc.dat<- data.frame(phenDat$id, PC1 = Z[,1], PC2 = Z[,2], PC3 = Z[,3],PC4 =Z[,4])
-s.id <- strsplit(as.character(pc.dat$phenDat.id), split="-",fixed=TRUE)
-pc.dat$Diet <-unlist(lapply(s.id, function(x) x[1]))
-pc.dat$Tissue <- unlist(lapply(strsplit(as.character(phenDat$id), 
-                                        split="_", fixed=TRUE), function(x) x[2]))
-
-# plot with ggplot2
-a <- ggplot(pc.dat, aes(x=PC1, y=PC2, col=Diet, pch=Tissue)) + 
-        geom_point(alpha=0.5, size=5) + 
-        scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
-        theme_bw() +
-        theme(axis.title = element_text(size = 24)) +
-        theme(text = element_text(size = 20)) +
-        theme(panel.border = element_blank(), 
-              panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(), 
-              axis.line.x = element_line(color="black", size = 0.8),
-              axis.line.y = element_line(color="black", size = 0.8))
-a 
-
-ggsave(filename = "../plots/PCA_overall.pdf",width = 5,height=5)
-```
-
 # Control for batch effects
 
 ```{r}
-# read table prepped from the ballgown `bg_ballG_all_results.Rda` object
+# load table prepped from `bg_ballG_all_results.Rda` object
 load("../processed/results/ballG_all_results/log_gfpkm_all.Rda")
 
-# sample data 
+# sample descriprions file
 phenDat <- read.csv("../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
+names(phenDat)[5]<-"batch"
 
 # Prepare up data for sva
-# Only expression variables needed in matrix form - log2-transformed for sva
-#log_gfpkm_sva = log_gfpkm_all %>%
-  #select(-GeneName)
-
-#rownames(log_gfpkm_sva) <- log_gfpkm_sva[,1]
-#log_gfpkm_sva[,1] <- NULL
-
 log_gfpkm_all <- as.matrix(log_gfpkm_all)
 ```
 
@@ -210,7 +81,7 @@ plot(svobj$sv)
 ```{r}
 mod2 <- model.matrix(~as.factor(treatment) + 
                               as.factor(tissue) + 
-                              as.factor(group), 
+                              as.factor(batch), 
                               data=phenDat)
 
 n.sv2 = num.sv(log_gfpkm_all, mod2, method = "be", B = 5)
@@ -225,9 +96,10 @@ plot(svobj2$sv)
 # ref: https://support.bioconductor.org/p/54719/
 
 ```{r}
-mod03 = model.matrix(~as.factor(group), data=phenDat) 
+mod03 = model.matrix(~as.factor(batch), data=phenDat) 
 mod = mod2 
 svobj3 = sva(log_gfpkm_all, mod, mod03) 
+
 plot(svobj3$sv)
 ```
 
@@ -257,8 +129,8 @@ plot(svaseq4$sv)
 
 # svaseq model 5: include known batch in both full and null models
 mod = mod2 
-mod05 = model.matrix(~as.factor(group), data=phenDat) 
-svobj5 = svaseq(log_gfpkm_all, mod, mod05) # compare with vfilter inluded
+mod05 = model.matrix(~as.factor(batch), data=phenDat) 
+svobj5 = svaseq(nolog_gfpkm_all, mod, mod05) # compare with vfilter inluded
 plot(svobj5$sv, pch=19,col="red")
 
 # NOTE on sva output:
@@ -266,41 +138,71 @@ plot(svobj5$sv, pch=19,col="red")
 # pprob.b: A vector of the posterior probabilities each gene is affected by mod n.sv
 ```
 
+# Did svaseq do better than without it?
+```{r}
+par(mfrow=c(2,1), mar=c(5,3,3,1))
+stripchart(svobj5$sv[,1] ~ phenDat$batch, vertical=TRUE, main="SV1")
+abline(h=0)
+
+stripchart(svobj5$sv[,2] ~ phenDat$batch, vertical=TRUE, main="SV2")
+abline(h=0)
+
+stripchart(svobj5$sv[,3] ~ phenDat$batch, vertical=TRUE, main="SV3")
+abline(h=0)
+
+# plus 4 more
+```
+
 # Remove batch effects from sva results
 
 ```{r}
 # 1) Calculate F-test p-values for DE wrt diet, without adjusting for SVs
-pValues_svaseq = f.pvalue(nolog_gfpkm_svaseq, mod, mod0) #note mod used, not mod1
+pValues_svaseq = f.pvalue(nolog_gfpkm_all, mod, mod0) #note mod used, not mod1
 qValues_svaseq = p.adjust(pValues_svaseq, method = "BH") 
 
 # 2) Adjust for surrogates
   # include surrogates in both full and null models, then get p-vals and q-vals
-modSv_svaseq = cbind(mod, svaseqobj$sv) 
+modSv_svaseq = cbind(mod, svobj5$sv) 
 # sv is matrix whose columns are estimated SVs
 
-mod0Sv_svaseq = cbind(mod0, svaseqobj$sv)
+mod0Sv_svaseq = cbind(mod03, svobj5$sv)
 
-pValuesSv_svaseq = f.pvalue(nolog_gfpkm_svaseq, modSv_svaseq, mod0Sv_svaseq)
+pValuesSv_svaseq = f.pvalue(nolog_gfpkm_all, modSv_svaseq, mod0Sv_svaseq)
 qValuesSv_svaseq = p.adjust(pValuesSv_svaseq, method = "BH")
 
-# These are the adjusted P-values and Q-values accounting for surrogate variables.
 # BUT, how to get adjusted expression values for downstream analysis?
 ```
 
-# Extract corrected expression values from svaseq object
+# Path1: Adding svs to sample variables
+
+# https://support.bioconductor.org/p/87508/ ("If your downstream goal involves any type of significance test (differential analysis between groups for example) then we _do not_ recommend cleaning your data and then performing analysis on that cleaned data. This will cause problems with the calculation of the degrees of freeom for the statistical test. Instead we suggest incorporating the estimated surrogate variables as covariates in your analyses with limma, egdeR or DESeq after performing your svaseq analysis. J. Leek)
+
+```{r}
+phenDat$SV1 <- svobj5$sv[,1]
+phenDat$SV2 <- svobj5$sv[,2]
+phenDat$SV3 <- svobj5$sv[,3]
+phenDat$SV4 <- svobj5$sv[,4]
+phenDat$SV5 <- svobj5$sv[,5]
+phenDat$SV6 <- svobj5$sv[,6]
+phenDat$SV7 <- svobj5$sv[,7]
+
+```
+
+# Path2: Get corrected expression values
 
 ```{r}
 # a) can use function
-svaseq.dat <- cleaningY(nolog_gfpkm_svaseq, mod = mod, svaobj = svaseqobj)
+svaseq.dat <- cleaningY(nolog_gfpkm_all, mod2, svobj5)
 
 # compare plots
-plot(nolog_gfpkm_svaseq[,c("C.1_H","C.2_H")])  # before sva
+plot(nolog_gfpkm_all[,c("C.1_H","C.2_H")])  # before sva
 plot(svaseq.dat[,c("C.1_H","C.2_H")]) # after sva
 
 # b) can use sva & limma
-#nolog_gfpkm_svaseq <- svaseq(nolog_gfpkm_svaseq, mod, mod0 , n.sv_svaseq)
-#Covar <- as.factor(cbind(nolog_gfpkm_svaseq$sv))
-#nolog_gfpkm_svaseq2 <- removeBatchEffect(nolog_gfpkm_svaseq, covariates = Covar)
+clean.dat <- svaseq(nolog_gfpkm_all, mod2, mod05)
+Covar <- as.vector(cbind(clean.dat$sv[,1:8])) #if SVs >1; also try [,1:nsv]
+#Covar <- as.factor(cbind(clean.dat$sv)) #if 1 SV
+nolog_gfpkm_svaseq2 <- removeBatchEffect(clean.dat, covariates = Covar)
 #plot(nolog_gfpkm_svaseq2)
 ```
 

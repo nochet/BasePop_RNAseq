@@ -22,26 +22,9 @@ library(devtools)
 # Load data
 
 ```{r}
-# phenotype data
-phenDat <- read.csv("../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
-
-#bg_ballG <- ballgown(dataDir = "../processed/ballG_all", samplePattern = "", pData = phenDat)
-
-# Save all transcripts across tissues and diets as .Rda
-#save(bg_ballG, file = "../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
-
-load("../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
-
-# Dispplay a decsription
+# load data filtered for low abundance
+load("../processed/results/ballG_all_results/bg_ballG_filt.Rda")
 bg_ballG
-```
-
-# Filter to remove low-abundance genes (i.e. those with variance across samples of <=1)
-
-```{r}
-bg_ballG_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TRUE) 
-
-save(bg_ballG_filt, file = "../processed/results/ballG_all_results/bg_ballG_filt.Rda")
 
 ## Qu.1 Both sva and RUVseq tutorials filter out non-expressed genes by requiring >5 reads in at least 2 samples for each gene
 # i.e. `filter <- apply(zfGenes, 1, function(x) lengthx[x>5]) >2`
@@ -50,8 +33,7 @@ save(bg_ballG_filt, file = "../processed/results/ballG_all_results/bg_ballG_filt
 # gene expression
 
 ```{r}
-load("../processed/results/ballG_all_results/bg_ballG_filt.Rda")
-
+# get expression data
 gfpkm_all = gexpr(bg_ballG_filt)
 
 #get gene names
