@@ -105,6 +105,9 @@ STEP9: Control for batch effects using SVAseq package
 
 ## Project Notes 
 
+### 2018-07-17 (EN)
+- Started a new, hopefully streamlined `DiffExpr_batch.Rmd` script. Script with all models tried up to now is pushed to `script_sink/` an `DiffExpr_batch_old.Rmd`
+
 ### 2018-07-11 (EN)
 - Move all ballgown stuff from `DiffExpr_batch.Rmd` to `DiffExpr.Rmd`
 - clean redundant code (i.e. same code in multiple scripts)
