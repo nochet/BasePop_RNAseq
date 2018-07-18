@@ -14,9 +14,9 @@ library(cowplot)
 library(reshape)
 #library(ggthemes)
 library(sva)
-library(pamr)
-library(limma)
-library(DESeq2)
+#library(pamr)
+#library(limma)
+#library(DESeq2)
 
 set.seed(3176133)
 
