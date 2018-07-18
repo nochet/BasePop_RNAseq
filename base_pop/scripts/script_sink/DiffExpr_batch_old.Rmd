@@ -119,7 +119,7 @@ nolog_gfpkm_all <- gfpkm_all
 # svaseq model 4: without known batch (ref: Love et al 2016, bottom page 31-page 33)
 mod4 = model.matrix(~as.factor(treatment) + 
                               as.factor(tissue),
-                    data=phenDat)
+                              data=phenDat)
 n.sv4 = num.sv(nolog_gfpkm_all, mod4, method = "be", B = 5)
 
 svaseq4 = svaseq(nolog_gfpkm_all, mod4, mod0,  

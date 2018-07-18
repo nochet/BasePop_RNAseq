@@ -16,27 +16,19 @@ library(reshape)
 library(sva)
 library(pamr)
 library(limma)
+library(DESeq2)
 
 set.seed(3176133)
+
+#register(SerialParam()) #specify to use one core, not more
 ```
 
 # Load data
 
 ```{r}
 # Expression data
-#load("../processed/results/ballG_all_results/log_gfpkm_all.Rda")
-
-
-# convert to matrix
-#log_gfpkm_all <- as.matrix(log_gfpkm_all)
-```
-
-# svaseq
-# svaseq: Moderated log link sva (i.e. log(g + c; c=1)
-
-```{r}
-# use untransformed data - svaseq takes care
 load("../processed/results/ballG_all_results/nolog_gfpkm_all.Rda")
+
 nolog_gfpkm_all <- as.matrix(gfpkm_all)
 
 # sample descriprions csv
@@ -44,9 +36,12 @@ phenDat <- read.csv("../processed/describe_samples_batch.csv", stringsAsFactors 
 names(phenDat)[5]<-"batch"
 ```
 
+# svaseq
+# svaseq: Moderated log link sva (i.e. log(g + c; c=1)
+
 ```{r}
 # svaseq
-mod1 <- model.matrix(~as.factor(treatment) + 
+mod <- model.matrix(~as.factor(treatment) + 
                               as.factor(tissue) + 
                               as.factor(batch), 
                               data=phenDat)
@@ -54,19 +49,49 @@ mod1 <- model.matrix(~as.factor(treatment) +
 mod0 <- model.matrix(~as.factor(batch), data=phenDat) 
 
 # calculate number of surrogate variables
-numb_sv = num.sv(nolog_gfpkm_all, mod1, method = "be", B = 5)
+n.sv <- num.sv(nolog_gfpkm_all, mod, method = "be", B = 5)
+print(c("Calculated number of significant SVs = ", n.sv))
 
-print(c("Calculated number of significant SVs = ", numb_sv))
+svobj <- svaseq(nolog_gfpkm_all, mod, mod0, n.sv=n.sv, B = 5) 
+# compare with vfilter inluded
 
-svseq <- svaseq(nolog_gfpkm_all, mod1, mod0, n.sv = numb_sv)
+svseq <- svaseq(nolog_gfpkm_all, mod, mod0,  
+                 n.sv = n.sv, controls = NULL, 
+                 method = c("irw", "two-step","supervised"))
+```
+
+# Did svaseq do better than without it?
+
+```{r}
+par(mfrow=c(2,1), mar=c(5,3,3,1))
+stripchart(svobj$sv ~ phenDat$batch, vertical=TRUE, main="SV1")
+abline(h=0)
+```
+
+# Adjust for surrogates, compute p- and q- values
+
+```{r}
+# include surrogates in both full and null models, then get p-vals and q-vals
+modSv = cbind(mod, svobj$sv) 
+
+mod0Sv = cbind(mod0, svobj$sv)
+
+pValuesSv = f.pvalue(nolog_gfpkm_all, modSv, mod0Sv)
+qValuesSv = p.adjust(pValuesSv, method = "BH")
+
+q.vals <- as.data.frame(qValuesSv)
+names(q.vals)[1]<-"qVal"
+q.Sig <- subset(q.vals, qVal < 0.01)
+#9415 genes significant out of 9640??
 ```
 
 # Differential expression using DESeq
+# needs read counts - integer values
 
 ```{r}
-addSVs <- data.frame(row.names=colnames(nolog_gfpkm_all), svseq$sv[,1], 
-                     as.factor(phenDat$batch), as.factor(treatment),
-                     as.factor(tissue))
+addSVs <- data.frame(row.names=colnames(nolog_gfpkm_all), svseq$sv, 
+                     as.factor(phenDat$batch), as.factor(phenDat$treatment),
+                     as.factor(phenDat$tissue))
 colnames(addSVs) <- c("unsupervised_sv1", "batch", "treatment", "tissue")
 
 dds <- DESeqDataSetFromMatrix(countData=nolog_gfpkm_all, colData=addSVs, 
