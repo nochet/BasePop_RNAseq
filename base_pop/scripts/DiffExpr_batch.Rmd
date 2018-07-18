@@ -85,6 +85,12 @@ q.Sig <- subset(q.vals, qVal < 0.01)
 #9415 genes significant out of 9640??
 ```
 
+# Add svs to sample variables
+
+```{r}
+phenDat$SV1 <- svobj$sv
+```
+
 # Differential expression using DESeq
 # needs read counts - integer values
 
