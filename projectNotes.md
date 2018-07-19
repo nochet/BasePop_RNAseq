@@ -107,6 +107,7 @@ STEP9: Control for batch effects using SVAseq package
 
 ### 2018-07-19
 - Sub-structured the `scripts` directory into `Ballgown_scripts` and `DESeq_scripts`
+- Renamed `/processed/ballG_all/` as ` /processed/ballgown`. The directory structure created bt StringTie is required `prepDE.py` to compile counts (see http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de)
 
 ### 2018-07-17 (EN)
 - Started a new, hopefully streamlined `DiffExpr_batch.Rmd` script. Script with all models tried up to now is pushed to `script_sink/` an `DiffExpr_batch_old.Rmd`
