@@ -18,7 +18,7 @@ library(stringr)
 ##grep -li assemb *.gtf > ~/MyGithub/BasePop_RNAseq/processed/gtf_list.txt
 # searches and list all .gtf which includes assemb*
 
-#Open gtf_list.sh in TextWrangler [command+F]
+#Open gtf_list.txt in TextWrangler [command+F]
 #In the search window type ^
 #In the replace window, type full path i.e: ~/MyGithub/BasePop_RNAseq/scripts/DESeq_scripts/
 #Do Replace All
@@ -32,7 +32,7 @@ library(stringr)
 # Load gene(/transcript) count matrix and labels
 
 ```{r}
-countdata <- as.matrix(read.csv("../../processed/gene_count_matrix.csv", row.names="gene_id"))
+countdata <- as.matrix(read.csv("../../processed/transcript_count_matrix.csv", row.names="gene_id"))
 
 phenDat <- read.csv("../../processed/describe_samplesDE.csv", stringsAsFactors = FALSE)
 names(phenDat)[1]<-"ids"
