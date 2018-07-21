@@ -32,51 +32,36 @@ library(stringr)
 # Load gene(/transcript) count matrix and labels
 
 ```{r}
-countdata <- as.matrix(read.csv("../../processed/transcript_count_matrix.csv", row.names="gene_id"))
+countdata <- read.csv("../../processed/gene_count_matrix.csv", row.names="gene_id")
+
+# Reformat column names
+names(countdata) = sub("\\.","",names(countdata)) #regex escape the escape
+countdata <- as.matrix(countdata)
 
 phenDat <- read.csv("../../processed/describe_samplesDE.csv", stringsAsFactors = FALSE)
 names(phenDat)[1]<-"ids"
 phenDat <- phenDat %>%
   select(ids,treatment,tissue)
 
-#rownames(phenDat) <- phenDat[,1]
-#phenDat[,1] <- NULL
+rownames(phenDat) <- phenDat[,1]
+phenDat[,1] <- NULL
 
 #colData <- pData(phenDat)[,c("treatment","tissue")]
-#phenDat <- as.matrix(phenDat)
-
-dg <- colnames(countdata)
-dg <- strsplit(dg, split = ".", fixed = TRUE)
-diet <- unlist(lapply(dg, function(x) x[1]))
-repl <- unlist(lapply(dg, function(x) x[2]))
-#unite(col="ids", c("diet", "repl"), sep ="", remove = FALSE)
-unlist(lapply(dg, "diet", "repl", sep = ""))
+phenDat <- as.matrix(phenDat)
 
 # Check all sample IDs in colData are also in CountData and match their orders
 all(rownames(phenDat) %in% colnames(countdata))
 countdata <- countdata[, rownames(phenDat)]
 all(rownames(phenDat) == colnames(countdata))
 
-
-
-dds <- data.frame(countdata, 
-                     #as.factor(phenDat$batch),
-                     as.factor(phenDat$treatment),
-                     as.factor(phenDat$tissue))
-#colnames(dds) <- c("treatment", "tissue")
-
-dds$treatment <- dds[,55]
-dds$tissue <- dds[,56]
-dds[,55:56] <- NULL
-
 # Create a DESeqDataSet from count matrix and labels
-ddsDE <- DESeqDataSetFromMatrix(countData = countdata,
-colData = dds, design = ~ treatment + tissue)
+dds <- DESeqDataSetFromMatrix(countData = countdata,
+colData = phenDat, design = ~ treatment + tissue)
 
 # Run the default analysis for DESeq2 and generate results table
 
-ddsDE <- DESeq(countdata)
-res <- results(dds)
+ddsDE <- DESeq(dds)
+res <- results(ddsDE)
 
 #Sort by adjusted p-value and display
 (resOrdered <- res[order(res$padj), ]) 

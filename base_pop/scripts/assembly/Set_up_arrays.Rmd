@@ -161,7 +161,7 @@ ids <- idd %>%
 ids <- ids %>%
   mutate(replic = replic,
          replicate = str_split(replic, "-", simplify = TRUE)[, 2]) %>%
-  unite(col="treat_tissue", c("treatment", "replicate"), sep="-", remove = FALSE) %>%
+  unite(col="treat_tissue", c("treatment", "replicate"), sep="", remove = FALSE) %>%
   unite(col="treat_tissue", c("treat_tissue", "tissue"), sep ="_", remove = FALSE)
 
 # reorder columns and assign first colum to row names
