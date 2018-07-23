@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library("DESeq2")
 library(dplyr)
 library(stringr)
+library(sva)
 ```
 
 # Generate a list of gtf commands - ref p.92-93 Dunn book
@@ -53,7 +54,11 @@ phenDat <- as.matrix(phenDat)
 all(rownames(phenDat) %in% colnames(countdata))
 countdata <- countdata[, rownames(phenDat)]
 all(rownames(phenDat) == colnames(countdata))
+```
 
+# Model with treatment and tissue
+
+```{r}
 # Create a DESeqDataSet from count matrix and labels
 dds <- DESeqDataSetFromMatrix(countData = countdata,
 colData = phenDat, design = ~ treatment + tissue)
@@ -67,6 +72,26 @@ res <- results(ddsDE)
 (resOrdered <- res[order(res$padj), ]) 
 ```
 
+# Model with treatment, tissue and interaction
+
+```{r}
+dds2 <- DESeqDataSetFromMatrix(countData = countdata,
+colData = phenDat, design = ~ treatment + tissue + treatment*tissue)
+
+# Run the default analysis for DESeq2 and generate results table
+
+ddsDE2 <- DESeq(dds2)
+res2 <- results(ddsDE2)
+
+#Sort by adjusted p-value and display
+(resOrdered2 <- res2[order(res2$padj), ]) 
+```
+
+# Control for batch effects
+
+```{r}
+
+```
 
 
 
