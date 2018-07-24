@@ -8,10 +8,11 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-library("DESeq2")
+library(DESeq2)
 library(dplyr)
 library(stringr)
 library(sva)
+library(ggplot2)
 ```
 
 # Generate a list of gtf commands - ref p.92-93 Dunn book
@@ -90,7 +91,35 @@ res2 <- results(ddsDE2)
 # Control for batch effects
 
 ```{r}
+dds.sva <- estimateSizeFactors(dds)
+dat.sva <- counts(dds.sva, normalized=TRUE)
+cc.c <- rowSums(dat.sva)
 
+#remove all genes with 0s for all samples
+dat.sva <- dat.sva[which(cc.c>0),]
+
+phenDat.sva <- read.csv("../../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
+names(phenDat.sva)[5]<-"batch"
+#cbind(phenDat.sva, colnames(dat.sva))
+
+mod <- model.matrix(~as.factor(treatment)* 
+                              as.factor(tissue) + 
+                              as.factor(batch), 
+                              data=phenDat.sva)
+
+mod0 <- model.matrix(~as.factor(batch), data=phenDat.sva) 
+
+# calculate number of surrogate variables
+n.sv <- num.sv(dat.sva, mod, method = "be")
+print(c("Calculated number of significant SVs = ", n.sv))
+
+svobj <- svaseq(dat.sva, mod, mod0, n.sv=n.sv) 
+
+phenDat.sva$SV1 <- svobj$sv[,1]
+phenDat.sva$SV2 <- svobj$sv[,2]
+
+ggplot(phenDat.sva, aes(x=SV1, y=SV2)) +
+  geom_point(alpha=1/5, size=3)
 ```
 
 

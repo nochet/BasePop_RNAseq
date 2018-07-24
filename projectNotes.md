@@ -105,6 +105,16 @@ STEP9: Control for batch effects using SVAseq package
 
 ## Project Notes 
 
+### 2018-07-24
+
+- Looked through DEseq code to check
+- Implemented svaseq to check for batch effects
+    - Will follow this: https://support.bioconductor.org/p/80755/
+    - Needed to remove all genes with sample counts that were all zeros. (gave this error: Error in density.default(x, adjust = adj) : 'x' contains missing values)
+    - sva identified 2 svas
+    - clearly 4 groupings when plotting svas- unknown sources
+
+
 ### 2018-07-19
 - Sub-structured the `scripts` directory into `Ballgown_scripts` and `DESeq_scripts`
 - Renamed `/processed/ballG_all/` as ` /processed/ballgown`. The directory structure created bt StringTie is required `prepDE.py` to compile counts (see http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de)

@@ -27,12 +27,12 @@ set.seed(3176133)
 
 ```{r}
 # Expression data
-load("../processed/results/ballG_all_results/nolog_gfpkm_all.Rda")
+load("../../processed/results/ballG_all_results/nolog_gfpkm_all.Rda")
 
 nolog_gfpkm_all <- as.matrix(gfpkm_all)
 
 # sample descriprions csv
-phenDat <- read.csv("../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
+phenDat <- read.csv("../../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
 names(phenDat)[5]<-"batch"
 ```
 
