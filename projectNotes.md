@@ -114,6 +114,8 @@ STEP9: Control for batch effects using SVAseq package
     - sva identified 2 svas
     - clearly 4 groupings when plotting svas- unknown sources
 
+### 2018-07-20
+- Performed first DESeq model: `design = ~ treatment + tissue`. Need to 1) do batch analysis and 2) include an interaction term `treatment*tissue`
 
 ### 2018-07-19
 - Sub-structured the `scripts` directory into `Ballgown_scripts` and `DESeq_scripts`
