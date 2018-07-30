@@ -13,11 +13,28 @@ library(dplyr)
 library(stringr)
 library(sva)
 library(ggplot2)
+
+set.seed(38142903)
 ```
 
-# Generate a list of gtf commands - ref p.92-93 Dunn book
+# Ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
 
-##grep -li assemb *.gtf > ~/MyGithub/BasePop_RNAseq/processed/gtf_list.txt
+# Requirements:
+#1. List of .gtf files produced by StringTie with the -B option (see Pertea et al 2016) and stored in a folder called `ballgown`
+#2. A Python script `prepDE.py`
+#3. A .txt file containing sample descriptions (see example at: http://ccb.jhu.edu/software/stringtie/dl/sample_lst.txt)
+
+#1. Generate count matrices using `prepDE.py`
+
+#a.    Assuming default ballgown directory structure produced by StringTie
+#    $ python prepDE.py
+#    List of GTFs sample IDs and paths (.txt) 
+#    $ python prepDE.py -i sample_lst.txt # I used TextWrangler + Regex instead:
+    
+# Ref p.92-93 Haddok & Dunn book
+
+# Locate the folder containing .gtf for each sample
+#grep -li assemb *.gtf > ~/MyGithub/BasePop_RNAseq/processed/gtf_list.txt
 # searches and list all .gtf which includes assemb*
 
 #Open gtf_list.txt in TextWrangler [command+F]
@@ -66,11 +83,14 @@ colData = phenDat, design = ~ treatment + tissue)
 
 # Run the default analysis for DESeq2 and generate results table
 
-ddsDE <- DESeq(dds)
-res <- results(ddsDE)
+#ddsDE <- DESeq(dds)
+#res <- results(ddsDE)
 
 #Sort by adjusted p-value and display
-(resOrdered <- res[order(res$padj), ]) 
+#(resOrdered <- res[order(res$padj), ]) 
+
+#save(ddsDE, file = "../../processed/DESEQ/ddsDE.Rda")
+#save(resOrdered, file = "../../processed/DESEQ/resOrdered.Rda")
 ```
 
 # Model with treatment, tissue and interaction
@@ -81,11 +101,14 @@ colData = phenDat, design = ~ treatment + tissue + treatment*tissue)
 
 # Run the default analysis for DESeq2 and generate results table
 
-ddsDE2 <- DESeq(dds2)
-res2 <- results(ddsDE2)
+#ddsDE2 <- DESeq(dds2)
+#res2 <- results(ddsDE2)
 
 #Sort by adjusted p-value and display
-(resOrdered2 <- res2[order(res2$padj), ]) 
+#(resOrdered2 <- res2[order(res2$padj), ]) 
+
+#save(ddsDE2, file = "../../processed/DESEQ/ddsDE2.Rda")
+#save(resOrdered2, file = "../../processed/DESEQ/resOrdered2.Rda")
 ```
 
 # Control for batch effects
@@ -122,7 +145,83 @@ ggplot(phenDat.sva, aes(x=SV1, y=SV2)) +
   geom_point(alpha=1/5, size=3)
 ```
 
+# DESeq on batch controlled data
 
+```{r}
+countdata <- read.csv("../../processed/gene_count_matrix.csv", row.names="gene_id")
+
+# Reformat column names
+names(countdata) = sub("\\.","",names(countdata)) #regex escape the escape
+countdata <- as.matrix(countdata)
+
+phenDat.sva <- phenDat.sva %>%
+  select(id,treatment,tissue,batch,SV1,SV2)
+
+rownames(phenDat.sva) <- phenDat.sva[,1]
+phenDat.sva[,1] <- NULL
+
+# Reformat column names
+rownames(phenDat.sva) = sub("\\-","",rownames(phenDat.sva)) #regex escape the escape
+#phenDat.sva <- as.matrix(phenDat.sva)
+
+# countData colnames() must be identical to colData rownames()
+all(rownames(phenDat.sva) %in% colnames(countdata))
+countdata <- countdata[, rownames(phenDat.sva)]
+all(rownames(phenDat.sva) == colnames(countdata))
+
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
+phenDat.sva$treatment <- as.factor(phenDat.sva$treatment)
+phenDat.sva$tissue <- as.factor(phenDat.sva$tissue)
+
+# DESeqDataSet for all variables
+dds.ttSS <- DESeqDataSetFromMatrix(countData = countdata,
+colData = phenDat.sva, design = ~ treatment + tissue + batch + SV1 + SV2)
+
+# Run the default analysis for DESeq2 and generate results table
+ddsDE.ttSS <- DESeq(dds.ttSS)
+res.ttSS <- results(ddsDE.ttSS)
+
+#Sort by adjusted p-value and display
+#(resOrdered <- res[order(res$padj), ]) 
+
+## code runs but burns out: "22 rows did not converge in beta, labelled in mcols(object)$betaConv. Use larger maxit argument with nbinomWaldTest"
+```
+
+# Try suggestions in: https://support.bioconductor.org/p/65091/
+
+```{r}
+# Filter out a normalized count of at least 10 in two or more samples
+ddsDE_filt10 <- estimateSizeFactors(dds.ttSS)
+nc <- counts(ddsDE_filt10, normalized=TRUE)
+filter <- rowSums(nc >= 10) >= 2
+ddsDE_filt10 <- ddsDE_filt10[filter,]
+
+# Run DESeq
+de_filt10 <- DESeq(ddsDE_filt10)
+res.filt10 <- results(de_filt10)
+
+# Still: "8 rows did not converge in beta, labelled in mcols(object)$betaConv. Use larger maxit argument with nbinomWaldTest"
+```
+
+# Try increasing the 2 sample requirement to 3 or 4
+
+```{r}
+ddsDE_filt10 <- estimateSizeFactors(dds.ttSS)
+nc <- counts(ddsDE_filt10, normalized=TRUE)
+filter <- rowSums(nc >= 10) >= 3
+ddsDE_filt10 <- ddsDE_filt10[filter,]
+
+de_filt10 <- DESeq(ddsDE_filt10)
+res.filt10 <- results(de_filt10)
+
+#either:  omit non-converging rows from the results step
+#ddsDE_Clean <- ddsDE_filt10[which(mcols(ddsDE_filt10)$betaConv),]
+
+# or: increase the maximum iterations (maxit) instead of running DESeq()
+dds <- estimateSizeFactors(dds.ttSS)
+dds <- estimateDispersions(dds)
+dds <- nbinomWaldTest(dds, maxit=500)
+```
 
 
 
