@@ -105,7 +105,27 @@ STEP9: Control for batch effects using SVAseq package
 
 ## Project Notes 
 
-### 2018-07-24
+### 2018-07-30 (EN)
+
+- Implemented DESeq2 on svaseq-prepped read count data
+- 22 rows did not converged when running `ddsDE.ttSS <- DESeq(dds.ttSS)`
+- Looked at https://support.bioconductor.org/p/65091/ and tried:
+- 1) Filter out normalized count of at least 10 reads in two or more samples. 
+	- `filter <- rowSums(nc >= 10) >= 2`
+	- 8 rows did not converge
+- 2) Try increasing the 2 sample requirement to 3 or 4
+	- `filter <- rowSums(nc >= 10) >= 3`
+	- 6 rows did not converge
+- 3) omit non-converging rows from the results step
+	- `ddsDE_Clean <- ddsDE_filt10[which(mcols(ddsDE_filt10)$betaConv),]`
+	- didn't run, but also doesn't feel a good approach!
+- 4) increase the maximum iterations (maxit) instead of running DESeq()
+	- `filter <- rowSums(nc >= 10) >= 3` plus`nbinomWaldTest(dds, maxit=500)`
+	- converged!
+- 5) `filter <- rowSums(nc >= 5) >= 2` plus `nbinomWaldTest(maxit=500)`
+	- 9 rows don't converge
+
+### 2018-07-24 (EGK)
 
 - Looked through DEseq code to check
 - Implemented svaseq to check for batch effects
@@ -114,24 +134,28 @@ STEP9: Control for batch effects using SVAseq package
     - sva identified 2 svas
     - clearly 4 groupings when plotting svas- unknown sources
 
-### 2018-07-20
+### 2018-07-20 (EN)
+
 - Performed first DESeq model: `design = ~ treatment + tissue`. Need to 1) do batch analysis and 2) include an interaction term `treatment*tissue`
 
-### 2018-07-19
+### 2018-07-19 (EN)
+
 - Sub-structured the `scripts` directory into `Ballgown_scripts` and `DESeq_scripts`
 - Renamed `/processed/ballG_all/` as ` /processed/ballgown`. The directory structure created bt StringTie is required `prepDE.py` to compile counts (see http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de)
 
 ### 2018-07-17 (EN)
+
 - Started a new, hopefully streamlined `DiffExpr_batch.Rmd` script. Script with all models tried up to now is pushed to `script_sink/` an `DiffExpr_batch_old.Rmd`
 
 ### 2018-07-11 (EN)
+
 - Move all ballgown stuff from `DiffExpr_batch.Rmd` to `DiffExpr.Rmd`
 - clean redundant code (i.e. same code in multiple scripts)
 - change column `group` in `phenDat` to `batch`
 
 ### 2018-07-09 
 
-Plan for analysis:
+Plan for analysis: (EN)
 
 Compare ballgown and sva differential expression analyses
  
@@ -141,10 +165,12 @@ Compare ballgown and sva differential expression analyses
 - Compare sva & ballgown
 
 ### 2018-06-20 (EN & EGK)
+
 - Decided: 1) check that known batches in our case have effect on expression (a. include batch in PCA, b. test with sva or linear model) 2) run svaseq without known bathes
 
 
 ### 2018-06-19 (EN)
+
 - Tested for batch effects using SVA package. The "be" and "leek" methods applied ns.v() produced 11 and 0 SVs, respectively.Wondering why the difference we read:
   - Leek_2014_ svaseq: removing batch effects and other unwanted noise from sequencing data, 
   - Leek_2011_Asymptotic Conditional Singular Value Decomposition for High-Dimensional Genomic Data,
