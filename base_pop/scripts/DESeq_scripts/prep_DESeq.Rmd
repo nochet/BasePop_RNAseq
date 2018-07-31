@@ -111,7 +111,7 @@ colData = phenDat, design = ~ treatment + tissue + treatment*tissue)
 #save(resOrdered2, file = "../../processed/DESEQ/resOrdered2.Rda")
 ```
 
-# Control for batch effects
+# Control for batch effects with sva
 
 ```{r}
 dds.sva <- estimateSizeFactors(dds)
@@ -145,7 +145,7 @@ ggplot(phenDat.sva, aes(x=SV1, y=SV2)) +
   geom_point(alpha=1/5, size=3)
 ```
 
-# DESeq on batch controlled data
+# DESeq on batch-controlled data
 
 ```{r}
 countdata <- read.csv("../../processed/gene_count_matrix.csv", row.names="gene_id")
@@ -178,13 +178,13 @@ dds.ttSS <- DESeqDataSetFromMatrix(countData = countdata,
 colData = phenDat.sva, design = ~ treatment + tissue + batch + SV1 + SV2)
 
 # Run the default analysis for DESeq2 and generate results table
-ddsDE.ttSS <- DESeq(dds.ttSS)
-res.ttSS <- results(ddsDE.ttSS)
+#ddsDE.ttSS <- DESeq(dds.ttSS)
+#res.ttSS <- results(ddsDE.ttSS)
 
-#Sort by adjusted p-value and display
-#(resOrdered <- res[order(res$padj), ]) 
+# Sort by adjusted p-value and display
+(resOrdered <- res.ttSS[order(res.ttSS$padj), ]) 
 
-## code runs but burns out: "22 rows did not converge in beta, labelled in mcols(object)$betaConv. Use larger maxit argument with nbinomWaldTest"
+## code burns out: "22 rows did not converge in beta, labelled in mcols(object)$betaConv. Use larger maxit argument with nbinomWaldTest"
 ```
 
 # Try suggestions in: https://support.bioconductor.org/p/65091/
@@ -197,8 +197,8 @@ filter <- rowSums(nc >= 10) >= 2
 ddsDE_filt10 <- ddsDE_filt10[filter,]
 
 # Run DESeq
-de_filt10 <- DESeq(ddsDE_filt10)
-res.filt10 <- results(de_filt10)
+#de_filt10 <- DESeq(ddsDE_filt10)
+#res.filt10 <- results(de_filt10)
 
 # Still: "8 rows did not converge in beta, labelled in mcols(object)$betaConv. Use larger maxit argument with nbinomWaldTest"
 ```
@@ -206,22 +206,51 @@ res.filt10 <- results(de_filt10)
 # Try increasing the 2 sample requirement to 3 or 4
 
 ```{r}
-ddsDE_filt10 <- estimateSizeFactors(dds.ttSS)
-nc <- counts(ddsDE_filt10, normalized=TRUE)
-filter <- rowSums(nc >= 10) >= 3
-ddsDE_filt10 <- ddsDE_filt10[filter,]
+set.seed(4364317)
+ddsDE_filt5 <- estimateSizeFactors(dds.ttSS)
+nc <- counts(ddsDE_filt5, normalized=TRUE)
+filter <- rowSums(nc >= 5) >= 2
+ddsDE_filt5 <- ddsDE_filt5[filter,]
 
-de_filt10 <- DESeq(ddsDE_filt10)
-res.filt10 <- results(de_filt10)
+#de_filt10 <- DESeq(ddsDE_filt10)
+#res.filt10 <- results(de_filt10)
+# still 6 rows not converged
 
 #either:  omit non-converging rows from the results step
 #ddsDE_Clean <- ddsDE_filt10[which(mcols(ddsDE_filt10)$betaConv),]
 
 # or: increase the maximum iterations (maxit) instead of running DESeq()
-dds <- estimateSizeFactors(dds.ttSS)
+dds <- estimateSizeFactors(ddsDE_filt5)
 dds <- estimateDispersions(dds)
 dds <- nbinomWaldTest(dds, maxit=500)
+
+save(dds, file = "../../processed/DESEQ/DEseq_sva_filt5_2.Rda")
+# 9 rows not converged
+
+# At least 10 reads in two or more samples
+ddsDE_filt10 <- estimateSizeFactors(dds.ttSS)
+nc <- counts(ddsDE_filt10, normalized=TRUE)
+filter <- rowSums(nc >= 10) >= 3
+ddsDE_filt10 <- ddsDE_filt10[filter,]
+
+# Increase the maximum iterations (maxit) instead of running DESeq()
+dds <- estimateSizeFactors(ddsDE_filt10)
+dds <- estimateDispersions(dds)
+dds <- nbinomWaldTest(dds, maxit=500)
+
+save(dds, file = "../../processed/DESEQ/DEseq_sva_filt10_3.Rda")
 ```
 
+# DESeq2 3-factor conditions: https://www.biostars.org/p/115685/ (LRT is akin 1-WAY ANOVA)
+
+```{r}
+load("../../processed/DESEQ/DEseq_sva_filt10_3.Rda")
+
+#res.filt10 <- results(de_filt10)
+
+design(dds) = ~ group
+dds = DESeq(dds, test = "LRT", reduced = ~ 1)
+results(dds)
+```
 
 
