@@ -79,7 +79,7 @@ all(rownames(phenDat) == colnames(countdata))
 ```{r}
 # Create a DESeqDataSet from count matrix and labels
 dds <- DESeqDataSetFromMatrix(countData = countdata,
-colData = phenDat, design = ~ treatment + tissue)
+colData = phenDat, design = ~ tissue + treatment)
 
 # Run the default analysis for DESeq2 and generate results table
 
@@ -97,7 +97,7 @@ colData = phenDat, design = ~ treatment + tissue)
 
 ```{r}
 dds2 <- DESeqDataSetFromMatrix(countData = countdata,
-colData = phenDat, design = ~ treatment + tissue + treatment*tissue)
+colData = phenDat, design = ~ tissue + treatment + tissue*treatment)
 
 # Run the default analysis for DESeq2 and generate results table
 
@@ -182,8 +182,9 @@ colData = phenDat.sva, design = ~ treatment + tissue + batch + SV1 + SV2)
 #res.ttSS <- results(ddsDE.ttSS)
 
 # Sort by adjusted p-value and display
-(resOrdered <- res.ttSS[order(res.ttSS$padj), ]) 
+#(resOrdered <- res.ttSS[order(res.ttSS$padj), ]) 
 
+save(resOrdered, file = "../../processed/DESEQ/resOrdered.Rda")
 ## code burns out: "22 rows did not converge in beta, labelled in mcols(object)$betaConv. Use larger maxit argument with nbinomWaldTest"
 ```
 
@@ -199,6 +200,8 @@ ddsDE_filt10 <- ddsDE_filt10[filter,]
 # Run DESeq
 #de_filt10 <- DESeq(ddsDE_filt10)
 #res.filt10 <- results(de_filt10)
+#(resOrdered10 <- res.filt10[order(res.filt10$padj), ]) 
+#save(resOrdered10, file = "../../processed/DESEQ/resOrdered10.Rda")
 
 # Still: "8 rows did not converge in beta, labelled in mcols(object)$betaConv. Use larger maxit argument with nbinomWaldTest"
 ```
@@ -212,9 +215,11 @@ nc <- counts(ddsDE_filt5, normalized=TRUE)
 filter <- rowSums(nc >= 5) >= 2
 ddsDE_filt5 <- ddsDE_filt5[filter,]
 
-#de_filt10 <- DESeq(ddsDE_filt10)
-#res.filt10 <- results(de_filt10)
-# still 6 rows not converged
+de_filt5 <- DESeq(ddsDE_filt5)
+res.filt5 <- results(de_filt5)
+(resOrdered5 <- res.filt5[order(res.filt5$padj), ]) 
+save(resOrdered5, file = "../../processed/DESEQ/resOrdered5.Rda")
+# still 13 rows not converged
 
 #either:  omit non-converging rows from the results step
 #ddsDE_Clean <- ddsDE_filt10[which(mcols(ddsDE_filt10)$betaConv),]
