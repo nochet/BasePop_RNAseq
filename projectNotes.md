@@ -121,7 +121,6 @@ STEP9: Control for batch effects using SVAseq package
 	- didn't run, but also doesn't feel a good approach!
 - 4) increase the maximum iterations (maxit) instead of running DESeq()
 	- `filter <- rowSums(nc >= 10) >= 3` plus`nbinomWaldTest(dds, maxit=500)`
-	- converged!
 - 5) `filter <- rowSums(nc >= 5) >= 2` plus `nbinomWaldTest(maxit=500)`
 	- 9 rows don't converge
 

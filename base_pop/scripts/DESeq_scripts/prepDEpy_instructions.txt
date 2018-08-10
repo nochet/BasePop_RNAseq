@@ -1,0 +1,31 @@
+Preparing RNASeq data for DESeq
+
+- Ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
+- Ref p.92-93 Haddok & Dunn book
+
+Steps:
+1. Compile a command list
+2. Run prepDE.py
+
+
+1. Prepping a command list
+
+- Locate the StringTie default output directory structure:
+/ballgown/sampleName/
+each sample folder within the ballgown folder contains 5 files: .gtf, e2t.ctab, e_data.ctab, i2t.ctab, i_data.ctab, and t_data.ctab
+These files are produced with the -B option in StringTie (see Pertea et al 2016)
+
+- In the shell, extract all .gtf file names and redirect to a .txt
+do:
+	grep -li assemb *.gtf > ~/MyGithub/BasePop_RNAseq/processed/gtf_list.txt
+Searches and list all .gtf which includes assemb*
+
+- Open gtf_list.txt in TextWrangler [command+F]
+In the search window type ^
+In the replace window, type full path where to store the file e.g.: ~/MyGithub/BasePop_RNAseq/scripts/DESeq_scripts/
+Do Replace All
+This gives full path to each of the .gtf
+
+#While in processed/ (i.e. where directory "ballgown" is located), run:
+#python ../scripts/DESeq_scripts/prepDE.py
+#Two output matrices are written: `transcript_count_matrix.csv` and `gene_count_matrix.csv`
