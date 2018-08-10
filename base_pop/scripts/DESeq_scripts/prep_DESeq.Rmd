@@ -13,40 +13,16 @@ library(dplyr)
 library(stringr)
 library(sva)
 library(ggplot2)
+library(limma)
 
 set.seed(38142903)
 ```
 
+# Get more gene_ids from StringTie object with python: https://www.biostars.org/p/261128/
+
 # Ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
-
-# Requirements:
-#1. List of .gtf files produced by StringTie with the -B option (see Pertea et al 2016) and stored in a folder called `ballgown`
-#2. A Python script `prepDE.py`
-#3. A .txt file containing sample descriptions (see example at: http://ccb.jhu.edu/software/stringtie/dl/sample_lst.txt)
-
-#1. Generate count matrices using `prepDE.py`
-
-#a.    Assuming default ballgown directory structure produced by StringTie
-#    $ python prepDE.py
-#    List of GTFs sample IDs and paths (.txt) 
-#    $ python prepDE.py -i sample_lst.txt # I used TextWrangler + Regex instead:
-    
 # Ref p.92-93 Haddok & Dunn book
-
-# Locate the folder containing .gtf for each sample
-#grep -li assemb *.gtf > ~/MyGithub/BasePop_RNAseq/processed/gtf_list.txt
-# searches and list all .gtf which includes assemb*
-
-#Open gtf_list.txt in TextWrangler [command+F]
-#In the search window type ^
-#In the replace window, type full path i.e: ~/MyGithub/BasePop_RNAseq/scripts/DESeq_scripts/
-#Do Replace All
-#This gives full path to each of the .gtf
-
-#Alternatively:
-#While in processed/ (i.e. where directory "ballgown" is located), run:
-#python ../scripts/DESeq_scripts/prepDE.py
-#Two output matrices are written: `transcript_count_matrix.csv` and `gene_count_matrix.csv`
+# Detailed instructions are in /scripts/DESeq_scripts/prepDEpy_instructions.txt
 
 # Load gene(/transcript) count matrix and labels
 
@@ -75,6 +51,7 @@ all(rownames(phenDat) == colnames(countdata))
 ```
 
 # Model with treatment and tissue
+# DESeq vs Ballgown, see https://support.bioconductor.org/p/107011/
 
 ```{r}
 # Create a DESeqDataSet from count matrix and labels
@@ -91,6 +68,7 @@ colData = phenDat, design = ~ tissue + treatment)
 
 #save(ddsDE, file = "../../processed/DESEQ/ddsDE.Rda")
 #save(resOrdered, file = "../../processed/DESEQ/resOrdered.Rda")
+
 ```
 
 # Model with treatment, tissue and interaction
@@ -164,6 +142,9 @@ phenDat.sva[,1] <- NULL
 rownames(phenDat.sva) = sub("\\-","",rownames(phenDat.sva)) #regex escape the escape
 #phenDat.sva <- as.matrix(phenDat.sva)
 
+#rp = rownames(phenDat.sva)
+#rp[duplicated(rp)]
+
 # countData colnames() must be identical to colData rownames()
 all(rownames(phenDat.sva) %in% colnames(countdata))
 countdata <- countdata[, rownames(phenDat.sva)]
@@ -177,60 +158,50 @@ phenDat.sva$tissue <- as.factor(phenDat.sva$tissue)
 dds.ttSS <- DESeqDataSetFromMatrix(countData = countdata, 
                                    colData = phenDat.sva, 
                                    design = ~ SV1 + SV2 + batch + tissue + treatment)
+
+dds_deseq <- DESeq(dds.ttSS)
+res.dds <- results(dds_deseq)
+(res.dds <- res.dds[order(res.dds$padj), ])
+
+save(dds, file = "../../processed/DESEQ/DEseq_sva_dds.Rda")
 ```
 
 # Filtering low abundance reads
 # Note: https://www.biostars.org/p/320132/
 
 ```{r}
-# Just raise the maxit value on all trancripts with >0 reads
-
-ddsDE_filt <- estimateSizeFactors(dds.ttSS)
-nc <- counts(ddsDE_filt, normalized=TRUE)
-#filter <- rowSums(nc >= 10) >= 5
-filter <- rowSums(nc > 0) 
-ddsDE_filt <- ddsDE_filt[filter,]
+# Filter step not necessary; default in results() - see ?results, but enhances speed https://support.bioconductor.org/p/65256/
+#filter <- rowSums(nc >= 10) >= 5 # at least 10 reads in at least 5 samples
 
 # Increase the maximum iterations (maxit) instead of running DESeq()
-# deseq() runs these functions in this order
+#dds <- estimateSizeFactors(ddsDE_filt)
+#dds <- estimateDispersions(dds)
+#dds <- nbinomWaldTest(dds, maxit=20000)
 
-dds <- estimateSizeFactors(ddsDE_filt)
-dds <- estimateDispersions(dds)
-dds <- nbinomWaldTest(dds, maxit=5000)
-
-which(duplicated(dds))
-
-
-
-# getting duplicated gene names! Why??
-# this site suggests remove duplicates:  https://support.bioconductor.org/p/90980/
-o <- order(dds$Amean, decreasing=TRUE)
-dds1 <- dds[o,]
-d <- duplicated(data.fit2$genes$SYMBOL)
-data.fit2 <- data.fit2[!d,]
-
-res.dds <- results(dds)
-(res.dds <- res.dds[order(res.dds$padj), ])
-
-save(dds, file = "../../processed/DESEQ/DEseq_sva_filt10_3.Rda")
-# 10/3; maxit=20000, 2 rows did not converge
-# 10/4; maxit=10000, 2 rows did not converge
-# 10/4; maxit=20000, 1 row did not converge
-
-# remove the non-converging rows
-ddsClean <- dds[which(mcols(dds)$betaConv),]
+# To remove the non-converging rows
+#ddsClean <- dds[which(mcols(dds)$betaConv),]
 ```
 
 # DESeq2 3-factor conditions: https://www.biostars.org/p/115685/ (LRT is akin 1-WAY ANOVA)
 
 ```{r}
-load("../../processed/DESEQ/DEseq_sva_filt10_3.Rda")
+load("../../processed/DESEQ/DEseq_sva_dds.Rda")
 
-#res.filt10 <- results(de_filt10)
+# see all results available
+resultsNames(dds_deseq)
 
+
+resDR_C <- results(dds_deseq, "batch_3_vs_1")
+
+```
+
+```{r}
 design(dds) = ~ group
 dds = DESeq(dds, test = "LRT", reduced = ~ 1)
 results(dds)
 ```
 
+```{r}
+
+```
 
