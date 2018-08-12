@@ -14,6 +14,7 @@ library(stringr)
 library(sva)
 library(ggplot2)
 library(limma)
+library(RColorBrewer)
 
 set.seed(38142903)
 ```
@@ -124,6 +125,7 @@ ggplot(phenDat.sva, aes(x=SV1, y=SV2)) +
 ```
 
 # DESeq on batch-controlled data
+# Model without interaction
 
 ```{r}
 countdata <- read.csv("../../processed/gene_count_matrix.csv", row.names="gene_id")
@@ -154,7 +156,7 @@ phenDat.sva$batch <- as.factor(phenDat.sva$batch)
 phenDat.sva$treatment <- as.factor(phenDat.sva$treatment)
 phenDat.sva$tissue <- as.factor(phenDat.sva$tissue)
 
-# DESeqDataSet for all variables
+# DESeqDataSet for all variables, no interaction
 dds.ttSS <- DESeqDataSetFromMatrix(countData = countdata, 
                                    colData = phenDat.sva, 
                                    design = ~ SV1 + SV2 + batch + tissue + treatment)
@@ -163,7 +165,60 @@ dds_deseq <- DESeq(dds.ttSS)
 res.dds <- results(dds_deseq)
 (res.dds <- res.dds[order(res.dds$padj), ])
 
-save(dds, file = "../../processed/DESEQ/DEseq_sva_dds.Rda")
+save(res.dds, file = "../../processed/DESEQ/DEseq_sva_dds.Rda")
+write.csv(res.dds, 
+          "../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.csv", row.names=TRUE)
+
+# DESeq2 3-factor conditions: https://www.biostars.org/p/115685/ (LRT is akin 1-WAY ANOVA)
+
+load("../../processed/DESEQ/DEseq_sva_dds.Rda")
+
+# see all results available
+resultsNames(dds_deseq)
+
+#resDR_C <- results(dds_deseq, "treatment_DR_vs_C")
+results(dds_deseq, contrast=c("treatment","C","DR"))
+mcols(cdr.int) # mcols = metadata columns, i.e. element-wise metadata
+
+```
+
+# Model with interactions
+
+```{r}
+dds.int <- DESeqDataSetFromMatrix(countData = countdata, 
+                                   colData = phenDat.sva, 
+                                   design = ~ SV1 + SV2 + batch + tissue + treatment + 
+                                    tissue*treatment)
+
+dds_int <- DESeq(dds.int)
+# 205 rows not converged!
+
+res_int <- results(dds_int)
+(resOrd_int <- res_int[order(res_int$padj), ])
+
+save(dds, file = "../../processed/DESEQ/DEseq_sva_int.Rda")
+write.csv(resOrd_int, 
+          "../../processed/DESEQ/DEseqSVA_int_resOrdered_padj.csv", row.names=TRUE)
+
+
+
+
+# Comparisons across treatment levels
+resultsNames(dds_int)
+
+# C vs DR
+cdr.int <- results(dds_deseq, contrast=c("treatment","C","DR"))
+mcols(cdr.int) 
+(resOrd_cdrint <- cdr.int[order(cdr.int$padj), ])
+write.csv(resOrd_cdrint, 
+          "../../processed/DESEQ/CvDR_DEseqSVA_int_resOrdered_padj.csv", row.names=TRUE)
+
+#C vs HS
+hs.int <- results(dds_deseq, contrast=c("treatment","C","HS"))
+(resOrd_hsint <- hs.int[order(hs.int$padj), ])
+
+write.csv(resOrd_hsint, 
+          "../../processed/DESEQ/CvHS_DEseqSVA_int_resOrdered_padj.csv", row.names=TRUE)
 ```
 
 # Filtering low abundance reads
@@ -182,26 +237,70 @@ save(dds, file = "../../processed/DESEQ/DEseq_sva_dds.Rda")
 #ddsClean <- dds[which(mcols(dds)$betaConv),]
 ```
 
-# DESeq2 3-factor conditions: https://www.biostars.org/p/115685/ (LRT is akin 1-WAY ANOVA)
+
+
+
+
+
+# Data transformation - the Love et al (2014) tutorial way
+# Note: data will no longer be counts
+# rlog is very similar to regularization in DESeq() and nbinomWaldTest()
 
 ```{r}
-load("../../processed/DESEQ/DEseq_sva_dds.Rda")
+rld <- rlogTransformation(dds_deseq, blind=TRUE) #time intensive
+vsd <- varianceStabilizingTransformation(dds_deseq, blind = TRUE)
 
-# see all results available
-resultsNames(dds_deseq)
+library(vsn) # Bioconductor
+library(hexbin)
 
+# Regularized log transformation
+par(mfrow=c(1,3))
+notAllZero <- (rowSums(counts(dds_deseq))>0)
+meanSdPlot(log2(counts(dds_deseq, normalized=TRUE)[notAllZero,]+1),
+           ylim = c(0,2.5))
+meanSdPlot(assay(rld[notAllZero,]), ylim = c(0,2.5))
+meanSdPlot(assay(vsd[notAllZero,]), ylim = c(0,2.5))
 
-resDR_C <- results(dds_deseq, "batch_3_vs_1")
-
+# Variance stabilizing transformation
 ```
+
+# Data quality assessment - clustering & visualization
 
 ```{r}
-design(dds) = ~ group
-dds = DESeq(dds, test = "LRT", reduced = ~ 1)
-results(dds)
+# Heatmap of count table
+library(gplots)
+
+#use a DESeq()-ready data object
+Select <- order(rowMeans(counts(dds_deseq, normalized=TRUE)), 
+                decreasing=TRUE)[1:30]
+hmcol <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
+
+heatmap.2(counts(dds_deseq, normalized=TRUE)[Select,], col = hmcol,
+          Rowv = FALSE, Colv = FALSE, scale = "none",
+          dendrogram = "none", trace = "none", margin = c(10,6))
+
+dev.off()
+heatmap.2(assay(rld)[Select,], col = hmcol,
+          Rowv = FALSE, Colv = FALSE, scale = "none",
+          dendrogram = "none", trace = "none", margin = c(10,6))
+
+dev.off()
+heatmap.2(assay(vsd)[Select,], col = hmcol,
+          Rowv = FALSE, Colv = FALSE, scale = "none",
+          dendrogram = "none", trace = "none", margin = c(10,6))
+
+# Heatmap of the sample-sample distance
+distRL <- dist(t(assay(rld)))
+Matt <- as.matrix(distRL)
+rownames(Matt) <- colnames(Matt) <- with(colData(dds_deseq),
+                                         paste(treatment, tissue, sep=":"))
+heatmap.2(Matt, trace = "none", col = rev(hmcol), margin=c(13,13))
+
+
+# PCA of samples
+dev.off()
+print(plotPCA(rld, intgroup=c("treatment", "tissue")))
 ```
 
-```{r}
 
-```
 
