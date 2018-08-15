@@ -165,21 +165,104 @@ dds_deseq <- DESeq(dds.ttSS)
 res.dds <- results(dds_deseq)
 (res.dds <- res.dds[order(res.dds$padj), ])
 
-save(res.dds, file = "../../processed/DESEQ/DEseq_sva_dds.Rda")
-write.csv(res.dds, 
+# 22 rows did not converge
+
+## Merge with normalized count data
+res.dds_table <- merge(as.data.frame(res.dds), 
+                       as.data.frame(counts(dds_deseq, normalized=TRUE)), 
+                       by="row.names", sort=FALSE)
+names(res.dds_table)[1] <- "Gene"
+
+save(dds_deseq, file = "../../processed/DESEQ/dds_deseq.Rda")
+save(res.dds_table, file = "../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+write.csv(res.dds_table, 
           "../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.csv", row.names=TRUE)
 
-# DESeq2 3-factor conditions: https://www.biostars.org/p/115685/ (LRT is akin 1-WAY ANOVA)
+load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
 
-load("../../processed/DESEQ/DEseq_sva_dds.Rda")
+# Examine plot of p-values
+hist(res.dds$pvalue, breaks=50, col="grey")
+
+# Examine independent filtering
+metadata(res.dds)$filterThreshold
+
+plot(metadata(res.dds)$filterNumRej, type="b", xlab="quantiles of baseMean", ylab="number of rejections")
+```
+
+# MA plot
+
+```{r}
+load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+# Could do with built-in DESeq2 function:
+DESeq2::plotMA(dds_deseq, ylim=c(-1,1))
+
+# Alternatively
+maplot <- function (res.dds_table, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
+  with(res.dds_table, plot(baseMean, log2FoldChange, pch=20, cex=.5, log="x", ...))
+  with(subset(res.dds_table, padj<thresh), points(baseMean, log2FoldChange, col="red", pch=20, cex=1.5))
+  if (labelsig) {
+    require(calibrate)
+    with(subset(res.dds_table, padj<thresh), textxy(baseMean, log2FoldChange, labs="Gene", cex=textcx, col=2))
+  }
+}
+png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
+maplot(res.dds_table, ylim=c(-2,2), main="MA Plot")
+dev.off()
 
 # see all results available
 resultsNames(dds_deseq)
 
 #resDR_C <- results(dds_deseq, "treatment_DR_vs_C")
 results(dds_deseq, contrast=c("treatment","C","DR"))
-mcols(cdr.int) # mcols = metadata columns, i.e. element-wise metadata
+```
 
+# Volcano plot
+
+```{r}
+load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+par(mar=c(5,5,5,5), cex=1.0, cex.main=1.4, cex.axis=1.4, cex.lab=1.4)
+
+topT <- as.data.frame(res.dds_table)
+
+#Adjusted P values (FDR Q values)
+with(topT, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1.0, xlab=bquote(~Log[2]~fold~change), ylab=bquote(~-log[10]~Q~value)))
+
+with(subset(topT, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
+
+#with(subset(topT, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(topT), topT$padj<0.05 & abs(topT$log2FoldChange)>2), cex=0.8, pos=3))
+
+#Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
+abline(v=0, col="black", lty=3, lwd=1.0)
+abline(v=-2, col="black", lty=4, lwd=2.0)
+abline(v=2, col="black", lty=4, lwd=2.0)
+abline(h=-log10(max(topT$pvalue[topT$padj<0.05], na.rm=TRUE)), col="black", lty=4, lwd=2.0)
+```
+
+```{r}
+dev.off()
+with(res.dds_table, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-5,5), ylim=c(0,25)))
+
+# Add colored points: red if padj<0.05, orange of log2FC>1, green if both)
+with(subset(res.dds_table, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+with(subset(res.dds_table, abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="orange"))
+with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="green"))
+
+# Label points with the textxy function from the calibrate plot
+library(calibrate)
+with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -log10(pvalue), labs=Gene, cex=.8))
+```
+
+# Subset tissues
+
+```{r}
+load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+res.dds_body <- res.dds_table[,c(1:9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57,60)]
+res.dds_head <- res.dds_table[,c(1:8,10,13,16,19,22,25,28,31,34,37,40,43,46,49,52,55,58,61)]
+res.dds_ovary <- res.dds_table[,c(1:8,11,14,17,20,23,26,29,32,35,38,41,44,47,50,53,56,59,62)]
 ```
 
 # Model with interactions
@@ -208,7 +291,7 @@ resultsNames(dds_int)
 
 # C vs DR
 cdr.int <- results(dds_deseq, contrast=c("treatment","C","DR"))
-mcols(cdr.int) 
+mcols(cdr.int) # mcols = metadata columns, i.e. element-wise metadata
 (resOrd_cdrint <- cdr.int[order(cdr.int$padj), ])
 write.csv(resOrd_cdrint, 
           "../../processed/DESEQ/CvDR_DEseqSVA_int_resOrdered_padj.csv", row.names=TRUE)
@@ -218,7 +301,8 @@ hs.int <- results(dds_deseq, contrast=c("treatment","C","HS"))
 (resOrd_hsint <- hs.int[order(hs.int$padj), ])
 
 write.csv(resOrd_hsint, 
-          "../../processed/DESEQ/CvHS_DEseqSVA_int_resOrdered_padj.csv", row.names=TRUE)
+          "../../processed/DESEQ/CvHS_DEseqSVA_int_resOrdered_padj.csv",
+          row.names=TRUE)
 ```
 
 # Filtering low abundance reads
@@ -262,6 +346,14 @@ meanSdPlot(assay(rld[notAllZero,]), ylim = c(0,2.5))
 meanSdPlot(assay(vsd[notAllZero,]), ylim = c(0,2.5))
 
 # Variance stabilizing transformation
+
+# Dispersion plot (parametric - recommended)
+plotDispEsts(dds_deseq)
+
+# Local dispersion fit (if parametric does not converge)
+#ddsLocal <- estimateDispersions(dds_deseq, fitType="local")
+# third alternative: mean dispersion
+
 ```
 
 # Data quality assessment - clustering & visualization
@@ -290,16 +382,47 @@ heatmap.2(assay(vsd)[Select,], col = hmcol,
           dendrogram = "none", trace = "none", margin = c(10,6))
 
 # Heatmap of the sample-sample distance
+dev.off()
 distRL <- dist(t(assay(rld)))
 Matt <- as.matrix(distRL)
 rownames(Matt) <- colnames(Matt) <- with(colData(dds_deseq),
                                          paste(treatment, tissue, sep=":"))
-heatmap.2(Matt, trace = "none", col = rev(hmcol), margin=c(13,13))
+heatmap.2(Matt, trace = "none", col = rev(hmcol), margin=c(8,8))
 
 
 # PCA of samples
+# different ways to visualize
 dev.off()
 print(plotPCA(rld, intgroup=c("treatment", "tissue")))
+plotPCA(rld, intgroup=c("treatment"), returnData=FALSE)
+
+rld.sub <- rld[ , rld$tissue %in% c("O", "B", "H") ]
+plotPCA(rld.sub, "tissue")
+
+rld.sub<-rld[,rld@colData@listData$treatment %in% c("C","HS", "DR")]
+plotPCA(rld.sub, "treatment")
+
+# Visualize p-value optimization
+attr(res.dds, "filterThreshold")
+attr(res_int, "filterThreshold")
+
+#NULL could mean too many DEs & independent (default in results()), filtering did not happen. Solution:
+
+metadata(res.dds)$filterThreshold
+metadata(res_int)$filterThreshold
+
+plot(attr(res.dds, "filterNumRej"), type="b",
+     xlab="quantiles of 'baseMean'",
+     ylab="number of rejections")
+
+# turn off independent filtering and see what happens
+resNoFilt <- results(dds_deseq, independentFiltering = FALSE)
+table(filtering=(res.dds$padj < 0.1), noFiltering=(resNoFilt$padj < 0.1))
+
+# turn on independent filtering and see what happens
+rv <- rowVars(counts(dds_deseq, normalized=TRUE))
+resFiltByVar <- results(dds_deseq, filter = rv)
+table(rowMean=(res.dds$padj < 0.1), rowVar=(resFiltByVar$padj < 0.1))
 ```
 
 
