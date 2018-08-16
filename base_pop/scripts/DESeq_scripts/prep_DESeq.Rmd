@@ -122,6 +122,8 @@ phenDat.sva$SV2 <- svobj$sv[,2]
 
 ggplot(phenDat.sva, aes(x=SV1, y=SV2)) +
   geom_point(alpha=1/5, size=3)
+
+save(phenDat.sva, file = "../../processed/DESEQ/phenDat.sva.Rda")
 ```
 
 # DESeq on batch-controlled data
@@ -233,7 +235,7 @@ with(topT, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1
 
 with(subset(topT, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
 
-#with(subset(topT, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(topT), topT$padj<0.05 & abs(topT$log2FoldChange)>2), cex=0.8, pos=3))
+with(subset(topT, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(topT), topT$padj<0.05 & abs(topT$log2FoldChange)>2), cex=0.8, pos=3))
 
 #Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
 abline(v=0, col="black", lty=3, lwd=1.0)
@@ -243,7 +245,7 @@ abline(h=-log10(max(topT$pvalue[topT$padj<0.05], na.rm=TRUE)), col="black", lty=
 ```
 
 ```{r}
-dev.off()
+#dev.off()
 with(res.dds_table, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-5,5), ylim=c(0,25)))
 
 # Add colored points: red if padj<0.05, orange of log2FC>1, green if both)
@@ -255,6 +257,139 @@ with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), points(log2FoldCha
 library(calibrate)
 with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -log10(pvalue), labs=Gene, cex=.8))
 ```
+
+# Contrast C vs DR
+
+```{r}
+# Comparisons across treatment levels
+resultsNames(dds_deseq)
+
+cdr.dds <- results(dds_deseq, contrast=c("treatment","C","DR"))
+mcols(cdr.dds) # mcols = metadata columns, i.e. element-wise metadata
+(resOrd_cdrdds <- cdr.dds[order(cdr.dds$padj), ])
+write.csv(resOrd_cdrdds, 
+          "../../processed/DESEQ/CvDR_DEseqSVA_dds_resOrdered_padj.csv", row.names=TRUE)
+
+
+# MA plot
+maplot <- function (resOrd_cdrdds, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
+  with(resOrd_cdrdds, plot(baseMean, log2FoldChange, pch=20, cex=.5, log="x", ...))
+  with(subset(resOrd_cdrdds, padj<thresh), points(baseMean, log2FoldChange, col="red", pch=20, cex=1.5))
+  if (labelsig) {
+    require(calibrate)
+    with(subset(resOrd_cdrdds, padj<thresh), textxy(baseMean, log2FoldChange, labs="Gene", cex=textcx, col=2))
+  }
+}
+png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
+maplot(resOrd_cdrdds, ylim=c(-2,2), main="MA Plot C vs DR")
+dev.off()
+
+
+# Volcano
+par(mar=c(5,5,5,5), cex=1.0, cex.main=1.4, cex.axis=1.4, cex.lab=1.4)
+
+cdr <- as.data.frame(resOrd_cdrdds)
+
+#Adjusted P values (FDR Q values)
+with(cdr, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1.0, xlab=bquote(~Log[2]~fold~change), ylab=bquote(~-log[10]~Q~value)))
+
+with(subset(cdr, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
+
+with(subset(cdr, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(cdr), cdr$padj<0.05 & abs(cdr$log2FoldChange)>2), cex=0.8, pos=3))
+
+#Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
+abline(v=0, col="black", lty=3, lwd=1.0)
+abline(v=-2, col="black", lty=4, lwd=2.0)
+abline(v=2, col="black", lty=4, lwd=2.0)
+abline(h=-log10(max(cdr$pvalue[cdr$padj<0.05], na.rm=TRUE)), col="black", lty=4, lwd=2.0)
+```
+
+# Contrast C vs HS
+
+```{r}
+hs.dds <- results(dds_deseq, contrast=c("treatment","C","HS"))
+(resOrd_hsdds <- hs.dds[order(hs.dds$padj), ])
+
+write.csv(resOrd_hsdds, 
+          "../../processed/DESEQ/CvHS_DEseqSVA_dds_resOrdered_padj.csv",
+          row.names=TRUE)
+
+# MA plot
+maplot <- function (resOrd_hsdds, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
+  with(resOrd_hsdds, plot(baseMean, log2FoldChange, pch=20, cex=.5, log="x", ...))
+  with(subset(resOrd_hsdds, padj<thresh), points(baseMean, log2FoldChange, col="red", pch=20, cex=1.5))
+  if (labelsig) {
+    require(calibrate)
+    with(subset(resOrd_hsdds, padj<thresh), textxy(baseMean, log2FoldChange, labs="Gene", cex=textcx, col=2))
+  }
+}
+png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
+maplot(resOrd_hsdds, ylim=c(-2,2), main="MA Plot C vs HS")
+dev.off()
+
+# Volcano
+par(mar=c(5,5,5,5), cex=1.0, cex.main=1.4, cex.axis=1.4, cex.lab=1.4)
+
+hs <- as.data.frame(resOrd_hsdds)
+
+#Adjusted P values (FDR Q values)
+with(hs, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1.0, xlab=bquote(~Log[2]~fold~change), ylab=bquote(~-log[10]~Q~value)))
+
+with(subset(hs, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
+
+with(subset(hs, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(hs), hs$padj<0.05 & abs(hs$log2FoldChange)>2), cex=0.8, pos=3))
+
+#Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
+abline(v=0, col="black", lty=3, lwd=1.0)
+abline(v=-2, col="black", lty=4, lwd=2.0)
+abline(v=2, col="black", lty=4, lwd=2.0)
+abline(h=-log10(max(hs$pvalue[hs$padj<0.05], na.rm=TRUE)), col="black", lty=4, lwd=2.0)
+```
+
+# Contrast DR vs HS
+
+```{r}
+dh.dds <- results(dds_deseq, contrast=c("treatment","DR","HS"))
+(resOrd_dhdds <- dh.dds[order(dh.dds$padj), ])
+
+write.csv(resOrd_dhdds, 
+          "../../processed/DESEQ/DRvHS_DEseqSVA_dds_resOrdered_padj.csv",
+          row.names=TRUE)
+
+# MA plot
+maplot <- function (resOrd_dhdds, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
+  with(resOrd_dhdds, plot(baseMean, log2FoldChange, pch=20, cex=.5, log="x", ...))
+  with(subset(resOrd_dhdds, padj<thresh), points(baseMean, log2FoldChange, col="red", pch=20, cex=1.5))
+  if (labelsig) {
+    require(calibrate)
+    with(subset(resOrd_dhdds, padj<thresh), textxy(baseMean, log2FoldChange, labs="Gene", cex=textcx, col=2))
+  }
+}
+png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
+maplot(resOrd_dhdds, ylim=c(-2,2), main="MA Plot DR vs HS")
+dev.off()
+
+# Volcano
+par(mar=c(5,5,5,5), cex=1.0, cex.main=1.4, cex.axis=1.4, cex.lab=1.4)
+
+drhs <- as.data.frame(resOrd_dhdds)
+
+#Adjusted P values (FDR Q values)
+with(drhs, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1.0, xlab=bquote(~Log[2]~fold~change), ylab=bquote(~-log[10]~Q~value)))
+
+with(subset(drhs, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
+
+with(subset(drhs, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(drhs), drhs$padj<0.05 & abs(drhs$log2FoldChange)>2), cex=0.8, pos=3))
+
+#Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
+abline(v=0, col="black", lty=3, lwd=1.0)
+abline(v=-2, col="black", lty=4, lwd=2.0)
+abline(v=2, col="black", lty=4, lwd=2.0)
+abline(h=-log10(max(drhs$pvalue[drhs$padj<0.05], na.rm=TRUE)), col="black", lty=4, lwd=2.0)
+```
+
+
+
 
 # Model with interactions
 
@@ -295,25 +430,6 @@ write.csv(resOrd_hsint,
           "../../processed/DESEQ/CvHS_DEseqSVA_int_resOrdered_padj.csv",
           row.names=TRUE)
 ```
-
-# Filtering low abundance reads
-# Note: https://www.biostars.org/p/320132/
-
-```{r}
-# Filter step not necessary; default in results() - see ?results, but enhances speed https://support.bioconductor.org/p/65256/
-#filter <- rowSums(nc >= 10) >= 5 # at least 10 reads in at least 5 samples
-
-# Increase the maximum iterations (maxit) instead of running DESeq()
-#dds <- estimateSizeFactors(ddsDE_filt)
-#dds <- estimateDispersions(dds)
-#dds <- nbinomWaldTest(dds, maxit=20000)
-
-# To remove the non-converging rows
-#ddsClean <- dds[which(mcols(dds)$betaConv),]
-```
-
-
-
 
 
 
@@ -417,4 +533,27 @@ table(rowMean=(res.dds$padj < 0.1), rowVar=(resFiltByVar$padj < 0.1))
 ```
 
 
+# Notes
+# Note: https://www.biostars.org/p/320132/
 
+```{r}
+# Filter step not necessary; default in results() - see ?results, but enhances speed https://support.bioconductor.org/p/65256/
+#filter <- rowSums(nc >= 10) >= 5 # at least 10 reads in at least 5 samples
+
+# Increase the maximum iterations (maxit) instead of running DESeq()
+#dds <- estimateSizeFactors(ddsDE_filt)
+#dds <- estimateDispersions(dds)
+#dds <- nbinomWaldTest(dds, maxit=20000)
+
+# To remove the non-converging rows
+#ddsClean <- dds[which(mcols(dds)$betaConv),]
+
+
+## Merge with normalized count data
+#res.dds_body <- merge(as.data.frame(res.dds), 
+                       #as.data.frame(counts(dds_deseq, normalized=TRUE)), 
+                       #by="row.names", sort=FALSE)
+#names(res.dds_table)[1] <- "Gene"
+#res.dds_body[,1] <- NULL
+
+```

@@ -17,11 +17,12 @@ library(RColorBrewer)
 set.seed(3802703)
 ```
 
+# Prep data
 # Data is normalized, batch-controlled, and from model with no interaction
 # Matrix from object dds.ttSS in script prepDESeq.Rmd
 
 ```{r}
-load("../../processed/DESEQ/res.dds.Rda")
+#load("../../processed/DESEQ/res.dds.Rda")
 load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
 
 # Extract counts from dds_deseq object
@@ -29,45 +30,26 @@ load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
 
 # Subset both counts and results for tissue
 
-# Bodies FIXME  
+# Bodies 
 ff <- as.data.frame(res.dds_table[1:8])
 kk <- grep("_B",colnames(res.dds_table))
 grep.dds_body <- res.dds_table[,kk]
-res.dds_body <- merge(ff, grep.dds_body, normalized=TRUE,
-by="row.names", sort=FALSE)
-names(res.dds_body)[1] <- "Gene"
-
-## Merge with normalized count data
-res.dds_body <- merge(as.data.frame(res.dds), 
-                       as.data.frame(counts(dds_deseq, normalized=TRUE)), 
-                       by="row.names", sort=FALSE)
-names(res.dds_table)[1] <- "Gene"
-res.dds_body[,1] <- NULL
+res.dds_body <- cbind(ff, grep.dds_body)
+#names(res.dds_body)[1] <- "Gene"
 
 
 # Heads
-grep_head <- grep("_H",colnames(res.dds_table))
-res.dds_head <- res.dds_table[,grep_head]
-
-
+hh <- grep("_H",colnames(res.dds_table))
+grep.dds_head <- res.dds_table[,hh]
+res.dds_head <- cbind(ff, grep.dds_head)
 
 # Ovaries
-grep_ovary <- grep("_O",colnames(res.dds_table))
-res.dds_ovary <- res.dds_table[,grep_ovary]
-
-## Merge with normalized count data
-res.dds_table <- merge(as.data.frame(res.dds), 
-                       as.data.frame(counts(dds_deseq, normalized=TRUE)), 
-                       by="row.names", sort=FALSE)
-names(res.dds_table)[1] <- "Gene"
+oo <- grep("_O",colnames(res.dds_table))
+grep.dds_ovary <- res.dds_table[,oo]
+res.dds_ovary <- cbind(ff, grep.dds_ovary)
 
 # Examine plot of p-values
-hist(res.dds$pvalue, breaks=50, col="grey")
-
-# Examine independent filtering
-metadata(res.dds)$filterThreshold
-
-plot(metadata(res.dds)$filterNumRej, type="b", xlab="quantiles of baseMean", ylab="number of rejections")
+hist(res.dds_body$padj, breaks=50, col="grey")
 ```
 
 # MA plots
