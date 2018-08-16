@@ -173,6 +173,7 @@ res.dds_table <- merge(as.data.frame(res.dds),
                        by="row.names", sort=FALSE)
 names(res.dds_table)[1] <- "Gene"
 
+save(res.dds, file = "../../processed/DESEQ/res.dds.Rda")
 save(dds_deseq, file = "../../processed/DESEQ/dds_deseq.Rda")
 save(res.dds_table, file = "../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
 
@@ -253,25 +254,6 @@ with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), points(log2FoldCha
 # Label points with the textxy function from the calibrate plot
 library(calibrate)
 with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -log10(pvalue), labs=Gene, cex=.8))
-```
-
-# Subset tissues
-
-```{r}
-load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
-
-# Bodies
-grep_body <- grep("_B",colnames(res.dds_table))
-res.dds_body <- res.dds_table[,grep_body]
-
-# Heads
-grep_head <- grep("_H",colnames(res.dds_table))
-res.dds_head <- res.dds_table[,grep_head]
-
-# Ovaries
-grep_ovary <- grep("_O",colnames(res.dds_table))
-res.dds_ovary <- res.dds_table[,grep_ovary]
-
 ```
 
 # Model with interactions
