@@ -29,7 +29,7 @@ echo "### Starting at: $(date) ###"
 
 module load stringtie/stringtie-1.3.3b
 
-COMMANDA=`head -n ${SLURM_ARRAY_TASK_ID} S06_abundances.txt | tail -n 1`
+COMMANDA=`head -n ${SLURM_ARRAY_TASK_ID} S06_abundances_pl.txt | tail -n 1`
 eval $COMMANDA
 
 echo "### Ending at: $(date) ###"
