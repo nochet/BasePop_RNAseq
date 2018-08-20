@@ -33,6 +33,7 @@ first run test align of two samples to see if it works:
 sbatch --array=1-2 scripts/sarray_setup_run1.sh
 
 second, run for all samples in a run1:
+
 sbatch --array=1-54 scripts/sarray_setup_run1.sh
 
 sbatch scripts:

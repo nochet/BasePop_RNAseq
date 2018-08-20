@@ -68,11 +68,8 @@ maplot <- function (res.dds_head, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
   }
 }
 png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
-maplot(res.dds_head, ylim=c(-2,2), main="MA Plot")
+maplot(res.dds_head, ylim=c(-4,4), main="MA Plot")
 dev.off()
-
-# see all results available
-resultsNames(dds_deseq)
 
 #resDR_C <- results(dds_deseq, "treatment_DR_vs_C")
 results(dds_deseq, contrast=c("treatment","C","DR"))

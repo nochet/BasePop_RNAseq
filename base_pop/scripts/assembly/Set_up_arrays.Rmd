@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
-## Step 1 Align
+## Step 1: Align
 
 ```{r}
 ll<-character(length=0)
@@ -43,7 +43,7 @@ ll<- c(ll,paste(strsplit(ffs[ii], ".", fixed=TRUE)[[1]][1],"_run",run,sep=""))
 }
 ```
 
-## Samtools sort
+## Step 2a: Samtools sort
 
 ```{r}
 cat("", file="S02_samtools_all.txt")
@@ -54,8 +54,8 @@ for(ii in ll)
 }
 ```
 
-
-## Samtools merge: combine transcripts from each run
+## Step 2b: Samtools merge - combine transcripts from each run
+## Step not in protocol
 
 ```{r}
 set <- data.frame('code'=unlist(lapply(strsplit(ll, split='_S',fixed=TRUE), function(x) x[1])), 'sample' = ll, stringsAsFactors=FALSE)
@@ -72,7 +72,7 @@ for(ii in un.set)
 }
 ```
 
-# StringTie: Assemble and quantify expressed genes and transcripts
+# Step 3: StringTie Assemble and quantify expressed genes and transcripts
 
 ```{r}
 # Assemble transcripts for each sample
@@ -95,24 +95,30 @@ for(ff in un.set)
 }
 ```
 
-# Compare transcripts to reference genome (optional)
+## Step 4: StringTie merge transcripts from all samples
+
+```{r}
+# chunck probably deleted accidentally; remake or use regex
+```
+
+## Step 5: Compare transcripts to reference genome (optional)
 
 ```{r}
 # gffcompare
 # step skipped
 ```
 
-# StringTie: transcript abundances and table of counts
+# Step 6: StringTie - transcript abundances and table of counts
 
 ```{r}
 cat("", file="S06_abundances.txt")
 
 
 indir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/" 
-outdir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/ballG/" 
+outdir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/perl_postPrep_S04/ballG/" 
 
 
-base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotgtfs/stringtie_merged.gtf -o "
+base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/perl_postPrep_S04/stringtie_merged_pl.gtf -o "
 
 for(ff in un.set) 
 {
