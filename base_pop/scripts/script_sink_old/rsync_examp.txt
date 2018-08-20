@@ -1,0 +1,5 @@
+
+# sync between servers
+# example: copies from lewis feom within the dotgtfs directory to nivalis
+
+rsync -ahrvP dotgtfs/ engoma@nivalis.biology.missouri.edu:~/MyGithub/BasePop_RNAseq/base_pop/processed/dotsams
