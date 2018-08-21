@@ -111,7 +111,8 @@ for(ff in un.set)
 # Step 6: StringTie - transcript abundances and table of counts
 
 ```{r}
-cat("", file="/scripts/assembly/S06_abundances_pl.txt")
+cat("", file="../assembly/S06_abundances_pl.txt")
+
 
 indir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/" 
 outdir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/scripts/assembly/" 
