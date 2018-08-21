@@ -74,6 +74,8 @@ Output: `S04_stringtie_assemble.txt`
 Next, run `stringtie_assemble.sh`
 Output: ?????
 
+Run perl script to extract more gene ids from StringTie output
+
 STEP 5: gffcompare (Compare transcripts to reference genome - optional)
 step skipped
 
@@ -90,9 +92,12 @@ Do "Create a csv containing sample ids" in `Set_up_arrays.Rmd`
 Output: `describe_samples.csv`
 
 
-STEP8: BallGown (Differential expression)
+STEP8A: BallGown (transcript level differential expression based on transformed transcript or gene counts)
 
-STEP9: Control for batch effects using SVAseq package
+STEP8B: DESeq (gene-level differential expression based on read count)
+Run `prepDESeq.Rmd` by following instructions in `/scripts/DESeq_scripts/prepDEpy_instructions.txt`
+
+STEP9A: Control for batch effects using SVAseq package
 - `dataPrep_batch.Rmd` - data prep for sva
 	- input1: `/processed/describe_samples_batch.csv` 
 	- input2: `/processed/results/ballG_all_results/bg_ballG_all_results.Rda`
@@ -102,9 +107,19 @@ STEP9: Control for batch effects using SVAseq package
 	- input: `/processed/results/ballG_all_results/nolog_gfpkm_all.Rda`
 	- output: `svaseq.dat` - an object containing batch-corrected expression data from the sva package
 	
-
+STEP9B: 
 
 ## Project Notes 
+
+### 2018-08-20 (EN)
+
+- Get more gene ids tranferred from StringTie by running a perl script `mstrg_prep.pl` explained here:
+https://github.com/gpertea/stringtie/issues/179
+and documented here:
+https://gist.github.com/gpertea/b83f1b32435e166afa92a2d388527f4b
+- Command: `perl mstrg_prep.pl stringtie_merged.gtf > stringtie_merged_pl.gtf`
+- Then, re-run step 6 (Pertea et al, 2016) to compute transcript abundances:  sbatch `stringtie_abundances.sh` 
+- Results stored in `ballG_pl`
 
 ### 2018-07-30 (EN)
 

@@ -3,16 +3,17 @@ Preparing RNASeq data for DESeq
 - Ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
 - Ref p.92-93 Haddok & Dunn book
 
+######
 Steps:
 1. Compile a command list
 2. Run prepDE.py
-
+######
 
 1. Prepping a command list
 
 - Locate the StringTie default output directory structure:
 /ballgown/sampleName/
-each sample folder within the ballgown folder contains 5 files: .gtf, e2t.ctab, e_data.ctab, i2t.ctab, i_data.ctab, and t_data.ctab
+each sample folder within the ballgown folder contains 6 files: sample.gtf, e2t.ctab, e_data.ctab, i2t.ctab, i_data.ctab, and t_data.ctab
 These files are produced with the -B option in StringTie (see Pertea et al 2016)
 
 - In the shell, extract all .gtf file names and redirect to a .txt
