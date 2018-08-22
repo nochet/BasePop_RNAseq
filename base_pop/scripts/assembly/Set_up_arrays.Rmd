@@ -98,7 +98,8 @@ for(ff in un.set)
 ## Step 4: StringTie merge transcripts from all samples
 
 ```{r}
-# see projectNotes.md
+# Shell step - see projectNotes.md:
+#perl mstrg_prep.pl stringtie_merged.gtf > stringtie_merged_pl.gtf
 
 # `sbatch stingtie_merge.sh`
 # stringtie --merge -p 8 -G /MyGithub/BasePop_RNAseq/base_pop/processed/dotgtfs/HS-6_O_assembled.gtf -o stringtie_merged_pl.gtf
