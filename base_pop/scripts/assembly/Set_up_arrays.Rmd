@@ -91,7 +91,7 @@ for(ff in un.set)
   cat(samp.set,"\n", file="S03_stringtie_assemble.txt",append=TRUE)
    
 # For stringtie merge 
-  cat(paste(outdir,ff,"_assembled.gtf",sep=""), "\n",file="mergelist.txt",append=TRUE)
+  cat(paste(outdir,ff,"_assembled_pl.gtf",sep=""), "\n",file="mergelist.txt",append=TRUE)
 }
 ```
 

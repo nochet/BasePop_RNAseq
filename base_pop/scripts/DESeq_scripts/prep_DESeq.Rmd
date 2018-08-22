@@ -25,10 +25,23 @@ set.seed(38142903)
 # Ref p.92-93 Haddok & Dunn book
 # Detailed instructions are in /scripts/DESeq_scripts/prepDEpy_instructions.txt
 
+# To split a .csv column with multiple id entries, follow: http://help.snapizzi.com/csv-files/split-csv-data-into-different-columns
+
 # Load gene(/transcript) count matrix and labels
 
 ```{r}
-countdata <- read.csv("../../processed/gene_count_matrix.csv", row.names="gene_id")
+# Read in data frame and fill in empty spaces in column 2 with value in 1
+pl3c <- read.csv("../../processed/gene_count_matrix_pl3c.csv", stringsAsFactors = FALSE)
+
+pl3c$gene_id <- ifelse(pl3c$gene_id == "", pl3c$gene_id0, pl3c$gene_id) 
+pl3c <- pl3c[c(2, 1, 3:57)]
+
+# Same as:
+#pl3c[pl3c$gene_id == "", "gene_id"  ]  <- pl3c[pl3c$gene_id == "", "gene_id0" ]
+
+countdata <- read.csv("../../processed/gene_count_matrix_pl3c.csv", row.names="gene_id")
+
+countdata$gene_id[countdata$gene_id == ""] <- countdata$gene_id0
 
 # Reformat column names
 names(countdata) = sub("\\.","",names(countdata)) #regex escape the escape
