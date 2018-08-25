@@ -42,7 +42,7 @@ pl3c[,1:3] <- NULL
 # Same as:
 #pl3c[pl3c$gene_id == "", "gene_id"  ]  <- pl3c[pl3c$gene_id == "", "gene_id0" ]
 
-#countdata <- read.csv("../../processed/gene_count_matrix_pl3c.csv", row.names="gene_id")
+#countdata <- read.csv("../../processed/Old-gene_count_matrix.csv", row.names="gene_id")
 
 
 # Reformat column names
@@ -50,21 +50,25 @@ countdata <- pl3c
 names(countdata) = sub("\\.","",names(countdata)) #regex escape the escape
 countdata <- as.matrix(countdata)
 
-phenDat <- read.csv("../../processed/describe_samplesDE.csv", stringsAsFactors = FALSE)
+phenDat <- read.csv("../../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
 names(phenDat)[1]<-"ids"
 phenDat <- phenDat %>%
-  select(ids,treatment,tissue)
+  select(ids,treatment,tissue,group)
 
 rownames(phenDat) <- phenDat[,1]
 phenDat[,1] <- NULL
-
+rownames(phenDat) = sub("\\-","",rownames(phenDat)) 
 #colData <- pData(phenDat)[,c("treatment","tissue")]
-phenDat <- as.matrix(phenDat)
+#phenDat <- as.matrix(phenDat)
 
 # Check all sample IDs in colData are also in CountData and match their orders
 all(rownames(phenDat) %in% colnames(countdata))
 countdata <- countdata[, rownames(phenDat)]
 all(rownames(phenDat) == colnames(countdata))
+
+phenDat$group <- as.factor(phenDat$group)
+phenDat$treatment <- as.factor(phenDat$treatment)
+phenDat$tissue <- as.factor(phenDat$tissue)
 ```
 
 # Model with treatment and tissue
@@ -73,7 +77,11 @@ all(rownames(phenDat) == colnames(countdata))
 ```{r}
 # Create a DESeqDataSet from count matrix and labels
 dds <- DESeqDataSetFromMatrix(countData = countdata,
-colData = phenDat, design = ~ tissue + treatment)
+                              colData = phenDat, 
+                              design = ~ tissue + treatment)
+
+colData(dds)$treatment <- factor(colData(dds)$treatment,
+                                 levels = c("C","DR","HS"))
 
 # Run the default analysis for DESeq2 and generate results table
 
@@ -116,8 +124,9 @@ cc.c <- rowSums(dat.sva)
 #remove all genes with 0s for all samples
 dat.sva <- dat.sva[which(cc.c>0),]
 
-phenDat.sva <- read.csv("../../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
-names(phenDat.sva)[5]<-"batch"
+#phenDat.sva <- read.csv("../../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
+phenDat.sva <- phenDat
+names(phenDat.sva)[3]<-"batch"
 #cbind(phenDat.sva, colnames(dat.sva))
 
 mod <- model.matrix(~as.factor(treatment)* 
@@ -136,55 +145,33 @@ svobj <- svaseq(dat.sva, mod, mod0, n.sv=n.sv)
 phenDat.sva$SV1 <- svobj$sv[,1]
 phenDat.sva$SV2 <- svobj$sv[,2]
 
+head(phenDat.sva, 3)
+
 ggplot(phenDat.sva, aes(x=SV1, y=SV2)) +
   geom_point(alpha=1/5, size=3)
 
 save(phenDat.sva, file = "../../processed/DESEQ/phenDat.sva.Rda")
 ```
 
-# DESeq on batch-controlled data
+# DESeq with surrogate variables added
 # Model without interaction
 
 ```{r}
-#countdata <- read.csv("../../processed/gene_count_matrix.csv", row.names="gene_id")
-
-
-# Reformat column names
-names(countdata) = sub("\\.","",names(countdata)) #regex escape the escape
-countdata <- as.matrix(countdata)
-
-phenDat.sva <- phenDat.sva %>%
-  select(id,treatment,tissue,batch,SV1,SV2)
-
-rownames(phenDat.sva) <- phenDat.sva[,1]
-phenDat.sva[,1] <- NULL
-
-# Reformat column names
-rownames(phenDat.sva) = sub("\\-","",rownames(phenDat.sva)) #regex escape the escape
-#phenDat.sva <- as.matrix(phenDat.sva)
-
-#rp = rownames(phenDat.sva)
-#rp[duplicated(rp)]
-
 # countData colnames() must be identical to colData rownames()
 all(rownames(phenDat.sva) %in% colnames(countdata))
 countdata <- countdata[, rownames(phenDat.sva)]
 all(rownames(phenDat.sva) == colnames(countdata))
-
-phenDat.sva$batch <- as.factor(phenDat.sva$batch)
-phenDat.sva$treatment <- as.factor(phenDat.sva$treatment)
-phenDat.sva$tissue <- as.factor(phenDat.sva$tissue)
 
 # DESeqDataSet for all variables, no interaction
 dds.ttSS <- DESeqDataSetFromMatrix(countData = countdata, 
                                    colData = phenDat.sva, 
                                    design = ~ SV1 + SV2 + batch + tissue + treatment)
 
-dds_deseq <- DESeq(dds.ttSS)
+dds_deseq <- DESeq(dds.ttSS, fitType = "local")
 res.dds <- results(dds_deseq)
 (res.dds <- res.dds[order(res.dds$padj), ])
 
-# 22 rows did not converge
+# Note: fitType='parametric', but the dispersion trend was not well captured by the function: y = a/x + b, and a local regression fit was automatically substituted.specify fitType='local' or 'mean' to avoid this message next time. 72 rows did not converge
 
 ## Merge with normalized count data
 res.dds_table <- merge(as.data.frame(res.dds), 
@@ -216,7 +203,7 @@ plot(metadata(res.dds)$filterNumRej, type="b", xlab="quantiles of baseMean", yla
 load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
 
 # Could do with built-in DESeq2 function:
-DESeq2::plotMA(dds_deseq, ylim=c(-1,1))
+DESeq2::plotMA(dds_deseq, ylim=c(-5,5))
 
 # Alternatively
 maplot <- function (res.dds_table, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
@@ -450,104 +437,6 @@ write.csv(resOrd_hsint,
 
 
 
-# Data transformation - the Love et al (2014) tutorial way
-# Note: data will no longer be counts
-# rlog is very similar to regularization in DESeq() and nbinomWaldTest()
-
-```{r}
-rld <- rlogTransformation(dds_deseq, blind=TRUE) #time intensive
-vsd <- varianceStabilizingTransformation(dds_deseq, blind = TRUE)
-
-library(vsn) # Bioconductor
-library(hexbin)
-
-# Regularized log transformation
-par(mfrow=c(1,3))
-notAllZero <- (rowSums(counts(dds_deseq))>0)
-meanSdPlot(log2(counts(dds_deseq, normalized=TRUE)[notAllZero,]+1),
-           ylim = c(0,2.5))
-meanSdPlot(assay(rld[notAllZero,]), ylim = c(0,2.5))
-meanSdPlot(assay(vsd[notAllZero,]), ylim = c(0,2.5))
-
-# Variance stabilizing transformation
-
-# Dispersion plot (parametric - recommended)
-plotDispEsts(dds_deseq)
-
-# Local dispersion fit (if parametric does not converge)
-#ddsLocal <- estimateDispersions(dds_deseq, fitType="local")
-# third alternative: mean dispersion
-
-```
-
-# Data quality assessment - clustering & visualization
-
-```{r}
-# Heatmap of count table
-library(gplots)
-
-#use a DESeq()-ready data object
-Select <- order(rowMeans(counts(dds_deseq, normalized=TRUE)), 
-                decreasing=TRUE)[1:30]
-hmcol <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
-
-heatmap.2(counts(dds_deseq, normalized=TRUE)[Select,], col = hmcol,
-          Rowv = FALSE, Colv = FALSE, scale = "none",
-          dendrogram = "none", trace = "none", margin = c(10,6))
-
-dev.off()
-heatmap.2(assay(rld)[Select,], col = hmcol,
-          Rowv = FALSE, Colv = FALSE, scale = "none",
-          dendrogram = "none", trace = "none", margin = c(10,6))
-
-dev.off()
-heatmap.2(assay(vsd)[Select,], col = hmcol,
-          Rowv = FALSE, Colv = FALSE, scale = "none",
-          dendrogram = "none", trace = "none", margin = c(10,6))
-
-# Heatmap of the sample-sample distance
-dev.off()
-distRL <- dist(t(assay(rld)))
-Matt <- as.matrix(distRL)
-rownames(Matt) <- colnames(Matt) <- with(colData(dds_deseq),
-                                         paste(treatment, tissue, sep=":"))
-heatmap.2(Matt, trace = "none", col = rev(hmcol), margin=c(8,8))
-
-
-# PCA of samples
-# different ways to visualize
-dev.off()
-print(plotPCA(rld, intgroup=c("treatment", "tissue")))
-plotPCA(rld, intgroup=c("treatment"), returnData=FALSE)
-
-rld.sub <- rld[ , rld$tissue %in% c("O", "B", "H") ]
-plotPCA(rld.sub, "tissue")
-
-rld.sub<-rld[,rld@colData@listData$treatment %in% c("C","HS", "DR")]
-plotPCA(rld.sub, "treatment")
-
-# Visualize p-value optimization
-attr(res.dds, "filterThreshold")
-attr(res_int, "filterThreshold")
-
-#NULL could mean too many DEs & independent (default in results()), filtering did not happen. Solution:
-
-metadata(res.dds)$filterThreshold
-metadata(res_int)$filterThreshold
-
-plot(attr(res.dds, "filterNumRej"), type="b",
-     xlab="quantiles of 'baseMean'",
-     ylab="number of rejections")
-
-# turn off independent filtering and see what happens
-resNoFilt <- results(dds_deseq, independentFiltering = FALSE)
-table(filtering=(res.dds$padj < 0.1), noFiltering=(resNoFilt$padj < 0.1))
-
-# turn on independent filtering and see what happens
-rv <- rowVars(counts(dds_deseq, normalized=TRUE))
-resFiltByVar <- results(dds_deseq, filter = rv)
-table(rowMean=(res.dds$padj < 0.1), rowVar=(resFiltByVar$padj < 0.1))
-```
 
 
 # Notes

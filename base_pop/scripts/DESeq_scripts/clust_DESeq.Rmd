@@ -1,0 +1,118 @@
+---
+title: "QA by clustering with DESeq"
+author: "Enoch Ng'oma"
+date: "8/24/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(vsn) # for transformation
+library(hexbin)
+library(gplots) # heatmap
+
+set.seed(72106)
+
+# model without interaction
+load("../../processed/DESEQ/dds_deseq.Rda")
+```
+
+# Data transformation - the Love et al (2014) tutorial way:
+# http://www.bioconductor.org/packages//2.13/bioc/vignettes/DESeq2/inst/doc/DESeq2.pdf
+# Note: data will no longer be counts
+# rlog is very similar to regularization in DESeq() and nbinomWaldTest()
+
+```{r}
+#rld <- rlogTransformation(dds_deseq, blind=TRUE) #time intensive
+vsd <- varianceStabilizingTransformation(dds_deseq, blind = TRUE) #fast
+
+#save(rld, file = "../../processed/DESEQ/rld.Rda")
+load("../../processed/DESEQ/rld.Rda")
+
+# Regularized log transformation
+par(mfrow=c(1,3))
+notAllZero <- (rowSums(counts(dds_deseq))>0)
+meanSdPlot(log2(counts(dds_deseq, normalized=TRUE)[notAllZero,]+1))
+meanSdPlot(assay(rld[notAllZero,]))
+meanSdPlot(assay(vsd[notAllZero,]))
+
+# Variance stabilizing transformation
+
+# Dispersion plot (parametric - recommended)
+plotDispEsts(dds_deseq)
+
+# Local dispersion fit (if parametric does not converge)
+#ddsLocal <- estimateDispersions(dds_deseq, fitType="local")
+# third alternative: mean dispersion
+
+```
+
+# Data quality assessment - clustering & visualization
+
+```{r}
+# Heatmap of count table
+Select <- order(rowMeans(counts(dds_deseq, normalized=TRUE)), 
+                decreasing=TRUE)[1:30]
+hmcol <- colorRampPalette(brewer.pal(9, "GnBu"))(100)
+
+# raw count data
+heatmap.2(counts(dds_deseq, normalized=TRUE)[Select,], col = hmcol,
+          Rowv = TRUE, Colv = TRUE, scale = "none",
+          dendrogram = "none", trace = "none", margin = c(8,9))
+
+# rlog-transformed (rld)
+dev.off()
+heatmap.2(assay(rld)[Select,], col = hmcol,
+          Rowv = FALSE, Colv = FALSE, scale = "none",
+          dendrogram = "none", trace = "none", margin = c(10,6))
+
+# variance stabilizing transformation (vst) 
+dev.off()
+heatmap.2(assay(vsd)[Select,], col = hmcol,
+          Rowv = FALSE, Colv = FALSE, scale = "none",
+          dendrogram = "none", trace = "none", margin = c(10,6))
+
+# Heatmap of the sample-sample distance
+dev.off()
+distRL <- dist(t(assay(rld)))
+Matt <- as.matrix(distRL)
+rownames(Matt) <- colnames(Matt) <- with(colData(dds_deseq),
+                                         paste(treatment, tissue, sep=":"))
+heatmap.2(Matt, trace = "none", col = rev(hmcol), margin=c(8,8))
+
+
+# PCA of samples
+# different ways to visualize
+dev.off()
+print(plotPCA(rld, intgroup=c("treatment", "tissue")))
+plotPCA(rld, intgroup=c("tissue"), returnData=FALSE)
+
+rld.sub <- rld[, rld$tissue %in% c("O") ]
+plotPCA(rld.sub, "tissue")
+
+rld.sub<-rld[,rld@colData@listData$treatment %in% c("C","HS", "DR")]
+plotPCA(rld.sub, "treatment")
+
+# Visualize p-value optimization
+attr(res.dds, "filterThreshold")
+attr(res_int, "filterThreshold")
+
+#NULL could mean too many DEs & independent (default in results()), filtering did not happen. Solution:
+
+metadata(res.dds)$filterThreshold
+metadata(res_int)$filterThreshold
+
+plot(attr(res.dds, "filterNumRej"), type="b",
+     xlab="quantiles of 'baseMean'",
+     ylab="number of rejections")
+
+# turn off independent filtering and see what happens
+resNoFilt <- results(dds_deseq, independentFiltering = FALSE)
+table(filtering=(res.dds$padj < 0.1), noFiltering=(resNoFilt$padj < 0.1))
+
+# turn on independent filtering and see what happens
+rv <- rowVars(counts(dds_deseq, normalized=TRUE))
+resFiltByVar <- results(dds_deseq, filter = rv)
+table(rowMean=(res.dds$padj < 0.1), rowVar=(resFiltByVar$padj < 0.1))
+```
