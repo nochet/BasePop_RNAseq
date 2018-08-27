@@ -60,10 +60,10 @@ Command at the prompt:
 sbatch --array=1-162 samtools_all.sh
 
 
-STEP 3: Samtools merge (combine transcripts from all runs)
+STEP 2b: Samtools merge (combine transcripts from all runs)
 
 Do Samtools merge step in `Set_up_arrays.Rmd` by running `???_merge.sh` check lewis
-Output: `S03_samtools_merge.txt`
+Output: `S02b_samtools_merge.txt`
 Next, run `samtools_merge.sh` to merge
 
 

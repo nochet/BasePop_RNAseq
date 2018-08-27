@@ -62,12 +62,12 @@ set <- data.frame('code'=unlist(lapply(strsplit(ll, split='_S',fixed=TRUE), func
 
 un.set <- unique(set$code)
 
-cat("", file="S03_samtools_merge.txt")
+cat("", file="S02b_samtools_merge.txt")
 
 for(ii in un.set)
 {
   samp.set <- subset(set, code==ii)
-   cat(paste("samtools merge -r  /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/",ii,"_merged.bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[1],".bam ","/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[2],".bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[3],".bam",sep=""), "\n", file=paste("S03_samtools_merge",".txt",sep=""),append=TRUE)
+   cat(paste("samtools merge -r  /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/",ii,"_merged.bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[1],".bam ","/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[2],".bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[3],".bam",sep=""), "\n", file=paste("S02b_samtools_merge",".txt",sep=""),append=TRUE)
 
 }
 ```
@@ -111,19 +111,19 @@ for(ff in un.set)
 # Step 6: StringTie - transcript abundances and table of counts
 
 ```{r}
-cat("", file="../assembly/S06_abundances_pl.txt")
+cat("", file="S03_abundances_short.txt")
 
 
 indir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/" 
 outdir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/scripts/assembly/" 
 
 
-base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/perl_postPrep_S04/stringtie_merged_pl.gtf -o "
+base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/shortProtocol/S03_short/stringtie_merged_pl.gtf -o "
 
 for(ff in un.set) 
 {
   cmd.cut <- paste(base.cmd,outdir,ff,"/",ff,"_ballgown.gtf ", indir,ff,"_merged.bam",sep="")
-  cat(cmd.cut,"\n", file="S06_abundances_pl.txt",append=TRUE)
+  cat(cmd.cut,"\n", file="S03_abundances_short.txt",append=TRUE)
    
 }
 ```
