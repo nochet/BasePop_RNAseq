@@ -118,7 +118,7 @@ indir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbam
 outdir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/scripts/assembly/" 
 
 
-base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/shortProtocol/S03_short/stringtie_merged_pl.gtf -o "
+base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/shortProtocol/S03_short/stringtie_merged.gtf -o "
 
 for(ff in un.set) 
 {
