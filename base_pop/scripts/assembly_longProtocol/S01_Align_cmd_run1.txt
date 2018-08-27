@@ -1,0 +1,1 @@
+hisat2 --dta -q -x indexes/bdgp6_tran/genome_tran -U /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/run1/NA -S /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotsams/NA_run1.sam 
