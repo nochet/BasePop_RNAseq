@@ -111,6 +111,12 @@ STEP9B:
 
 ## Project Notes 
 
+## 2018-08-27 (EN)
+
+Implementing an alternative workflow. A visual of the short protocol is here: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
+
+Run stringtie -eB on the output of samtools -sort ie. (step 2 of Pertea et al, 2016)
+
 ### 2018-08-27 (EGK)
 
 Attepting to generate novel transcripts and get an accurate gene level analysis is complex. We plan to perform separate pipelines for a transcript level and gene level analysis. 
@@ -130,6 +136,7 @@ https://gist.github.com/gpertea/b83f1b32435e166afa92a2d388527f4b
 - Command: `perl mstrg_prep.pl stringtie_merged.gtf > stringtie_merged_pl.gtf`
 - Then, re-run step 6 (Pertea et al, 2016) to compute transcript abundances:  sbatch `stringtie_abundances.sh` 
 - Results stored in `ballG_pl`
+- Problem: duplicated MSTRG and Fbgn ids. Perl script appears to assign transcript is not sure of to the same MSTRG id creating duplicates.
 
 ### 2018-07-30 (EN)
 

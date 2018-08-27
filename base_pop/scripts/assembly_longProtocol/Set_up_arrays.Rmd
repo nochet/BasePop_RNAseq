@@ -46,10 +46,10 @@ ll<- c(ll,paste(strsplit(ffs[ii], ".", fixed=TRUE)[[1]][1],"_run",run,sep=""))
 ## Step 2a: Samtools sort
 
 ```{r}
-cat("", file="S02_samtools_all.txt")
+cat("", file="S02a_short_samtools.txt")
 for(ii in ll)
 {
-   cat(paste("samtools sort -@ 8 -o /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/",ii,".bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotsams/", ii,".sam ",sep=""), "\n", file=paste("S02_samtools_all",".txt",sep=""),append=TRUE)
+   cat(paste("samtools sort -@ 8 -o /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/",ii,".bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotsams/", ii,".sam ",sep=""), "\n", file=paste("S02a_short_samtools",".txt",sep=""),append=TRUE)
 
 }
 ```
