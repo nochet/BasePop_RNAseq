@@ -111,6 +111,16 @@ STEP9B:
 
 ## Project Notes 
 
+### 2018-08-27 (EGK)
+
+Attepting to generate novel transcripts and get an accurate gene level analysis is complex. We plan to perform separate pipelines for a transcript level and gene level analysis. 
+
+Gene level analysis: we will use the reference annotation rather than performing the merge step in StringTie followed by DEseq
+
+Transcript level analysis: we will use the StringTie-Ballgown pipeline
+
+Exploration of the gene count table generated from the data using the merge file before and after assigning a reference gene gave different results. Some MSTRGs are split up into those that are assigned to a gene and those that are not. 
+
 ### 2018-08-20 (EN)
 
 - Get more gene ids tranferred from StringTie by running a perl script `mstrg_prep.pl` explained here:
