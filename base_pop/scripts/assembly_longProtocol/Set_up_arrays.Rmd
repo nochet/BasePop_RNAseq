@@ -117,9 +117,10 @@ cat("", file="S03_abundances_short.txt")
 indir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/" 
 outdir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/scripts/assembly/" 
 
-
+# for long protocal
 #base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/stringtie_merged.gtf -o "
 
+# for short protocol
 base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/merged.bam -o "
 
 for(ff in un.set) 
