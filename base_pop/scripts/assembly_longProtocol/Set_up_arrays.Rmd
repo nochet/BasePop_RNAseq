@@ -50,7 +50,6 @@ cat("", file="S02a_short_samtools.txt")
 for(ii in ll)
 {
    cat(paste("samtools sort -@ 8 -o /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/",ii,".bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotsams/", ii,".sam ",sep=""), "\n", file=paste("S02a_short_samtools",".txt",sep=""),append=TRUE)
-
 }
 ```
 
@@ -68,7 +67,6 @@ for(ii in un.set)
 {
   samp.set <- subset(set, code==ii)
    cat(paste("samtools merge -r  /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/",ii,"_merged.bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[1],".bam ","/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[2],".bam ", "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/", samp.set$sample[3],".bam",sep=""), "\n", file=paste("S02b_samtools_merge",".txt",sep=""),append=TRUE)
-
 }
 ```
 
@@ -121,13 +119,12 @@ outdir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/scripts/assembl
 #base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/stringtie_merged.gtf -o "
 
 # for short protocol
-base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/bam_merged_runs/*_merged.bam -o "
+base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/genes/dmel-all-r6.18.gtf -o "
 
 for(ff in un.set) 
 {
   cmd.cut <- paste(base.cmd,outdir,ff,"/",ff,"_ballgown.gtf ", indir,ff,"_merged.bam",sep="")
   cat(cmd.cut,"\n", file="S03_abundances_short.txt",append=TRUE)
-   
 }
 ```
 
