@@ -13,15 +13,17 @@ Steps:
 
 - Locate the StringTie default output directory structure:
 /ballgown/sampleName/
-each sample folder within the ballgown folder contains 6 files: sample.gtf, e2t.ctab, e_data.ctab, i2t.ctab, i_data.ctab, and t_data.ctab
+Each sample folder within the ballgown folder contains 6 files: sample.gtf, e2t.ctab, e_data.ctab, i2t.ctab, i_data.ctab, and t_data.ctab
 These files are produced with the -B option in StringTie (see Pertea et al 2016)
 
 - In the shell, cd to /dotgtfs/ and extract all .gtf file names and redirect to a .txt
 do:
-	grep -li assemb *.gtf > ~/MyGithub/BasePop_RNAseq/processed/gtf_list.txt
+	grep -li assemb *.gtf > ~/MyGithub/BasePop_RNAseq/base_pop/processed/gtf_list.txt
 Searches and list all .gtf which includes assemb*
 
 - Open gtf_list.txt in TextWrangler [command+F]
+(Note: if on server, sync to git and open on local machine)
+
 In the search window type ^
 In the replace window, type full path where to store the file e.g.: ~/MyGithub/BasePop_RNAseq/scripts/DESeq_scripts/
 Do Replace All
