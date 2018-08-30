@@ -1,5 +1,5 @@
 ---
-title: "Prep DESeq-worthy counts from StringTie output"
+title: "Prep counts from StringTie output for use with DESeq2"
 author: "Enoch Ng'oma"
 date: "7/19/2018"
 output: html_document
@@ -31,7 +31,9 @@ set.seed(38142903)
 
 ```{r}
 # Read in data frame and fill in empty spaces in column 2 with value in 1
-pl3c <- read.csv("../../processed/gene_count_matrix_pl3c.csv", stringsAsFactors = FALSE)
+pl3c <- read.csv("../../processed/S03_short_ballG/gene_count_matrix.csv", 
+                 stringsAsFactors = FALSE)
+# A gene count matrix that excludes all novel transcripts - see projectNotes.md
 
 dds.g <- which(duplicated(pl3c$gene_id0))
 pl3c[pl3c$gene_id0==pl3c$gene_id0[dds.g[6]],1:6]

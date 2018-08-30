@@ -118,11 +118,11 @@ Implementing an alternative workflow. A visual of the short protocol is here: ht
 
 Run stringtie -eB on the output of samtools -sort ie. (step 2 of Pertea et al, 2016)
 
-Gene count tables en written to /processed/S03_short_ballG: `gene_count_matrix` and `transcript_count_matrix`
+Gene count tables are written to /processed/S03_short_ballG/ `gene_count_matrix` and `transcript_count_matrix`
 
 ### 2018-08-27 (EGK)
 
-Attepting to generate novel transcripts and get an accurate gene level analysis is complex. We plan to perform separate pipelines for a transcript level and gene level analysis. 
+Attempting to generate novel transcripts and get an accurate gene level analysis is complex. We plan to perform separate pipelines for a transcript level and gene level analysis. 
 
 Gene level analysis: we will use the reference annotation rather than performing the merge step in StringTie followed by DEseq
 
