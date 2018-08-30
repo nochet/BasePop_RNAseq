@@ -111,11 +111,14 @@ STEP9B:
 
 ## Project Notes 
 
-## 2018-08-27 (EN)
+
+### 2018-08-27 (EN)
 
 Implementing an alternative workflow. A visual of the short protocol is here: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
 
 Run stringtie -eB on the output of samtools -sort ie. (step 2 of Pertea et al, 2016)
+
+Gene count tables en written to /processed/S03_short_ballG: `gene_count_matrix` and `transcript_count_matrix`
 
 ### 2018-08-27 (EGK)
 
