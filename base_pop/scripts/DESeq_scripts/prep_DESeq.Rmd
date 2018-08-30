@@ -35,24 +35,23 @@ pl3c <- read.csv("../../processed/S03_short_ballG/gene_count_matrix.csv",
                  stringsAsFactors = FALSE)
 # A gene count matrix that excludes all novel transcripts - see projectNotes.md
 
-dds.g <- which(duplicated(pl3c$gene_id0))
-pl3c[pl3c$gene_id0==pl3c$gene_id0[dds.g[6]],1:6]
+length(unique(pl3c$gene_id))
 
-pl3c$gene_id <- ifelse(pl3c$gene_id == "", pl3c$gene_id0, pl3c$gene_id) 
-pl3c <- pl3c[c(2, 1, 3:57)]
+#dds.g <- which(duplicated(pl3c$gene_id0))
+#pl3c[pl3c$gene_id0==pl3c$gene_id0[dds.g[6]],1:6]
+
+#pl3c$gene_id <- ifelse(pl3c$gene_id == "", pl3c$gene_id0, pl3c$gene_id) 
+#pl3c <- pl3c[c(2, 1, 3:57)]
 
 rownames(pl3c) <- pl3c[,1]
-pl3c[,1:3] <- NULL
+pl3c[,1] <- NULL
 
 # Same as:
 #pl3c[pl3c$gene_id == "", "gene_id"  ]  <- pl3c[pl3c$gene_id == "", "gene_id0" ]
 
-countdata <- read.csv("../../processed/Old-gene_count_matrix.csv", row.names="gene_id")
-
-
 # Reformat column names
 countdata <- pl3c
-names(countdata) = sub("\\.","",names(countdata)) #regex escape the escape
+colnames(countdata) = sub("\\.","",colnames(countdata)) #regex escape the escape
 countdata <- as.matrix(countdata)
 
 phenDat <- read.csv("../../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
@@ -129,7 +128,6 @@ cc.c <- rowSums(dat.sva)
 #remove all genes with 0s for all samples
 dat.sva <- dat.sva[which(cc.c>0),]
 
-#phenDat.sva <- read.csv("../../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
 phenDat.sva <- phenDat
 names(phenDat.sva)[3]<-"batch"
 #cbind(phenDat.sva, colnames(dat.sva))
@@ -148,11 +146,11 @@ print(c("Calculated number of significant SVs = ", n.sv))
 svobj <- svaseq(dat.sva, mod, mod0, n.sv=n.sv) 
 
 phenDat.sva$SV1 <- svobj$sv[,1]
-phenDat.sva$SV2 <- svobj$sv[,2]
+#phenDat.sva$SV2 <- svobj$sv[,2]
 
 head(phenDat.sva, 3)
 
-ggplot(phenDat.sva, aes(x=SV1, y=SV2)) +
+ggplot(phenDat.sva, x=SV1, ) +
   geom_point(alpha=1/5, size=3)
 
 save(phenDat.sva, file = "../../processed/DESEQ/phenDat.sva.Rda")
