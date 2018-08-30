@@ -111,6 +111,15 @@ STEP9B:
 
 ## Project Notes 
 
+### 2018-08-30 (EGK)
+
+Developed compare_StringTie_method script. Compares: 1) gene count table generated from stringtie run that includes estimating novel transcripts, 2) gene count table generated from stringtie run that includes estimating novel transcripts followed by perl script to get back FBgn names, 3) gene count table ignoring novel transcripts
+
+General comparison:
+
+Type 1 has very few FBgn names. When comparing type 2 and 3 (merging on gene names), those with differences are almost all a MSTRG that is split up in the perl script to assign gene names. So some reads are assigned to a gene and some just get an MSTRG number (both share the same string tie MSTRG number). Another set are genes with more than one assigned with the perl script. It makes sense these do not agree. Those that are left ~800 I am not sure why they don't agree. For one I looked at, the pattern matches what modEncode reports on flybase (low ovary expression) for type 3, while type 2 and 1 are both way higher for all tissues including ovaries. In conclusion, I feel good about using type 3 for GENE level analysis. 
+
+Only 200 gene names in type 3 are not represented in type 2. Not sure why for these.
 
 ### 2018-08-27 (EN)
 

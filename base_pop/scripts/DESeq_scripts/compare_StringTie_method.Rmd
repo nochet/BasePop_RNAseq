@@ -1,5 +1,5 @@
 ---
-title: "Prep DESeq-worthy counts from StringTie output"
+title: "Compare gene count tables"
 author: "Enoch Ng'oma"
 date: "7/19/2018"
 output: html_document
@@ -19,37 +19,32 @@ library(RColorBrewer)
 set.seed(38142903)
 ```
 
-# Get more gene_ids from StringTie object with python: https://www.biostars.org/p/261128/
-
-# Ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
-# Ref p.92-93 Haddok & Dunn book
-# Detailed instructions are in /scripts/DESeq_scripts/prepDEpy_instructions.txt
-
-# To split a .csv column with multiple id entries, follow: http://help.snapizzi.com/csv-files/split-csv-data-into-different-columns
-
-# Load gene(/transcript) count matrix and labels
-
 ```{r}
 # Read in data frame and fill in empty spaces in column 2 with value in 1
-pl3c <- read.csv("../../processed/gene_count_matrix_pl3c.csv", stringsAsFactors = FALSE)
+cdat1 <- read.csv("../../processed/gene_count_matrix_pl3c.csv", stringsAsFactors = FALSE)
 
-dds.g <- which(duplicated(pl3c$gene_id0))
-pl3c[pl3c$gene_id0==pl3c$gene_id0[dds.g[6]],1:6]
+#dds.g <- which(duplicated(cdat1$gene_id0))
+#cdat1[cdat1$gene_id0==cdat1$gene_id0[dds.g[6]],1:6]
 
-pl3c$gene_id <- ifelse(pl3c$gene_id == "", pl3c$gene_id0, pl3c$gene_id) 
-pl3c <- pl3c[c(2, 1, 3:57)]
+cdat1$gene_id <- ifelse(cdat1$gene_id == "", cdat1$gene_id0, cdat1$gene_id) 
+cdat1 <- cdat1[c(2, 1, 3:57)]
 
-rownames(pl3c) <- pl3c[,1]
-pl3c[,1:3] <- NULL
+rownames(cdat1) <- cdat1[,1]
+cdat1[,1:3] <- NULL
 
-# Same as:
-#pl3c[pl3c$gene_id == "", "gene_id"  ]  <- pl3c[pl3c$gene_id == "", "gene_id0" ]
+cdat2 <- read.csv("../../processed/Old-gene_count_matrix.csv", row.names="gene_id")
 
-countdata <- read.csv("../../processed/Old-gene_count_matrix.csv", row.names="gene_id")
+cdat3 <- read.csv("../../processed/S03_short_ballG/gene_count_matrix.csv", row.names="gene_id")
 
+
+
+
+```
+
+```{r}
 
 # Reformat column names
-countdata <- pl3c
+countdata<-cdat3
 names(countdata) = sub("\\.","",names(countdata)) #regex escape the escape
 countdata <- as.matrix(countdata)
 
@@ -86,36 +81,9 @@ dds <- DESeqDataSetFromMatrix(countData = countdata,
 colData(dds)$treatment <- factor(colData(dds)$treatment,
                                  levels = c("C","DR","HS"))
 
-# Run the default analysis for DESeq2 and generate results table
-
-#ddsDE <- DESeq(dds)
-#res <- results(ddsDE)
-
-#Sort by adjusted p-value and display
-#(resOrdered <- res[order(res$padj), ]) 
-
-#save(ddsDE, file = "../../processed/DESEQ/ddsDE.Rda")
-#save(resOrdered, file = "../../processed/DESEQ/resOrdered.Rda")
 
 ```
 
-# Model with treatment, tissue and interaction
-
-```{r}
-dds2 <- DESeqDataSetFromMatrix(countData = countdata,
-colData = phenDat, design = ~ tissue + treatment + tissue*treatment)
-
-# Run the default analysis for DESeq2 and generate results table
-
-#ddsDE2 <- DESeq(dds2)
-#res2 <- results(ddsDE2)
-
-#Sort by adjusted p-value and display
-#(resOrdered2 <- res2[order(res2$padj), ]) 
-
-#save(ddsDE2, file = "../../processed/DESEQ/ddsDE2.Rda")
-#save(resOrdered2, file = "../../processed/DESEQ/resOrdered2.Rda")
-```
 
 # Control for batch effects with sva
 
@@ -153,316 +121,47 @@ head(phenDat.sva, 3)
 ggplot(phenDat.sva, aes(x=SV1, y=SV2)) +
   geom_point(alpha=1/5, size=3)
 
-save(phenDat.sva, file = "../../processed/DESEQ/phenDat.sva.Rda")
-```
-
-# DESeq with surrogate variables added
-# Model without interaction
-
-```{r}
-# countData colnames() must be identical to colData rownames()
-all(rownames(phenDat.sva) %in% colnames(countdata))
-countdata <- countdata[, rownames(phenDat.sva)]
-all(rownames(phenDat.sva) == colnames(countdata))
-
-# DESeqDataSet for all variables, no interaction
-dds.ttSS <- DESeqDataSetFromMatrix(countData = countdata, 
-                                   colData = phenDat.sva, 
-                                   design = ~ SV1 + SV2 + batch + tissue + treatment)
-
-dds_deseq <- DESeq(dds.ttSS, fitType = "local")
-res.dds <- results(dds_deseq)
-(res.dds <- res.dds[order(res.dds$padj), ])
-
-# Note: fitType='parametric', but the dispersion trend was not well captured by the function: y = a/x + b, and a local regression fit was automatically substituted.specify fitType='local' or 'mean' to avoid this message next time. 72 rows did not converge
-
-## Merge with normalized count data
-res.dds_table <- merge(as.data.frame(res.dds), 
-                       as.data.frame(counts(dds_deseq, normalized=TRUE)), 
-                       by="row.names", sort=FALSE)
-names(res.dds_table)[1] <- "Gene"
-
-save(res.dds, file = "../../processed/DESEQ/res.dds.Rda")
-save(dds_deseq, file = "../../processed/DESEQ/dds_deseq.Rda")
-save(res.dds_table, file = "../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
-
-write.csv(res.dds_table, 
-          "../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.csv", row.names=TRUE)
-
-load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
-
-# Examine plot of p-values
-hist(res.dds$pvalue, breaks=50, col="grey")
-
-# Examine independent filtering
-metadata(res.dds)$filterThreshold
-
-plot(metadata(res.dds)$filterNumRej, type="b", xlab="quantiles of baseMean", ylab="number of rejections")
-```
-
-# MA plot
-
-```{r}
-load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
-
-# Could do with built-in DESeq2 function:
-DESeq2::plotMA(dds_deseq, ylim=c(-5,5))
-
-# Alternatively
-maplot <- function (res.dds_table, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
-  with(res.dds_table, plot(baseMean, log2FoldChange, pch=20, cex=.5, log="x", ...))
-  with(subset(res.dds_table, padj<thresh), points(baseMean, log2FoldChange, col="red", pch=20, cex=1.5))
-  if (labelsig) {
-    require(calibrate)
-    with(subset(res.dds_table, padj<thresh), textxy(baseMean, log2FoldChange, labs="Gene", cex=textcx, col=2))
-  }
-}
-png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
-maplot(res.dds_table, ylim=c(-2,2), main="MA Plot")
-dev.off()
-
-# see all results available
-resultsNames(dds_deseq)
-
-#resDR_C <- results(dds_deseq, "treatment_DR_vs_C")
-results(dds_deseq, contrast=c("treatment","C","DR"))
-```
-
-# Volcano plot
-
-```{r}
-load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
-
-par(mar=c(5,5,5,5), cex=1.0, cex.main=1.4, cex.axis=1.4, cex.lab=1.4)
-
-topT <- as.data.frame(res.dds_table)
-
-#Adjusted P values (FDR Q values)
-with(topT, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1.0, xlab=bquote(~Log[2]~fold~change), ylab=bquote(~-log[10]~Q~value)))
-
-with(subset(topT, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
-
-with(subset(topT, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(topT), topT$padj<0.05 & abs(topT$log2FoldChange)>2), cex=0.8, pos=3))
-
-#Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
-abline(v=0, col="black", lty=3, lwd=1.0)
-abline(v=-2, col="black", lty=4, lwd=2.0)
-abline(v=2, col="black", lty=4, lwd=2.0)
-abline(h=-log10(max(topT$pvalue[topT$padj<0.05], na.rm=TRUE)), col="black", lty=4, lwd=2.0)
-```
-
-```{r}
-#dev.off()
-with(res.dds_table, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-5,5), ylim=c(0,25)))
-
-# Add colored points: red if padj<0.05, orange of log2FC>1, green if both)
-with(subset(res.dds_table, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
-with(subset(res.dds_table, abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="orange"))
-with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="green"))
-
-# Label points with the textxy function from the calibrate plot
-library(calibrate)
-with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -log10(pvalue), labs=Gene, cex=.8))
-```
-
-# Contrast C vs DR
-
-```{r}
-# Comparisons across treatment levels
-resultsNames(dds_deseq)
-
-cdr.dds <- results(dds_deseq, contrast=c("treatment","C","DR"))
-mcols(cdr.dds) # mcols = metadata columns, i.e. element-wise metadata
-(resOrd_cdrdds <- cdr.dds[order(cdr.dds$padj), ])
-write.csv(resOrd_cdrdds, 
-          "../../processed/DESEQ/CvDR_DEseqSVA_dds_resOrdered_padj.csv", row.names=TRUE)
-
-
-# MA plot
-maplot <- function (resOrd_cdrdds, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
-  with(resOrd_cdrdds, plot(baseMean, log2FoldChange, pch=20, cex=.5, log="x", ...))
-  with(subset(resOrd_cdrdds, padj<thresh), points(baseMean, log2FoldChange, col="red", pch=20, cex=1.5))
-  if (labelsig) {
-    require(calibrate)
-    with(subset(resOrd_cdrdds, padj<thresh), textxy(baseMean, log2FoldChange, labs="Gene", cex=textcx, col=2))
-  }
-}
-png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
-maplot(resOrd_cdrdds, ylim=c(-2,2), main="MA Plot C vs DR")
-dev.off()
-
-
-# Volcano
-par(mar=c(5,5,5,5), cex=1.0, cex.main=1.4, cex.axis=1.4, cex.lab=1.4)
-
-cdr <- as.data.frame(resOrd_cdrdds)
-
-#Adjusted P values (FDR Q values)
-with(cdr, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1.0, xlab=bquote(~Log[2]~fold~change), ylab=bquote(~-log[10]~Q~value)))
-
-with(subset(cdr, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
-
-with(subset(cdr, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(cdr), cdr$padj<0.05 & abs(cdr$log2FoldChange)>2), cex=0.8, pos=3))
-
-#Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
-abline(v=0, col="black", lty=3, lwd=1.0)
-abline(v=-2, col="black", lty=4, lwd=2.0)
-abline(v=2, col="black", lty=4, lwd=2.0)
-abline(h=-log10(max(cdr$pvalue[cdr$padj<0.05], na.rm=TRUE)), col="black", lty=4, lwd=2.0)
-```
-
-# Contrast C vs HS
-
-```{r}
-hs.dds <- results(dds_deseq, contrast=c("treatment","C","HS"))
-(resOrd_hsdds <- hs.dds[order(hs.dds$padj), ])
-
-write.csv(resOrd_hsdds, 
-          "../../processed/DESEQ/CvHS_DEseqSVA_dds_resOrdered_padj.csv",
-          row.names=TRUE)
-
-# MA plot
-maplot <- function (resOrd_hsdds, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
-  with(resOrd_hsdds, plot(baseMean, log2FoldChange, pch=20, cex=.5, log="x", ...))
-  with(subset(resOrd_hsdds, padj<thresh), points(baseMean, log2FoldChange, col="red", pch=20, cex=1.5))
-  if (labelsig) {
-    require(calibrate)
-    with(subset(resOrd_hsdds, padj<thresh), textxy(baseMean, log2FoldChange, labs="Gene", cex=textcx, col=2))
-  }
-}
-png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
-maplot(resOrd_hsdds, ylim=c(-2,2), main="MA Plot C vs HS")
-dev.off()
-
-# Volcano
-par(mar=c(5,5,5,5), cex=1.0, cex.main=1.4, cex.axis=1.4, cex.lab=1.4)
-
-hs <- as.data.frame(resOrd_hsdds)
-
-#Adjusted P values (FDR Q values)
-with(hs, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1.0, xlab=bquote(~Log[2]~fold~change), ylab=bquote(~-log[10]~Q~value)))
-
-with(subset(hs, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
-
-with(subset(hs, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(hs), hs$padj<0.05 & abs(hs$log2FoldChange)>2), cex=0.8, pos=3))
-
-#Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
-abline(v=0, col="black", lty=3, lwd=1.0)
-abline(v=-2, col="black", lty=4, lwd=2.0)
-abline(v=2, col="black", lty=4, lwd=2.0)
-abline(h=-log10(max(hs$pvalue[hs$padj<0.05], na.rm=TRUE)), col="black", lty=4, lwd=2.0)
-```
-
-# Contrast DR vs HS
-
-```{r}
-dh.dds <- results(dds_deseq, contrast=c("treatment","DR","HS"))
-(resOrd_dhdds <- dh.dds[order(dh.dds$padj), ])
-
-write.csv(resOrd_dhdds, 
-          "../../processed/DESEQ/DRvHS_DEseqSVA_dds_resOrdered_padj.csv",
-          row.names=TRUE)
-
-# MA plot
-maplot <- function (resOrd_dhdds, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
-  with(resOrd_dhdds, plot(baseMean, log2FoldChange, pch=20, cex=.5, log="x", ...))
-  with(subset(resOrd_dhdds, padj<thresh), points(baseMean, log2FoldChange, col="red", pch=20, cex=1.5))
-  if (labelsig) {
-    require(calibrate)
-    with(subset(resOrd_dhdds, padj<thresh), textxy(baseMean, log2FoldChange, labs="Gene", cex=textcx, col=2))
-  }
-}
-png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
-maplot(resOrd_dhdds, ylim=c(-2,2), main="MA Plot DR vs HS")
-dev.off()
-
-# Volcano
-par(mar=c(5,5,5,5), cex=1.0, cex.main=1.4, cex.axis=1.4, cex.lab=1.4)
-
-drhs <- as.data.frame(resOrd_dhdds)
-
-#Adjusted P values (FDR Q values)
-with(drhs, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1.0, xlab=bquote(~Log[2]~fold~change), ylab=bquote(~-log[10]~Q~value)))
-
-with(subset(drhs, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
-
-with(subset(drhs, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(drhs), drhs$padj<0.05 & abs(drhs$log2FoldChange)>2), cex=0.8, pos=3))
-
-#Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
-abline(v=0, col="black", lty=3, lwd=1.0)
-abline(v=-2, col="black", lty=4, lwd=2.0)
-abline(v=2, col="black", lty=4, lwd=2.0)
-abline(h=-log10(max(drhs$pvalue[drhs$padj<0.05], na.rm=TRUE)), col="black", lty=4, lwd=2.0)
 ```
 
 
-
-
-# Model with interactions
-
 ```{r}
-dds.int <- DESeqDataSetFromMatrix(countData = countdata, 
-                                   colData = phenDat.sva, 
-                                   design = ~ SV1 + SV2 + batch + tissue + treatment + 
-                                    tissue*treatment)
+cdat1 <- read.csv("../../processed/gene_count_matrix_pl3c.csv", stringsAsFactors = FALSE)
 
-dds_int <- DESeq(dds.int)
-# 205 rows not converged!
-
-res_int <- results(dds_int)
-(resOrd_int <- res_int[order(res_int$padj), ])
-
-save(dds, file = "../../processed/DESEQ/DEseq_sva_int.Rda")
-write.csv(resOrd_int, 
-          "../../processed/DESEQ/DEseqSVA_int_resOrdered_padj.csv", row.names=TRUE)
+dds.g <- which(duplicated(cdat1$gene_id0))
+#cdat1[cdat1$gene_id0==cdat1$gene_id0[dds.g[6]],1:6]
+dd.mst <- cdat1$gene_id0[dds.g]
 
 
+cdat1$gene_id <- ifelse(cdat1$gene_id == "", cdat1$gene_id0, cdat1$gene_id) 
+cdat1 <- cdat1[c(2, 1, 3:57)]
+rownames(cdat1) <- cdat1[,1]
+
+#check those that are given FBgn by stringtie
+cdat1$id <- rownames(cdat1)
+cdat2$id <- rownames(cdat2)
+cdat3$id <- rownames(cdat3)
+
+mm <- merge(cdat1,cdat3,by='id')
+mmd<-mm[,5:58]-mm[,59:112]
+ss <- rowSums(mmd)
+which.min(ss)
+mm[673,]
+
+mm.dif <- mm[which(ss!=0),]
+set.dupM <- which(mm.dif$gene_id0 %in% dd.mst)
+mm.dif <- mm.dif[-set.dupM,]
+mm.dif<- mm.dif[-which(mm.dif$gene_id1!=""),]
+
+mm.sm<-mm.dif[,5:58]-mm.dif[,59:112]
+which.max(rowSums(mm.sm))
+mm.dif[41,1:10]
+#should be low in ovaries- flybase more consistent with ref set
 
 
-# Comparisons across treatment levels
-resultsNames(dds_int)
+ww.13<- which(!(cdat1$id %in% cdat3$id))
+grep("FB",cdat1$id[ww.13])
 
-# C vs DR
-cdr.int <- results(dds_deseq, contrast=c("treatment","C","DR"))
-mcols(cdr.int) # mcols = metadata columns, i.e. element-wise metadata
-(resOrd_cdrint <- cdr.int[order(cdr.int$padj), ])
-write.csv(resOrd_cdrint, 
-          "../../processed/DESEQ/CvDR_DEseqSVA_int_resOrdered_padj.csv", row.names=TRUE)
-
-#C vs HS
-hs.int <- results(dds_deseq, contrast=c("treatment","C","HS"))
-(resOrd_hsint <- hs.int[order(hs.int$padj), ])
-
-write.csv(resOrd_hsint, 
-          "../../processed/DESEQ/CvHS_DEseqSVA_int_resOrdered_padj.csv",
-          row.names=TRUE)
-```
-
-
-
-
-
-# Notes
-# Note: https://www.biostars.org/p/320132/
-
-```{r}
-# Filter step not necessary; default in results() - see ?results, but enhances speed https://support.bioconductor.org/p/65256/
-#filter <- rowSums(nc >= 10) >= 5 # at least 10 reads in at least 5 samples
-
-# Increase the maximum iterations (maxit) instead of running DESeq()
-#dds <- estimateSizeFactors(ddsDE_filt)
-#dds <- estimateDispersions(dds)
-#dds <- nbinomWaldTest(dds, maxit=20000)
-
-# To remove the non-converging rows
-#ddsClean <- dds[which(mcols(dds)$betaConv),]
-
-
-## Merge with normalized count data
-#res.dds_body <- merge(as.data.frame(res.dds), 
-                       #as.data.frame(counts(dds_deseq, normalized=TRUE)), 
-                       #by="row.names", sort=FALSE)
-#names(res.dds_table)[1] <- "Gene"
-#res.dds_body[,1] <- NULL
-
+ww.31<- which(!(cdat3$id %in% cdat1$id))
+ww.y<-which(cdat3$id[ww.31] %in% cdat1$gene_id1)
+cdat3$id[ww.31][-ww.y]
 ```
