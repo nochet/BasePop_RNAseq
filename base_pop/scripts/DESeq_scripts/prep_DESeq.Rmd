@@ -168,7 +168,7 @@ all(rownames(phenDat.sva) == colnames(countdata))
 # DESeqDataSet for all variables, no interaction
 dds.ttSS <- DESeqDataSetFromMatrix(countData = countdata, 
                                    colData = phenDat.sva, 
-                                   design = ~ SV1 + SV2 + batch + tissue + treatment)
+                                   design = ~ SV1 + batch + tissue + treatment)
 
 dds_deseq <- DESeq(dds.ttSS, fitType = "local")
 res.dds <- results(dds_deseq)
