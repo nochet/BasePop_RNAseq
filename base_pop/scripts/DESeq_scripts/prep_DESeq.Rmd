@@ -15,6 +15,7 @@ library(sva)
 library(ggplot2)
 library(limma)
 library(RColorBrewer)
+library(ReportingTools)
 
 set.seed(38142903)
 ```
@@ -430,42 +431,96 @@ dds.deInt <- nbinomWaldTest(dds.deInt, maxit = 10000, useOptim = TRUE)
 # Remove unconverged rows
 dds.deInt[which(mcols(dds.deInt)$betaConv),]
 
+# Look at the DESeq object
+colData(dds.deInt)
+
+# Access results
 res_int <- results(dds.deInt)
 (resOrd_int <- res_int[order(res_int$padj), ])
 
+save(dds.deInt, file = "../../processed/DESEQ/DEseq_sva_int.Rda")
+load("../../processed/DESEQ/DEseq_sva_int.Rda")
 # Basic tallies
 summary(res_int)
 
 # How many pvalues are less than 0.1
-#sum()
+sum(res_int$padj < 0.1, na.rm = TRUE)
 
-par(mar=c(8,5,2,2)) boxplot(log10(assays(dds)[["cooks"]]), range=0, las=2)
-boxplot(log10(assays(dds)[["cooks"]]), range=0, las=2)
+# Try alpha 0.05 (default is 0.1)
+res05 <- results(dds.deInt, alpha=0.05) 
+summary(res05)
 
-save(dds.deInt, file = "../../processed/DESEQ/DEseq_sva_int.Rda")
+# Boxplot of samples
+par(mar=c(8,5,2,2))
+boxplot(log10(assays(dds.deInt)[["cooks"]]), range=0, las=2)
+
+# Merge with normalized count data
+res.int_table <- merge(as.data.frame(res_int), 
+                       as.data.frame(counts(dds.deInt, normalized=TRUE)), 
+                       by="row.names", sort=FALSE)
+names(res.int_table)[1] <- "Gene"
+
 write.csv(resOrd_int, 
           "../../processed/DESEQ/DEseqSVA_int_resOrdered_padj.csv", row.names=TRUE)
+```
 
+# Look at highly DE genes
 
+```{r}
+topDE <- as.data.frame(res.int_table)
 
+highDown <- which(topDE$log2FoldChange < -5)
+topDE[highDown,]
 
-# Comparisons across treatment levels
-resultsNames(dds_int)
+highUp <- which(topDE$log2FoldChange > 5)
+topDE[highUp,]
+```
+
+# Contrasts
+
+```{r}
+# arguments 'name' and 'contrast' to results() are the same
+
+resultsNames(dds.deInt)
 
 # C vs DR
-cdr.int <- results(dds_deseq, contrast=c("treatment","C","DR"))
+cdr.int <- results(dds.deInt, contrast=c("treatment","DR","C"))
+#same as:
+cdr.in <- results(dds.deInt, name = "treatment_DR_vs_C")
+
 mcols(cdr.int) # mcols = metadata columns, i.e. element-wise metadata
 (resOrd_cdrint <- cdr.int[order(cdr.int$padj), ])
+
+# Get more info onresults columns
+mcols(cdr.int)$description
+
 write.csv(resOrd_cdrint, 
-          "../../processed/DESEQ/CvDR_DEseqSVA_int_resOrdered_padj.csv", row.names=TRUE)
+          "../../processed/DESEQ/treatment_DR_vs_C.csv", row.names=TRUE)
+
+resSig_cdr <- subset(resOrd_cdrint, padj < 0.1)
+summary(resSig_cdr)
+sum(resSig_cdr$padj < 0.1, na.rm = TRUE)
+
+# Log fold change shrinkage for visualization and ranking
+# Ref. https://www.biorxiv.org/content/early/2018/04/17/303255 #for fewer NAs in padj??.
+library(apeglm)
+res_cdr_LFC <- lfcShrink(dds.deInt, coef="treatment_DR_vs_C", type="apeglm") 
+res_cdr_LFC
+
+# Compare MA plots
+plotMA(cdr.int, ylim=c(-5,5))
+plotMA(res_cdr_LFC, ylim=c(-5,5))
+
 
 #C vs HS
 hs.int <- results(dds_deseq, contrast=c("treatment","C","HS"))
 (resOrd_hsint <- hs.int[order(hs.int$padj), ])
 
-write.csv(resOrd_hsint, 
-          "../../processed/DESEQ/CvHS_DEseqSVA_int_resOrdered_padj.csv",
+write.csv(resOrd_hsint, file= 
+          "../../processed/DESEQ/treatment_HS_vs_C.csv",
           row.names=TRUE)
+
+
 ```
 
 
