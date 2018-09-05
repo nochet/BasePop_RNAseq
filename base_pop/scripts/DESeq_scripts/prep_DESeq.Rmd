@@ -153,13 +153,15 @@ head(phenDat.sva, 3)
 ggplot(phenDat.sva, x=SV1, ) +
   geom_point(alpha=1/5, size=3)
 
-save(phenDat.sva, file = "../../processed/DESEQ/phenDat.sva.Rda")
+#save(phenDat.sva, file = "../../processed/DESEQ/phenDat.sva.Rda")
 ```
 
 # DESeq with surrogate variables added
 # Model without interaction
 
 ```{r}
+load("../../processed/DESEQ/phenDat.sva.Rda")
+
 # countData colnames() must be identical to colData rownames()
 all(rownames(phenDat.sva) %in% colnames(countdata))
 countdata <- countdata[, rownames(phenDat.sva)]
@@ -170,7 +172,11 @@ dds.ttSS <- DESeqDataSetFromMatrix(countData = countdata,
                                    colData = phenDat.sva, 
                                    design = ~ SV1 + batch + tissue + treatment)
 
-dds_deseq <- DESeq(dds.ttSS, fitType = "local")
+dds_deseq <- estimateSizeFactors(dds_deseq)
+dds_deseq <- estimateDispersions(dds_deseq, fitType = "local", maxit = 100)
+dds_deseq <- nbinomWaldTest(dds_deseq, maxit = 1000, useOptim = TRUE)
+
+#dds_deseq <- DESeq(dds.ttSS, fitType = "local")
 res.dds <- results(dds_deseq)
 (res.dds <- res.dds[order(res.dds$padj), ])
 
@@ -182,13 +188,15 @@ res.dds_table <- merge(as.data.frame(res.dds),
                        by="row.names", sort=FALSE)
 names(res.dds_table)[1] <- "Gene"
 
-save(res.dds, file = "../../processed/DESEQ/res.dds.Rda")
-save(dds_deseq, file = "../../processed/DESEQ/dds_deseq.Rda")
-save(res.dds_table, file = "../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+#save(res.dds, file = "../../processed/DESEQ/res.dds.Rda")
+#save(dds_deseq, file = "../../processed/DESEQ/dds_deseq.Rda")
+#save(res.dds_table, file = "../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
 
-write.csv(res.dds_table, 
-          "../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.csv", row.names=TRUE)
+#write.csv(res.dds_table, 
+          #"../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.csv", row.names=TRUE)
 
+load("../../processed/DESEQ/res.dds.Rda")
+load("../../processed/DESEQ/dds_deseq.Rda")
 load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
 
 # Examine plot of p-values
@@ -220,12 +228,6 @@ maplot <- function (res.dds_table, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
 png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
 maplot(res.dds_table, ylim=c(-2,2), main="MA Plot")
 dev.off()
-
-# see all results available
-resultsNames(dds_deseq)
-
-#resDR_C <- results(dds_deseq, "treatment_DR_vs_C")
-results(dds_deseq, contrast=c("treatment","C","DR"))
 ```
 
 # Volcano plot
@@ -263,6 +265,16 @@ with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), points(log2FoldCha
 # Label points with the textxy function from the calibrate plot
 library(calibrate)
 with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -log10(pvalue), labs=Gene, cex=.8))
+```
+
+# Look at highly DE genes
+
+```{r}
+highDown <- which(topT$log2FoldChange < -5)
+topT[highDown,]
+
+highUp <- which(topT$log2FoldChange > 5)
+topT[highUp,]
 ```
 
 # Contrast C vs DR
@@ -402,17 +414,35 @@ abline(h=-log10(max(drhs$pvalue[drhs$padj<0.05], na.rm=TRUE)), col="black", lty=
 
 ```{r}
 dds.int <- DESeqDataSetFromMatrix(countData = countdata, 
-                                   colData = phenDat.sva, 
-                                   design = ~ SV1 + SV2 + batch + tissue + treatment + 
-                                    tissue*treatment)
+                                  colData = phenDat.sva, 
+                                  design = ~ SV1 + batch + tissue + treatment + tissue*treatment)
 
-dds_int <- DESeq(dds.int)
-# 205 rows not converged!
+dds.deInt <- estimateSizeFactors(dds.int)
+nc <- counts(dds.deInt, normalized=TRUE)
+filter <- rowSums(nc >= 10) >= 2
+dds.deInt <- dds.deInt[filter,]
+dds.deInt <- estimateDispersions(dds.deInt, fitType = "local")
+dds.deInt <- nbinomWaldTest(dds.deInt, maxit = 10000, useOptim = TRUE)
 
-res_int <- results(dds_int)
+# dealing with autocorrelation: https://support.bioconductor.org/p/65091/
+#dds_int <- DESeq(dds.int)
+
+# Remove unconverged rows
+dds.deInt[which(mcols(dds.deInt)$betaConv),]
+
+res_int <- results(dds.deInt)
 (resOrd_int <- res_int[order(res_int$padj), ])
 
-save(dds, file = "../../processed/DESEQ/DEseq_sva_int.Rda")
+# Basic tallies
+summary(res_int)
+
+# How many pvalues are less than 0.1
+#sum()
+
+par(mar=c(8,5,2,2)) boxplot(log10(assays(dds)[["cooks"]]), range=0, las=2)
+boxplot(log10(assays(dds)[["cooks"]]), range=0, las=2)
+
+save(dds.deInt, file = "../../processed/DESEQ/DEseq_sva_int.Rda")
 write.csv(resOrd_int, 
           "../../processed/DESEQ/DEseqSVA_int_resOrdered_padj.csv", row.names=TRUE)
 
