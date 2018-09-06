@@ -15,18 +15,10 @@ library(sva)
 library(ggplot2)
 library(limma)
 library(RColorBrewer)
-library(ReportingTools)
+#library(ReportingTools)
 
 set.seed(38142903)
 ```
-
-# Get more gene_ids from StringTie object with python: https://www.biostars.org/p/261128/
-
-# Ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
-# Ref p.92-93 Haddok & Dunn book
-# Detailed instructions are in /scripts/DESeq_scripts/prepDEpy_instructions.txt
-
-# To split a .csv column with multiple id entries, follow: http://help.snapizzi.com/csv-files/split-csv-data-into-different-columns
 
 # Load gene(/transcript) count matrix and labels
 
@@ -34,23 +26,9 @@ set.seed(38142903)
 # Read in data frame and fill in empty spaces in column 2 with value in 1
 pl3c <- read.csv("../../processed/S03_short_ballG/gene_count_matrix.csv", 
                  stringsAsFactors = FALSE)
-# A gene count matrix that excludes all novel transcripts - see projectNotes.md
-
-length(unique(pl3c$gene_id))
-
-#dds.g <- which(duplicated(pl3c$gene_id0))
-#pl3c[pl3c$gene_id0==pl3c$gene_id0[dds.g[6]],1:6]
-
-#pl3c$gene_id <- ifelse(pl3c$gene_id == "", pl3c$gene_id0, pl3c$gene_id) 
-#pl3c <- pl3c[c(2, 1, 3:57)]
 
 rownames(pl3c) <- pl3c[,1]
 pl3c[,1] <- NULL
-
-# Same as:
-#pl3c[pl3c$gene_id == "", "gene_id"  ]  <- pl3c[pl3c$gene_id == "", "gene_id0" ]
-
-# Reformat column names
 countdata <- pl3c
 colnames(countdata) = sub("\\.","",colnames(countdata)) #regex escape the escape
 countdata <- as.matrix(countdata)
@@ -63,8 +41,6 @@ phenDat <- phenDat %>%
 rownames(phenDat) <- phenDat[,1]
 phenDat[,1] <- NULL
 rownames(phenDat) = sub("\\-","",rownames(phenDat)) 
-#colData <- pData(phenDat)[,c("treatment","tissue")]
-#phenDat <- as.matrix(phenDat)
 
 # Check all sample IDs in colData are also in CountData and match their orders
 all(rownames(phenDat) %in% colnames(countdata))
@@ -76,52 +52,15 @@ phenDat$treatment <- as.factor(phenDat$treatment)
 phenDat$tissue <- as.factor(phenDat$tissue)
 ```
 
-# Model with treatment and tissue
-# DESeq vs Ballgown, see https://support.bioconductor.org/p/107011/
-
-```{r}
-# Create a DESeqDataSet from count matrix and labels
-dds <- DESeqDataSetFromMatrix(countData = countdata,
-                              colData = phenDat, 
-                              design = ~ tissue + treatment)
-
-colData(dds)$treatment <- factor(colData(dds)$treatment,
-                                 levels = c("C","DR","HS"))
-
-# Run the default analysis for DESeq2 and generate results table
-
-#ddsDE <- DESeq(dds)
-#res <- results(ddsDE)
-
-#Sort by adjusted p-value and display
-#(resOrdered <- res[order(res$padj), ]) 
-
-#save(ddsDE, file = "../../processed/DESEQ/ddsDE.Rda")
-#save(resOrdered, file = "../../processed/DESEQ/resOrdered.Rda")
-
-```
-
-# Model with treatment, tissue and interaction
-
-```{r}
-dds2 <- DESeqDataSetFromMatrix(countData = countdata,
-colData = phenDat, design = ~ tissue + treatment + tissue*treatment)
-
-# Run the default analysis for DESeq2 and generate results table
-
-#ddsDE2 <- DESeq(dds2)
-#res2 <- results(ddsDE2)
-
-#Sort by adjusted p-value and display
-#(resOrdered2 <- res2[order(res2$padj), ]) 
-
-#save(ddsDE2, file = "../../processed/DESEQ/ddsDE2.Rda")
-#save(resOrdered2, file = "../../processed/DESEQ/resOrdered2.Rda")
-```
-
 # Control for batch effects with sva
 
 ```{r}
+
+dds <- DESeqDataSetFromMatrix(countData = countdata,
+                              colData = phenDat, 
+                              design = ~ tissue*treatment)
+
+
 dds.sva <- estimateSizeFactors(dds)
 dat.sva <- counts(dds.sva, normalized=TRUE)
 cc.c <- rowSums(dat.sva)
@@ -147,42 +86,71 @@ print(c("Calculated number of significant SVs = ", n.sv))
 svobj <- svaseq(dat.sva, mod, mod0, n.sv=n.sv) 
 
 phenDat.sva$SV1 <- svobj$sv[,1]
-#phenDat.sva$SV2 <- svobj$sv[,2]
-
-head(phenDat.sva, 3)
-
-ggplot(phenDat.sva, x=SV1, ) +
-  geom_point(alpha=1/5, size=3)
-
-#save(phenDat.sva, file = "../../processed/DESEQ/phenDat.sva.Rda")
-```
-
-# DESeq with surrogate variables added
-# Model without interaction
-
-```{r}
-load("../../processed/DESEQ/phenDat.sva.Rda")
 
 # countData colnames() must be identical to colData rownames()
 all(rownames(phenDat.sva) %in% colnames(countdata))
 countdata <- countdata[, rownames(phenDat.sva)]
 all(rownames(phenDat.sva) == colnames(countdata))
 
-# DESeqDataSet for all variables, no interaction
-dds.ttSS <- DESeqDataSetFromMatrix(countData = countdata, 
+```
+
+# Nested models
+
+```{r}
+# Create a DESeqDataSet from count matrix and labels
+
+dds.01 <- DESeqDataSetFromMatrix(countData = countdata, 
                                    colData = phenDat.sva, 
                                    design = ~ SV1 + batch + tissue + treatment)
 
-dds_deseq <- estimateSizeFactors(dds_deseq)
-dds_deseq <- estimateDispersions(dds_deseq, fitType = "local", maxit = 100)
-dds_deseq <- nbinomWaldTest(dds_deseq, maxit = 1000, useOptim = TRUE)
+dds.02 <- DESeqDataSetFromMatrix(countData = countdata, 
+                                   colData = phenDat.sva, 
+                                   design = ~ SV1 + batch + tissue*treatment)
 
-#dds_deseq <- DESeq(dds.ttSS, fitType = "local")
-res.dds <- results(dds_deseq)
-(res.dds <- res.dds[order(res.dds$padj), ])
+#either run DESeq or do these three steps
+dds_deseq.01 <- estimateSizeFactors(dds.01)
+nc <- counts(dds_deseq.01, normalized=TRUE)
+filter <- rowSums(nc >= 10) >= 2
+dds_deseq.01 <- dds_deseq.01[filter,]
+dds_deseq.01 <- estimateDispersions(dds_deseq.01, fitType = "local")
+dds_deseq.01 <- nbinomWaldTest(dds_deseq.01, maxit = 1000, useOptim = TRUE)
 
-# Note: fitType='parametric', but the dispersion trend was not well captured by the function: y = a/x + b, and a local regression fit was automatically substituted.specify fitType='local' or 'mean' to avoid this message next time. 72 rows did not converge
+dds_deseq.02 <- estimateSizeFactors(dds.02)
+nc <- counts(dds_deseq.02, normalized=TRUE)
+filter <- rowSums(nc >= 10) >= 2
+dds_deseq.02 <- dds_deseq.02[filter,]
+dds_deseq.02 <- estimateDispersions(dds_deseq.02, fitType = "local")
+dds_deseq.02 <- nbinomWaldTest(dds_deseq.02, maxit = 1000, useOptim = TRUE)
+dds_deseq.02 <- dds_deseq.02[which(mcols(dds_deseq.02)$betaConv),]
 
+# Look at the DESeq object
+colData(dds_deseq.01)
+colData(dds_deseq.02)
+
+
+lrt.tissue <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + treatment)
+lrt.tissue <- results(lrt.tissue)
+
+lrt.treatment <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + tissue)
+lrt.treatment <- results(lrt.treatment)
+
+lrt.int <- DESeq(dds.02, test="LRT", reduced=~ SV1 + batch + tissue + treatment)
+lrt.int <- results(lrt.int)
+
+
+# pairwise comparisions
+
+rr1 <- results(dds_deseq.02, contrast=c('tissue', "H","B"))
+rr2 <- results(dds_deseq.02, contrast=c('tissue', "O","B"))
+rr3 <- results(dds_deseq.02, contrast=c('tissue', "O","H"))
+
+
+```
+
+
+
+
+```{r}
 ## Merge with normalized count data
 res.dds_table <- merge(as.data.frame(res.dds), 
                        as.data.frame(counts(dds_deseq, normalized=TRUE)), 
@@ -416,7 +384,7 @@ abline(h=-log10(max(drhs$pvalue[drhs$padj<0.05], na.rm=TRUE)), col="black", lty=
 ```{r}
 dds.int <- DESeqDataSetFromMatrix(countData = countdata, 
                                   colData = phenDat.sva, 
-                                  design = ~ SV1 + batch + tissue + treatment + tissue*treatment)
+                                  design = ~ SV1 + batch + tissue + treatment + tissue:treatment)
 
 dds.deInt <- estimateSizeFactors(dds.int)
 nc <- counts(dds.deInt, normalized=TRUE)
@@ -429,10 +397,20 @@ dds.deInt <- nbinomWaldTest(dds.deInt, maxit = 10000, useOptim = TRUE)
 #dds_int <- DESeq(dds.int)
 
 # Remove unconverged rows
-dds.deInt[which(mcols(dds.deInt)$betaConv),]
+dds.deInt <- dds.deInt[which(mcols(dds.deInt)$betaConv),]
 
 # Look at the DESeq object
 colData(dds.deInt)
+
+# results for all terms
+
+rr1 <- results(dds.deInt, contrast=c('tissue', "H","B"))
+rr2 <- results(dds.deInt, contrast=c('tissue', "O","B"))
+rr3 <- results(dds.deInt, contrast=c('tissue', "O","H"))
+
+lrt.int <- DESeq(dds.int, test="LRT", reduced=~ SV1 + batch + tissue + treatment)
+lrt.int <- results(lrt.int)
+
 
 # Access results
 res_int <- results(dds.deInt)

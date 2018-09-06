@@ -109,7 +109,21 @@ STEP9A: Control for batch effects using SVAseq package
 	
 STEP9B: 
 
-## Project Notes 
+## Project Notes
+
+### General Notes & links
+
+ Get more gene_ids from StringTie object with python: https://www.biostars.org/p/261128/
+
+ Ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
+ Ref p.92-93 Haddok & Dunn book
+ Detailed instructions are in /scripts/DESeq_scripts/prepDEpy_instructions.txt
+
+ To split a .csv column with multiple id entries, follow: http://help.snapizzi.com/csv-files/split-csv-data-into-different-columns
+
+DESeq vs Ballgown, see https://support.bioconductor.org/p/107011/
+
+
 
 ### 2018-08-30 (EGK)
 
