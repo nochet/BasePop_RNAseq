@@ -1,0 +1,553 @@
+---
+title: "Prep counts from StringTie output for use with DESeq2"
+author: "Enoch Ng'oma"
+date: "7/19/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(DESeq2)
+library(dplyr)
+library(stringr)
+library(sva)
+library(ggplot2)
+library(limma)
+library(RColorBrewer)
+library(ReportingTools)
+
+set.seed(38142903)
+```
+
+# Get more gene_ids from StringTie object with python: https://www.biostars.org/p/261128/
+
+# Ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
+# Ref p.92-93 Haddok & Dunn book
+# Detailed instructions are in /scripts/DESeq_scripts/prepDEpy_instructions.txt
+
+# To split a .csv column with multiple id entries, follow: http://help.snapizzi.com/csv-files/split-csv-data-into-different-columns
+
+# Load gene(/transcript) count matrix and labels
+
+```{r}
+# Read in data frame and fill in empty spaces in column 2 with value in 1
+pl3c <- read.csv("../../processed/S03_short_ballG/gene_count_matrix.csv", 
+                 stringsAsFactors = FALSE)
+# A gene count matrix that excludes all novel transcripts - see projectNotes.md
+
+length(unique(pl3c$gene_id))
+
+#dds.g <- which(duplicated(pl3c$gene_id0))
+#pl3c[pl3c$gene_id0==pl3c$gene_id0[dds.g[6]],1:6]
+
+#pl3c$gene_id <- ifelse(pl3c$gene_id == "", pl3c$gene_id0, pl3c$gene_id) 
+#pl3c <- pl3c[c(2, 1, 3:57)]
+
+rownames(pl3c) <- pl3c[,1]
+pl3c[,1] <- NULL
+
+# Same as:
+#pl3c[pl3c$gene_id == "", "gene_id"  ]  <- pl3c[pl3c$gene_id == "", "gene_id0" ]
+
+# Reformat column names
+countdata <- pl3c
+colnames(countdata) = sub("\\.","",colnames(countdata)) #regex escape the escape
+countdata <- as.matrix(countdata)
+
+phenDat <- read.csv("../../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
+names(phenDat)[1]<-"ids"
+phenDat <- phenDat %>%
+  select(ids,treatment,tissue,group)
+
+rownames(phenDat) <- phenDat[,1]
+phenDat[,1] <- NULL
+rownames(phenDat) = sub("\\-","",rownames(phenDat)) 
+#colData <- pData(phenDat)[,c("treatment","tissue")]
+#phenDat <- as.matrix(phenDat)
+
+# Check all sample IDs in colData are also in CountData and match their orders
+all(rownames(phenDat) %in% colnames(countdata))
+countdata <- countdata[, rownames(phenDat)]
+all(rownames(phenDat) == colnames(countdata))
+
+phenDat$group <- as.factor(phenDat$group)
+phenDat$treatment <- as.factor(phenDat$treatment)
+phenDat$tissue <- as.factor(phenDat$tissue)
+```
+
+# Model with treatment and tissue
+# DESeq vs Ballgown, see https://support.bioconductor.org/p/107011/
+
+```{r}
+# Create a DESeqDataSet from count matrix and labels
+dds <- DESeqDataSetFromMatrix(countData = countdata,
+                              colData = phenDat, 
+                              design = ~ tissue + treatment)
+
+colData(dds)$treatment <- factor(colData(dds)$treatment,
+                                 levels = c("C","DR","HS"))
+
+# Run the default analysis for DESeq2 and generate results table
+
+#ddsDE <- DESeq(dds)
+#res <- results(ddsDE)
+
+#Sort by adjusted p-value and display
+#(resOrdered <- res[order(res$padj), ]) 
+
+#save(ddsDE, file = "../../processed/DESEQ/ddsDE.Rda")
+#save(resOrdered, file = "../../processed/DESEQ/resOrdered.Rda")
+
+```
+
+# Model with treatment, tissue and interaction
+
+```{r}
+dds2 <- DESeqDataSetFromMatrix(countData = countdata,
+colData = phenDat, design = ~ tissue + treatment + tissue*treatment)
+
+# Run the default analysis for DESeq2 and generate results table
+
+#ddsDE2 <- DESeq(dds2)
+#res2 <- results(ddsDE2)
+
+#Sort by adjusted p-value and display
+#(resOrdered2 <- res2[order(res2$padj), ]) 
+
+#save(ddsDE2, file = "../../processed/DESEQ/ddsDE2.Rda")
+#save(resOrdered2, file = "../../processed/DESEQ/resOrdered2.Rda")
+```
+
+# Control for batch effects with sva
+
+```{r}
+dds.sva <- estimateSizeFactors(dds)
+dat.sva <- counts(dds.sva, normalized=TRUE)
+cc.c <- rowSums(dat.sva)
+
+#remove all genes with 0s for all samples
+dat.sva <- dat.sva[which(cc.c>0),]
+
+phenDat.sva <- phenDat
+names(phenDat.sva)[3]<-"batch"
+#cbind(phenDat.sva, colnames(dat.sva))
+
+mod <- model.matrix(~as.factor(treatment)* 
+                              as.factor(tissue) + 
+                              as.factor(batch), 
+                              data=phenDat.sva)
+
+mod0 <- model.matrix(~as.factor(batch), data=phenDat.sva) 
+
+# calculate number of surrogate variables
+n.sv <- num.sv(dat.sva, mod, method = "be")
+print(c("Calculated number of significant SVs = ", n.sv))
+
+svobj <- svaseq(dat.sva, mod, mod0, n.sv=n.sv) 
+
+phenDat.sva$SV1 <- svobj$sv[,1]
+#phenDat.sva$SV2 <- svobj$sv[,2]
+
+head(phenDat.sva, 3)
+
+ggplot(phenDat.sva, x=SV1, ) +
+  geom_point(alpha=1/5, size=3)
+
+#save(phenDat.sva, file = "../../processed/DESEQ/phenDat.sva.Rda")
+```
+
+# DESeq with surrogate variables added
+# Model without interaction
+
+```{r}
+load("../../processed/DESEQ/phenDat.sva.Rda")
+
+# countData colnames() must be identical to colData rownames()
+all(rownames(phenDat.sva) %in% colnames(countdata))
+countdata <- countdata[, rownames(phenDat.sva)]
+all(rownames(phenDat.sva) == colnames(countdata))
+
+# DESeqDataSet for all variables, no interaction
+dds.ttSS <- DESeqDataSetFromMatrix(countData = countdata, 
+                                   colData = phenDat.sva, 
+                                   design = ~ SV1 + batch + tissue + treatment)
+
+dds_deseq <- estimateSizeFactors(dds_deseq)
+dds_deseq <- estimateDispersions(dds_deseq, fitType = "local", maxit = 100)
+dds_deseq <- nbinomWaldTest(dds_deseq, maxit = 1000, useOptim = TRUE)
+
+#dds_deseq <- DESeq(dds.ttSS, fitType = "local")
+res.dds <- results(dds_deseq)
+(res.dds <- res.dds[order(res.dds$padj), ])
+
+# Note: fitType='parametric', but the dispersion trend was not well captured by the function: y = a/x + b, and a local regression fit was automatically substituted.specify fitType='local' or 'mean' to avoid this message next time. 72 rows did not converge
+
+## Merge with normalized count data
+res.dds_table <- merge(as.data.frame(res.dds), 
+                       as.data.frame(counts(dds_deseq, normalized=TRUE)), 
+                       by="row.names", sort=FALSE)
+names(res.dds_table)[1] <- "Gene"
+
+#save(res.dds, file = "../../processed/DESEQ/res.dds.Rda")
+#save(dds_deseq, file = "../../processed/DESEQ/dds_deseq.Rda")
+#save(res.dds_table, file = "../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+#write.csv(res.dds_table, 
+          #"../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.csv", row.names=TRUE)
+
+load("../../processed/DESEQ/res.dds.Rda")
+load("../../processed/DESEQ/dds_deseq.Rda")
+load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+# Examine plot of p-values
+hist(res.dds$pvalue, breaks=50, col="grey")
+
+# Examine independent filtering
+metadata(res.dds)$filterThreshold
+
+plot(metadata(res.dds)$filterNumRej, type="b", xlab="quantiles of baseMean", ylab="number of rejections")
+```
+
+# MA plot
+
+```{r}
+load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+# Could do with built-in DESeq2 function:
+DESeq2::plotMA(dds_deseq, ylim=c(-5,5))
+
+# Alternatively
+maplot <- function (res.dds_table, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
+  with(res.dds_table, plot(baseMean, log2FoldChange, pch=20, cex=.5, log="x", ...))
+  with(subset(res.dds_table, padj<thresh), points(baseMean, log2FoldChange, col="red", pch=20, cex=1.5))
+  if (labelsig) {
+    require(calibrate)
+    with(subset(res.dds_table, padj<thresh), textxy(baseMean, log2FoldChange, labs="Gene", cex=textcx, col=2))
+  }
+}
+png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
+maplot(res.dds_table, ylim=c(-2,2), main="MA Plot")
+dev.off()
+```
+
+# Volcano plot
+
+```{r}
+load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+par(mar=c(5,5,5,5), cex=1.0, cex.main=1.4, cex.axis=1.4, cex.lab=1.4)
+
+topT <- as.data.frame(res.dds_table)
+
+#Adjusted P values (FDR Q values)
+with(topT, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1.0, xlab=bquote(~Log[2]~fold~change), ylab=bquote(~-log[10]~Q~value)))
+
+with(subset(topT, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
+
+with(subset(topT, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(topT), topT$padj<0.05 & abs(topT$log2FoldChange)>2), cex=0.8, pos=3))
+
+#Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
+abline(v=0, col="black", lty=3, lwd=1.0)
+abline(v=-2, col="black", lty=4, lwd=2.0)
+abline(v=2, col="black", lty=4, lwd=2.0)
+abline(h=-log10(max(topT$pvalue[topT$padj<0.05], na.rm=TRUE)), col="black", lty=4, lwd=2.0)
+```
+
+```{r}
+#dev.off()
+with(res.dds_table, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-5,5), ylim=c(0,25)))
+
+# Add colored points: red if padj<0.05, orange of log2FC>1, green if both)
+with(subset(res.dds_table, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+with(subset(res.dds_table, abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="orange"))
+with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="green"))
+
+# Label points with the textxy function from the calibrate plot
+library(calibrate)
+with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -log10(pvalue), labs=Gene, cex=.8))
+```
+
+# Look at highly DE genes
+
+```{r}
+highDown <- which(topT$log2FoldChange < -5)
+topT[highDown,]
+
+highUp <- which(topT$log2FoldChange > 5)
+topT[highUp,]
+```
+
+# Contrast C vs DR
+
+```{r}
+# Comparisons across treatment levels
+resultsNames(dds_deseq)
+
+cdr.dds <- results(dds_deseq, contrast=c("treatment","C","DR"))
+mcols(cdr.dds) # mcols = metadata columns, i.e. element-wise metadata
+(resOrd_cdrdds <- cdr.dds[order(cdr.dds$padj), ])
+write.csv(resOrd_cdrdds, 
+          "../../processed/DESEQ/CvDR_DEseqSVA_dds_resOrdered_padj.csv", row.names=TRUE)
+
+
+# MA plot
+maplot <- function (resOrd_cdrdds, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
+  with(resOrd_cdrdds, plot(baseMean, log2FoldChange, pch=20, cex=.5, log="x", ...))
+  with(subset(resOrd_cdrdds, padj<thresh), points(baseMean, log2FoldChange, col="red", pch=20, cex=1.5))
+  if (labelsig) {
+    require(calibrate)
+    with(subset(resOrd_cdrdds, padj<thresh), textxy(baseMean, log2FoldChange, labs="Gene", cex=textcx, col=2))
+  }
+}
+png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
+maplot(resOrd_cdrdds, ylim=c(-2,2), main="MA Plot C vs DR")
+dev.off()
+
+
+# Volcano
+par(mar=c(5,5,5,5), cex=1.0, cex.main=1.4, cex.axis=1.4, cex.lab=1.4)
+
+cdr <- as.data.frame(resOrd_cdrdds)
+
+#Adjusted P values (FDR Q values)
+with(cdr, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1.0, xlab=bquote(~Log[2]~fold~change), ylab=bquote(~-log[10]~Q~value)))
+
+with(subset(cdr, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
+
+with(subset(cdr, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(cdr), cdr$padj<0.05 & abs(cdr$log2FoldChange)>2), cex=0.8, pos=3))
+
+#Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
+abline(v=0, col="black", lty=3, lwd=1.0)
+abline(v=-2, col="black", lty=4, lwd=2.0)
+abline(v=2, col="black", lty=4, lwd=2.0)
+abline(h=-log10(max(cdr$pvalue[cdr$padj<0.05], na.rm=TRUE)), col="black", lty=4, lwd=2.0)
+```
+
+# Contrast C vs HS
+
+```{r}
+hs.dds <- results(dds_deseq, contrast=c("treatment","C","HS"))
+(resOrd_hsdds <- hs.dds[order(hs.dds$padj), ])
+
+write.csv(resOrd_hsdds, 
+          "../../processed/DESEQ/CvHS_DEseqSVA_dds_resOrdered_padj.csv",
+          row.names=TRUE)
+
+# MA plot
+maplot <- function (resOrd_hsdds, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
+  with(resOrd_hsdds, plot(baseMean, log2FoldChange, pch=20, cex=.5, log="x", ...))
+  with(subset(resOrd_hsdds, padj<thresh), points(baseMean, log2FoldChange, col="red", pch=20, cex=1.5))
+  if (labelsig) {
+    require(calibrate)
+    with(subset(resOrd_hsdds, padj<thresh), textxy(baseMean, log2FoldChange, labs="Gene", cex=textcx, col=2))
+  }
+}
+png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
+maplot(resOrd_hsdds, ylim=c(-2,2), main="MA Plot C vs HS")
+dev.off()
+
+# Volcano
+par(mar=c(5,5,5,5), cex=1.0, cex.main=1.4, cex.axis=1.4, cex.lab=1.4)
+
+hs <- as.data.frame(resOrd_hsdds)
+
+#Adjusted P values (FDR Q values)
+with(hs, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1.0, xlab=bquote(~Log[2]~fold~change), ylab=bquote(~-log[10]~Q~value)))
+
+with(subset(hs, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
+
+with(subset(hs, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(hs), hs$padj<0.05 & abs(hs$log2FoldChange)>2), cex=0.8, pos=3))
+
+#Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
+abline(v=0, col="black", lty=3, lwd=1.0)
+abline(v=-2, col="black", lty=4, lwd=2.0)
+abline(v=2, col="black", lty=4, lwd=2.0)
+abline(h=-log10(max(hs$pvalue[hs$padj<0.05], na.rm=TRUE)), col="black", lty=4, lwd=2.0)
+```
+
+# Contrast DR vs HS
+
+```{r}
+dh.dds <- results(dds_deseq, contrast=c("treatment","DR","HS"))
+(resOrd_dhdds <- dh.dds[order(dh.dds$padj), ])
+
+write.csv(resOrd_dhdds, 
+          "../../processed/DESEQ/DRvHS_DEseqSVA_dds_resOrdered_padj.csv",
+          row.names=TRUE)
+
+# MA plot
+maplot <- function (resOrd_dhdds, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
+  with(resOrd_dhdds, plot(baseMean, log2FoldChange, pch=20, cex=.5, log="x", ...))
+  with(subset(resOrd_dhdds, padj<thresh), points(baseMean, log2FoldChange, col="red", pch=20, cex=1.5))
+  if (labelsig) {
+    require(calibrate)
+    with(subset(resOrd_dhdds, padj<thresh), textxy(baseMean, log2FoldChange, labs="Gene", cex=textcx, col=2))
+  }
+}
+png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
+maplot(resOrd_dhdds, ylim=c(-2,2), main="MA Plot DR vs HS")
+dev.off()
+
+# Volcano
+par(mar=c(5,5,5,5), cex=1.0, cex.main=1.4, cex.axis=1.4, cex.lab=1.4)
+
+drhs <- as.data.frame(resOrd_dhdds)
+
+#Adjusted P values (FDR Q values)
+with(drhs, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1.0, xlab=bquote(~Log[2]~fold~change), ylab=bquote(~-log[10]~Q~value)))
+
+with(subset(drhs, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
+
+with(subset(drhs, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(drhs), drhs$padj<0.05 & abs(drhs$log2FoldChange)>2), cex=0.8, pos=3))
+
+#Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
+abline(v=0, col="black", lty=3, lwd=1.0)
+abline(v=-2, col="black", lty=4, lwd=2.0)
+abline(v=2, col="black", lty=4, lwd=2.0)
+abline(h=-log10(max(drhs$pvalue[drhs$padj<0.05], na.rm=TRUE)), col="black", lty=4, lwd=2.0)
+```
+
+
+
+
+# Model with interactions
+
+```{r}
+dds.int <- DESeqDataSetFromMatrix(countData = countdata, 
+                                  colData = phenDat.sva, 
+                                  design = ~ SV1 + batch + tissue + treatment + tissue*treatment)
+
+dds.deInt <- estimateSizeFactors(dds.int)
+nc <- counts(dds.deInt, normalized=TRUE)
+filter <- rowSums(nc >= 10) >= 2
+dds.deInt <- dds.deInt[filter,]
+dds.deInt <- estimateDispersions(dds.deInt, fitType = "local")
+dds.deInt <- nbinomWaldTest(dds.deInt, maxit = 10000, useOptim = TRUE)
+
+# dealing with autocorrelation: https://support.bioconductor.org/p/65091/
+#dds_int <- DESeq(dds.int)
+
+# Remove unconverged rows
+dds.deInt[which(mcols(dds.deInt)$betaConv),]
+
+# Look at the DESeq object
+colData(dds.deInt)
+
+# Access results
+res_int <- results(dds.deInt)
+(resOrd_int <- res_int[order(res_int$padj), ])
+
+save(dds.deInt, file = "../../processed/DESEQ/DEseq_sva_int.Rda")
+load("../../processed/DESEQ/DEseq_sva_int.Rda")
+# Basic tallies
+summary(res_int)
+
+# How many pvalues are less than 0.1
+sum(res_int$padj < 0.1, na.rm = TRUE)
+
+# Try alpha 0.05 (default is 0.1)
+res05 <- results(dds.deInt, alpha=0.05) 
+summary(res05)
+
+# Boxplot of samples
+par(mar=c(8,5,2,2))
+boxplot(log10(assays(dds.deInt)[["cooks"]]), range=0, las=2)
+
+# Merge with normalized count data
+res.int_table <- merge(as.data.frame(res_int), 
+                       as.data.frame(counts(dds.deInt, normalized=TRUE)), 
+                       by="row.names", sort=FALSE)
+names(res.int_table)[1] <- "Gene"
+
+write.csv(resOrd_int, 
+          "../../processed/DESEQ/DEseqSVA_int_resOrdered_padj.csv", row.names=TRUE)
+```
+
+# Look at highly DE genes
+
+```{r}
+topDE <- as.data.frame(res.int_table)
+
+highDown <- which(topDE$log2FoldChange < -5)
+topDE[highDown,]
+
+highUp <- which(topDE$log2FoldChange > 5)
+topDE[highUp,]
+```
+
+# Contrasts
+
+```{r}
+# arguments 'name' and 'contrast' to results() are the same
+
+resultsNames(dds.deInt)
+
+# C vs DR
+cdr.int <- results(dds.deInt, contrast=c("treatment","DR","C"))
+#same as:
+cdr.in <- results(dds.deInt, name = "treatment_DR_vs_C")
+
+mcols(cdr.int) # mcols = metadata columns, i.e. element-wise metadata
+(resOrd_cdrint <- cdr.int[order(cdr.int$padj), ])
+
+# Get more info onresults columns
+mcols(cdr.int)$description
+
+write.csv(resOrd_cdrint, 
+          "../../processed/DESEQ/treatment_DR_vs_C.csv", row.names=TRUE)
+
+resSig_cdr <- subset(resOrd_cdrint, padj < 0.1)
+summary(resSig_cdr)
+sum(resSig_cdr$padj < 0.1, na.rm = TRUE)
+
+# Log fold change shrinkage for visualization and ranking
+# Ref. https://www.biorxiv.org/content/early/2018/04/17/303255 #for fewer NAs in padj??.
+library(apeglm)
+res_cdr_LFC <- lfcShrink(dds.deInt, coef="treatment_DR_vs_C", type="apeglm") 
+res_cdr_LFC
+
+# Compare MA plots
+plotMA(cdr.int, ylim=c(-5,5))
+plotMA(res_cdr_LFC, ylim=c(-5,5))
+
+
+#C vs HS
+hs.int <- results(dds_deseq, contrast=c("treatment","C","HS"))
+(resOrd_hsint <- hs.int[order(hs.int$padj), ])
+
+write.csv(resOrd_hsint, file= 
+          "../../processed/DESEQ/treatment_HS_vs_C.csv",
+          row.names=TRUE)
+
+
+```
+
+
+
+
+
+# Notes
+# Note: https://www.biostars.org/p/320132/
+
+```{r}
+# Filter step not necessary; default in results() - see ?results, but enhances speed https://support.bioconductor.org/p/65256/
+#filter <- rowSums(nc >= 10) >= 5 # at least 10 reads in at least 5 samples
+
+# Increase the maximum iterations (maxit) instead of running DESeq()
+#dds <- estimateSizeFactors(ddsDE_filt)
+#dds <- estimateDispersions(dds)
+#dds <- nbinomWaldTest(dds, maxit=20000)
+
+# To remove the non-converging rows
+#ddsClean <- dds[which(mcols(dds)$betaConv),]
+
+
+## Merge with normalized count data
+#res.dds_body <- merge(as.data.frame(res.dds), 
+                       #as.data.frame(counts(dds_deseq, normalized=TRUE)), 
+                       #by="row.names", sort=FALSE)
+#names(res.dds_table)[1] <- "Gene"
+#res.dds_body[,1] <- NULL
+
+```

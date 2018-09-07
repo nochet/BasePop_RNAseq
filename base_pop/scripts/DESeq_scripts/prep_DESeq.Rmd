@@ -15,7 +15,6 @@ library(sva)
 library(ggplot2)
 library(limma)
 library(RColorBrewer)
-#library(ReportingTools)
 
 set.seed(38142903)
 ```
@@ -91,7 +90,6 @@ phenDat.sva$SV1 <- svobj$sv[,1]
 all(rownames(phenDat.sva) %in% colnames(countdata))
 countdata <- countdata[, rownames(phenDat.sva)]
 all(rownames(phenDat.sva) == colnames(countdata))
-
 ```
 
 # Nested models
@@ -107,7 +105,7 @@ dds.02 <- DESeqDataSetFromMatrix(countData = countdata,
                                    colData = phenDat.sva, 
                                    design = ~ SV1 + batch + tissue*treatment)
 
-#either run DESeq or do these three steps
+# either run DESeq or do these three steps
 dds_deseq.01 <- estimateSizeFactors(dds.01)
 nc <- counts(dds_deseq.01, normalized=TRUE)
 filter <- rowSums(nc >= 10) >= 2
@@ -127,26 +125,68 @@ dds_deseq.02 <- dds_deseq.02[which(mcols(dds_deseq.02)$betaConv),]
 colData(dds_deseq.01)
 colData(dds_deseq.02)
 
-
+# Effect of tissue 
 lrt.tissue <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + treatment)
-lrt.tissue <- results(lrt.tissue)
+lrt.tissue <- lrt.tissue[which(mcols(lrt.tissue)$fullBetaConv),]
+lrt.tissue <- results(lrt.tissue, alpha = 0.05)
 
+# Effect of treatment 
 lrt.treatment <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + tissue)
-lrt.treatment <- results(lrt.treatment)
+lrt.treatment <- lrt.treatment[which(mcols(lrt.treatment)$fullBetaConv),]
+lrt.treatment <- results(lrt.treatment, alpha = 0.05)
 
+# Effect of the interaction 
 lrt.int <- DESeq(dds.02, test="LRT", reduced=~ SV1 + batch + tissue + treatment)
-lrt.int <- results(lrt.int)
-
+lrt.int <- lrt.int[which(mcols(lrt.int)$fullBetaConv),]
+lrt.int <- results(lrt.int, alpha = 0.05)
 
 # pairwise comparisions
+rr1 <- results(dds_deseq.02, contrast=c('tissue', "H","B"), alpha = 0.05)
+rr2 <- results(dds_deseq.02, contrast=c('tissue', "O","B"), alpha = 0.05)
+rr3 <- results(dds_deseq.02, contrast=c('tissue', "O","H"), alpha = 0.05)
 
-rr1 <- results(dds_deseq.02, contrast=c('tissue', "H","B"))
-rr2 <- results(dds_deseq.02, contrast=c('tissue', "O","B"))
-rr3 <- results(dds_deseq.02, contrast=c('tissue', "O","H"))
+# Get list of DEGs
+resSig_lrt.int <- subset(lrt.int, padj < 0.05)
+summary(resSig_lrt.int)
+sum(resSig_lrt.int$padj < 0.05, na.rm = TRUE)
 
+resSig_lrt.tissue <- subset(lrt.tissue, padj < 0.05)
+summary(resSig_lrt.tissue)
+sum(lrt.tissue$padj < 0.05, na.rm = TRUE)
 
+resSig_lrt.treatment <- subset(lrt.treatment, padj < 0.05)
+summary(resSig_lrt.treatment)
+sum(lrt.treatment$padj < 0.05, na.rm = TRUE)
+
+# List for comparisons
+resSig_HB <- subset(rr1, padj < 0.05)
+summary(resSig_HB)
+sum(resSig_HB$padj < 0.05, na.rm = TRUE)
+
+resSig_OB <- subset(rr2, padj < 0.05)
+summary(resSig_OB)
+sum(resSig_OB$padj < 0.05, na.rm = TRUE)
+
+resSig_OH <- subset(rr3, padj < 0.05)
+summary(resSig_OH)
+sum(resSig_OH$padj < 0.05, na.rm = TRUE)
 ```
 
+# PCA
+
+```{r}
+
+vsd.01 <- varianceStabilizingTransformation(dds_deseq.01, blind = TRUE)
+vsd.02 <- varianceStabilizingTransformation(dds_deseq.02, blind = TRUE)
+
+print(plotPCA(vsd.01, intgroup=c("treatment", "tissue")))
+plotPCA(vsd.01, intgroup=c("tissue"), returnData=FALSE)
+plotPCA(vsd.01, intgroup=c("treatment"), returnData=FALSE)
+
+print(plotPCA(vsd.02, intgroup=c("treatment", "tissue")))
+plotPCA(vsd.02, intgroup=c("tissue"), returnData=FALSE)
+plotPCA(vsd.02, intgroup=c("treatment"), returnData=FALSE)
+```
 
 
 
