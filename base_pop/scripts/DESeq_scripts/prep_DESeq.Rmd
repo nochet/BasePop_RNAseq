@@ -149,27 +149,35 @@ rr3 <- results(dds_deseq.02, contrast=c('tissue', "O","H"), alpha = 0.05)
 resSig_lrt.int <- subset(lrt.int, padj < 0.05)
 summary(resSig_lrt.int)
 sum(resSig_lrt.int$padj < 0.05, na.rm = TRUE)
+write.table(resSig_lrt.int, "../../processed/DESEQ/resSig_lrt.int_0.05.xlsx", row.names=TRUE, sep="\t")
 
 resSig_lrt.tissue <- subset(lrt.tissue, padj < 0.05)
 summary(resSig_lrt.tissue)
 sum(lrt.tissue$padj < 0.05, na.rm = TRUE)
+write.table(resSig_lrt.tissue, "../../processed/DESEQ/resSig_lrt.tissue_0.05.xlsx", row.names=TRUE, sep="\t")
 
 resSig_lrt.treatment <- subset(lrt.treatment, padj < 0.05)
 summary(resSig_lrt.treatment)
 sum(lrt.treatment$padj < 0.05, na.rm = TRUE)
+write.table(resSig_lrt.treatment, "../../processed/DESEQ/resSig_lrt.treatment_0.05.xlsx", row.names=TRUE, sep="\t")
+
 
 # List for comparisons
 resSig_HB <- subset(rr1, padj < 0.05)
 summary(resSig_HB)
 sum(resSig_HB$padj < 0.05, na.rm = TRUE)
+write.table(resSig_HB, "../../processed/DESEQ/resSig_HB_0.05.xlsx", row.names=TRUE, sep="\t")
 
 resSig_OB <- subset(rr2, padj < 0.05)
 summary(resSig_OB)
 sum(resSig_OB$padj < 0.05, na.rm = TRUE)
+write.table(resSig_OB, "../../processed/DESEQ/resSig_OB_0.05.xlsx", row.names=TRUE, sep="\t")
 
 resSig_OH <- subset(rr3, padj < 0.05)
 summary(resSig_OH)
 sum(resSig_OH$padj < 0.05, na.rm = TRUE)
+write.table(resSig_OH, "../../processed/DESEQ/resSig_OH_0.05.xlsx", row.names=TRUE, sep="\t")
+
 ```
 
 # PCA
