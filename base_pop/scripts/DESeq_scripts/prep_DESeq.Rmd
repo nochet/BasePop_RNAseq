@@ -147,25 +147,32 @@ rr3 <- results(dds_deseq.02, contrast=c('tissue', "O","H"), alpha = 0.05)
 
 # Get list of DEGs
 resSig_lrt.int <- subset(lrt.int, padj < 0.05)
-summary(resSig_lrt.int)
-sum(resSig_lrt.int$padj < 0.05, na.rm = TRUE)
-resSig_lrt.int$Gene <- rownames(resSig_lrt.int)
-resSig_lrt.int <- resSig_lrt.int[, c(7,1:6)]
-write.csv(resSig_lrt.int, "../../processed/DESEQ/DEGs_lrt.int_0.05.csv", row.names=TRUE)
-
 resSig_lrt.tissue <- subset(lrt.tissue, padj < 0.05)
-summary(resSig_lrt.tissue)
-sum(lrt.tissue$padj < 0.05, na.rm = TRUE)
-resSig_lrt.tissue$Gene <- rownames(resSig_lrt.tissue)
-resSig_lrt.tissue <- resSig_lrt.tissue[, c(7,1:6)]
-write.csv(resSig_lrt.tissue, "../../processed/DESEQ/DEGs_lrt.tissue_0.05.csv", row.names=TRUE)
-
 resSig_lrt.treatment <- subset(lrt.treatment, padj < 0.05)
+
+summary(resSig_lrt.int)
+summary(resSig_lrt.tissue)
 summary(resSig_lrt.treatment)
+
+sum(resSig_lrt.int$padj < 0.05, na.rm = TRUE)
+sum(lrt.tissue$padj < 0.05, na.rm = TRUE)
 sum(lrt.treatment$padj < 0.05, na.rm = TRUE)
+
+resSig_lrt.int$Gene <- rownames(resSig_lrt.int)
+resSig_lrt.tissue$Gene <- rownames(resSig_lrt.tissue)
 resSig_lrt.treatment$Gene <- rownames(resSig_lrt.treatment)
+
+resSig_lrt.int <- resSig_lrt.int[, c(7,1:6)]
+resSig_lrt.tissue <- resSig_lrt.tissue[, c(7,1:6)]
 resSig_lrt.treatment <- resSig_lrt.treatment[, c(7,1:6)]
-write.csv(resSig_lrt.treatment, "../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv", row.names=TRUE)
+
+(resSig_lrt.int <- resSig_lrt.int[order(resSig_lrt.int$padj), ])
+resSig_lrt.tissue <- resSig_lrt.tissue[order(resSig_lrt.tissue$padj), ]
+resSig_lrt.treatment <- resSig_lrt.treatment[order(resSig_lrt.treatment$padj), ]
+
+write.csv(resSig_lrt.int, "../../processed/DESEQ/DEGs_lrt.int_0.05.csv")
+write.csv(resSig_lrt.tissue, "../../processed/DESEQ/DEGs_lrt.tissue_0.05.csv")
+write.csv(resSig_lrt.treatment, "../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv")
 
 
 # List for comparisons
@@ -174,21 +181,24 @@ summary(resSig_HB)
 sum(resSig_HB$padj < 0.05, na.rm = TRUE)
 resSig_HB$Gene <- rownames(resSig_HB)
 resSig_HB <- resSig_HB[, c(7,1:6)]
-write.csv(resSig_HB, "../../processed/DESEQ/DEGs_HB_0.05.csv", row.names=TRUE)
+(resSig_HB <- resSig_HB[order(resSig_HB$padj), ])
+write.csv(resSig_HB, "../../processed/DESEQ/DEGs_HB_0.05.csv")
 
 resSig_OB <- subset(rr2, padj < 0.05)
 summary(resSig_OB)
 sum(resSig_OB$padj < 0.05, na.rm = TRUE)
 resSig_OB$Gene <- rownames(resSig_OB)
 resSig_OB <- resSig_OB[, c(7,1:6)]
-write.csv(resSig_OB, "../../processed/DESEQ/DEGs_OB_0.05.csv", row.names=TRUE)
+(resSig_OB <- resSig_OB[order(resSig_OB$padj), ])
+write.csv(resSig_OB, "../../processed/DESEQ/DEGs_OB_0.05.csv")
 
 resSig_OH <- subset(rr3, padj < 0.05)
 summary(resSig_OH)
 sum(resSig_OH$padj < 0.05, na.rm = TRUE)
 resSig_OH$Gene <- rownames(resSig_OH)
 resSig_OH <- resSig_OH[, c(7,1:6)]
-write.csv(resSig_OH, "../../processed/DESEQ/DEGs_OH_0.05.csv", row.names=TRUE)
+(resSig_OH <- resSig_OH[order(resSig_OH$padj), ])
+write.csv(resSig_OH, "../../processed/DESEQ/DEGs_OH_0.05.csv")
 
 ```
 
