@@ -1,0 +1,105 @@
+Notes DEGs
+
+> # Extract list of significant genes
+> resSig_lrt.int <- subset(lrt.int, padj < 0.05)
+> summary(resSig_lrt.int)
+
+out of 980 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 736, 75%
+LFC < 0 (down)     : 244, 25%
+outliers [1]       : 0, 0%
+low counts [2]     : 0, 0%
+(mean count < 7)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+> sum(resSig_lrt.int$padj < 0.5, na.rm = TRUE)
+[1] 980
+> 
+> resSig_lrt.tissue <- subset(lrt.tissue, padj < 0.05)
+> summary(resSig_lrt.tissue)
+
+out of 13164 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 7767, 59%
+LFC < 0 (down)     : 5397, 41%
+outliers [1]       : 0, 0%
+low counts [2]     : 0, 0%
+(mean count < 0)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+> sum(lrt.tissue$padj < 0.5, na.rm = TRUE)
+[1] 13875
+> 
+> resSig_lrt.treatment <- subset(lrt.treatment, padj < 0.05)
+> summary(resSig_lrt.treatment)
+
+out of 2475 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 1498, 61%
+LFC < 0 (down)     : 977, 39%
+outliers [1]       : 0, 0%
+low counts [2]     : 0, 0%
+(mean count < 7)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+> sum(lrt.treatment$padj < 0.5, na.rm = TRUE)
+[1] 8351
+
+
+
+
+
+
+> # List for comparisons
+
+> resSig_HB <- subset(rr1, padj < 0.05)
+> summary(resSig_HB)
+
+out of 1805 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 1227, 68%
+LFC < 0 (down)     : 578, 32%
+outliers [1]       : 0, 0%
+low counts [2]     : 0, 0%
+(mean count < 4)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+> sum(resSig_HB$padj < 0.5, na.rm = TRUE)
+[1] 1805
+> 
+> resSig_OB <- subset(rr2, padj < 0.05)
+> summary(resSig_OB)
+
+out of 10702 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 4120, 38%
+LFC < 0 (down)     : 6582, 62%
+outliers [1]       : 0, 0%
+low counts [2]     : 0, 0%
+(mean count < 1)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+> sum(resSig_OB$padj < 0.5, na.rm = TRUE)
+[1] 10702
+> 
+> resSig_OH <- subset(rr3, padj < 0.05)
+> summary(resSig_OH)
+
+out of 10663 with nonzero total read count
+adjusted p-value < 0.1
+LFC > 0 (up)       : 4050, 38%
+LFC < 0 (down)     : 6613, 62%
+outliers [1]       : 0, 0%
+low counts [2]     : 0, 0%
+(mean count < 1)
+[1] see 'cooksCutoff' argument of ?results
+[2] see 'independentFiltering' argument of ?results
+
+> sum(resSig_OH$padj < 0.5, na.rm = TRUE)
+[1] 10663
