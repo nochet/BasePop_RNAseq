@@ -121,26 +121,28 @@ dds_deseq.02 <- estimateDispersions(dds_deseq.02, fitType = "local")
 dds_deseq.02 <- nbinomWaldTest(dds_deseq.02, maxit = 1000, useOptim = TRUE)
 dds_deseq.02 <- dds_deseq.02[which(mcols(dds_deseq.02)$betaConv),]
 
+resultsNames(dds_deseq.02)
+
 # Look at the DESeq object
 colData(dds_deseq.01)
 colData(dds_deseq.02)
 
-# Effect of tissue 
+# DEGs significant for effect of tissue 
 lrt.tissue <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + treatment)
 lrt.tissue <- lrt.tissue[which(mcols(lrt.tissue)$fullBetaConv),]
 lrt.tissue <- results(lrt.tissue, alpha = 0.05)
 
-# Effect of treatment 
+# DEGs significant for effect of treatment 
 lrt.treatment <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + tissue)
 lrt.treatment <- lrt.treatment[which(mcols(lrt.treatment)$fullBetaConv),]
 lrt.treatment <- results(lrt.treatment, alpha = 0.05)
 
-# Effect of the interaction 
+# DEGs significant for effect of the interaction 
 lrt.int <- DESeq(dds.02, test="LRT", reduced=~ SV1 + batch + tissue + treatment)
 lrt.int <- lrt.int[which(mcols(lrt.int)$fullBetaConv),]
 lrt.int <- results(lrt.int, alpha = 0.05)
 
-# pairwise comparisions
+# pairwise comparisions (treatment effect)
 rr1 <- results(dds_deseq.02, contrast=c('tissue', "H","B"), alpha = 0.05)
 rr2 <- results(dds_deseq.02, contrast=c('tissue', "O","B"), alpha = 0.05)
 rr3 <- results(dds_deseq.02, contrast=c('tissue', "O","H"), alpha = 0.05)
@@ -170,19 +172,20 @@ resSig_lrt.treatment <- resSig_lrt.treatment[, c(7,1:6)]
 resSig_lrt.tissue <- resSig_lrt.tissue[order(resSig_lrt.tissue$padj), ]
 resSig_lrt.treatment <- resSig_lrt.treatment[order(resSig_lrt.treatment$padj), ]
 
-write.csv(resSig_lrt.int, "../../processed/DESEQ/DEGs_lrt.int_0.05.csv")
-write.csv(resSig_lrt.tissue, "../../processed/DESEQ/DEGs_lrt.tissue_0.05.csv")
-write.csv(resSig_lrt.treatment, "../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv")
+write.csv(resSig_lrt.int, "../../processed/DESEQ/DEGs_lrt.int_0.05.csv", row.names = FALSE)
+write.csv(resSig_lrt.tissue, "../../processed/DESEQ/DEGs_lrt.tissue_0.05.csv", row.names = FALSE)
+write.csv(resSig_lrt.treatment, "../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv", row.names = FALSE)
 
 
-# List for comparisons
+# Gene lists for comparisons
 resSig_HB <- subset(rr1, padj < 0.05)
 summary(resSig_HB)
 sum(resSig_HB$padj < 0.05, na.rm = TRUE)
 resSig_HB$Gene <- rownames(resSig_HB)
 resSig_HB <- resSig_HB[, c(7,1:6)]
 (resSig_HB <- resSig_HB[order(resSig_HB$padj), ])
-write.csv(resSig_HB, "../../processed/DESEQ/DEGs_HB_0.05.csv")
+write.csv(resSig_HB, "../../processed/DESEQ/DEGs_HB_0.05.csv", row.names = FALSE)
+mcols(resSig_HB)$description
 
 resSig_OB <- subset(rr2, padj < 0.05)
 summary(resSig_OB)
@@ -190,7 +193,7 @@ sum(resSig_OB$padj < 0.05, na.rm = TRUE)
 resSig_OB$Gene <- rownames(resSig_OB)
 resSig_OB <- resSig_OB[, c(7,1:6)]
 (resSig_OB <- resSig_OB[order(resSig_OB$padj), ])
-write.csv(resSig_OB, "../../processed/DESEQ/DEGs_OB_0.05.csv")
+write.csv(resSig_OB, "../../processed/DESEQ/DEGs_OB_0.05.csv", row.names = FALSE)
 
 resSig_OH <- subset(rr3, padj < 0.05)
 summary(resSig_OH)
@@ -198,9 +201,45 @@ sum(resSig_OH$padj < 0.05, na.rm = TRUE)
 resSig_OH$Gene <- rownames(resSig_OH)
 resSig_OH <- resSig_OH[, c(7,1:6)]
 (resSig_OH <- resSig_OH[order(resSig_OH$padj), ])
-write.csv(resSig_OH, "../../processed/DESEQ/DEGs_OH_0.05.csv")
+write.csv(resSig_OH, "../../processed/DESEQ/DEGs_OH_0.05.csv", row.names = FALSE)
 
 ```
+
+# Are QTL genes in IIS/TOR (Stanley et al 2017) represented
+
+```{r}
+iis.qtl <- read.csv("../../processed/DESEQ/DEG_QTL/iis_genelist.csv",
+                     stringsAsFactors = FALSE) 
+
+# DEG table, interaction H vs B
+HB.int_table <- as.data.frame(resSig_HB)
+HBvQTL <- HB.int_table %>%
+      filter(Gene %in% iis.qtl$fbgn_id)                      
+write.csv(HBvQTL, 
+          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_HBvQTL.csv")
+
+# DEG table, interaction O vs B
+OB.int_table <- as.data.frame(resSig_OB)
+OBvQTL <- OB.int_table %>%
+      filter(Gene %in% iis.qtl$fbgn_id)                      
+write.csv(OBvQTL, "../../processed/DESEQ/DEG_QTL/sigDEGs_int_OBvQTL.csv")
+
+# DEG table, interaction O vs H
+OH.int_table <- as.data.frame(resSig_OH)
+OHvQTL <- OH.int_table %>%
+      filter(Gene %in% iis.qtl$fbgn_id)                      
+write.csv(OHvQTL, "../../processed/DESEQ/DEG_QTL/sigDEGs_int_OHvQTL.csv")
+```
+
+# pairwise comparisions (tissue effect)
+
+```{r}
+ff1 <- results(dds_deseq.02, contrast=c('treatment', "C","DR"), alpha = 0.05)
+ff2 <- results(dds_deseq.02, contrast=c('treatment', "C","HS"), alpha = 0.05)
+ff3 <- results(dds_deseq.02, contrast=c('treatment', "DR","HS"), alpha = 0.05)
+```
+
+
 
 # PCA
 

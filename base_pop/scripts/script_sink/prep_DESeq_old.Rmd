@@ -491,7 +491,7 @@ cdr.in <- results(dds.deInt, name = "treatment_DR_vs_C")
 mcols(cdr.int) # mcols = metadata columns, i.e. element-wise metadata
 (resOrd_cdrint <- cdr.int[order(cdr.int$padj), ])
 
-# Get more info onresults columns
+# Get more info on results columns
 mcols(cdr.int)$description
 
 write.csv(resOrd_cdrint, 
