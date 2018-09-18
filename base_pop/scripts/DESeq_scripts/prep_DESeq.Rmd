@@ -149,27 +149,24 @@ rr3 <- results(dds_deseq.02, contrast=c('tissue', "O","H"), alpha = 0.05)
 
 # Get list of DEGs
 resSig_lrt.int <- subset(lrt.int, padj < 0.05)
-resSig_lrt.tissue <- subset(lrt.tissue, padj < 0.05)
-resSig_lrt.treatment <- subset(lrt.treatment, padj < 0.05)
-
 summary(resSig_lrt.int)
-summary(resSig_lrt.tissue)
-summary(resSig_lrt.treatment)
-
 sum(resSig_lrt.int$padj < 0.05, na.rm = TRUE)
-sum(lrt.tissue$padj < 0.05, na.rm = TRUE)
-sum(lrt.treatment$padj < 0.05, na.rm = TRUE)
-
 resSig_lrt.int$Gene <- rownames(resSig_lrt.int)
-resSig_lrt.tissue$Gene <- rownames(resSig_lrt.tissue)
-resSig_lrt.treatment$Gene <- rownames(resSig_lrt.treatment)
-
 resSig_lrt.int <- resSig_lrt.int[, c(7,1:6)]
-resSig_lrt.tissue <- resSig_lrt.tissue[, c(7,1:6)]
-resSig_lrt.treatment <- resSig_lrt.treatment[, c(7,1:6)]
-
 (resSig_lrt.int <- resSig_lrt.int[order(resSig_lrt.int$padj), ])
+
+resSig_lrt.tissue <- subset(lrt.tissue, padj < 0.05)
+summary(resSig_lrt.tissue)
+sum(lrt.tissue$padj < 0.05, na.rm = TRUE)
+resSig_lrt.tissue$Gene <- rownames(resSig_lrt.tissue)
+resSig_lrt.tissue <- resSig_lrt.tissue[, c(7,1:6)]
 resSig_lrt.tissue <- resSig_lrt.tissue[order(resSig_lrt.tissue$padj), ]
+
+resSig_lrt.treatment <- subset(lrt.treatment, padj < 0.05)
+summary(resSig_lrt.treatment)
+sum(lrt.treatment$padj < 0.05, na.rm = TRUE)
+resSig_lrt.treatment$Gene <- rownames(resSig_lrt.treatment)
+resSig_lrt.treatment <- resSig_lrt.treatment[, c(7,1:6)]
 resSig_lrt.treatment <- resSig_lrt.treatment[order(resSig_lrt.treatment$padj), ]
 
 write.csv(resSig_lrt.int, "../../processed/DESEQ/DEGs_lrt.int_0.05.csv", row.names = FALSE)
@@ -203,6 +200,9 @@ resSig_OH <- resSig_OH[, c(7,1:6)]
 (resSig_OH <- resSig_OH[order(resSig_OH$padj), ])
 write.csv(resSig_OH, "../../processed/DESEQ/DEGs_OH_0.05.csv", row.names = FALSE)
 
+# Background list - all gene_ids
+bList <- as.data.frame(rownames(pl3c))
+write.csv(bList, "../../processed/DESEQ/gene_background_list.csv")
 ```
 
 # Are QTL genes in IIS/TOR (Stanley et al 2017) represented
@@ -239,6 +239,16 @@ ff2 <- results(dds_deseq.02, contrast=c('treatment', "C","HS"), alpha = 0.05)
 ff3 <- results(dds_deseq.02, contrast=c('treatment', "DR","HS"), alpha = 0.05)
 ```
 
+```{r}
+cdrSig_HB <- subset(ff1, padj < 0.05)
+summary(cdrSig_HB)
+sum(cdrSig_HB$padj < 0.05, na.rm = TRUE)
+cdrSig_HB$Gene <- rownames(cdrSig_HB)
+cdrSig_HB <- cdrSig_HB[, c(7,1:6)]
+(cdrSig_HB <- cdrSig_HB[order(cdrSig_HB$padj), ])
+#write.csv(cdrSig_HB, "../../processed/DESEQ/DEGs_CDR_0.05.csv", row.names = FALSE)
+mcols(cdrSig_HB)$description
+```
 
 
 # PCA
