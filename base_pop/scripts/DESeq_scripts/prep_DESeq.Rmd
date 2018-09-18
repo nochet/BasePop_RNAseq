@@ -206,6 +206,7 @@ write.csv(bList, "../../processed/DESEQ/gene_background_list.csv")
 ```
 
 # Are QTL genes in IIS/TOR (Stanley et al 2017) represented
+# Treatment effect in the interaction model
 
 ```{r}
 iis.qtl <- read.csv("../../processed/DESEQ/DEG_QTL/iis_genelist.csv",
@@ -231,7 +232,7 @@ OHvQTL <- OH.int_table %>%
 write.csv(OHvQTL, "../../processed/DESEQ/DEG_QTL/sigDEGs_int_OHvQTL.csv")
 ```
 
-# pairwise comparisions (tissue effect)
+# pairwise comparisions (tissue effect, interaction model)
 
 ```{r}
 ff1 <- results(dds_deseq.02, contrast=c('treatment', "C","DR"), alpha = 0.05)
@@ -240,14 +241,32 @@ ff3 <- results(dds_deseq.02, contrast=c('treatment', "DR","HS"), alpha = 0.05)
 ```
 
 ```{r}
-cdrSig_HB <- subset(ff1, padj < 0.05)
-summary(cdrSig_HB)
-sum(cdrSig_HB$padj < 0.05, na.rm = TRUE)
-cdrSig_HB$Gene <- rownames(cdrSig_HB)
-cdrSig_HB <- cdrSig_HB[, c(7,1:6)]
-(cdrSig_HB <- cdrSig_HB[order(cdrSig_HB$padj), ])
-#write.csv(cdrSig_HB, "../../processed/DESEQ/DEGs_CDR_0.05.csv", row.names = FALSE)
-mcols(cdrSig_HB)$description
+resSig_CDR <- subset(ff1, padj < 0.05)
+summary(resSig_CDR)
+sum(resSig_CDR$padj < 0.05, na.rm = TRUE)
+resSig_CDR$Gene <- rownames(resSig_CDR)
+resSig_CDR <- resSig_CDR[, c(7,1:6)]
+(resSig_CDR <- resSig_CDR[order(resSig_CDR$padj), ])
+write.csv(resSig_CDR, "../../processed/DESEQ/DEGs_CDR_0.05.csv", row.names = FALSE)
+mcols(resSig_CDR)$description
+
+resSig_CHS <- subset(ff2, padj < 0.05)
+summary(resSig_CHS)
+sum(resSig_CHS$padj < 0.05, na.rm = TRUE)
+resSig_CHS$Gene <- rownames(resSig_CHS)
+resSig_CHS <- resSig_CHS[, c(7,1:6)]
+(resSig_CHS <- resSig_CHS[order(resSig_CHS$padj), ])
+write.csv(resSig_CHS, "../../processed/DESEQ/DEGs_CHS_0.05.csv", row.names = FALSE)
+mcols(resSig_CHS)$description
+
+resSig_DRHS <- subset(ff3, padj < 0.05)
+summary(resSig_DRHS)
+sum(resSig_DRHS$padj < 0.05, na.rm = TRUE)
+resSig_DRHS$Gene <- rownames(resSig_DRHS)
+resSig_DRHS <- resSig_DRHS[, c(7,1:6)]
+(resSig_DRHS <- resSig_DRHS[order(resSig_DRHS$padj), ])
+write.csv(resSig_DRHS, "../../processed/DESEQ/DEGs_DRHS_0.05.csv", row.names = FALSE)
+mcols(resSig_DRHS)$description
 ```
 
 
