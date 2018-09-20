@@ -215,20 +215,23 @@ iis.qtl <- read.csv("../../processed/DESEQ/DEG_QTL/iis_genelist.csv",
 # DEG table, interaction H vs B
 HB.int_table <- as.data.frame(resSig_HB)
 HBvQTL <- HB.int_table %>%
-      filter(Gene %in% iis.qtl$fbgn_id)                      
-write.csv(HBvQTL, 
-          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_HBvQTL.csv")
+      filter(Gene %in% iis.qtl$fbgn_id)
+HBvQTL$analysis <- rep("HBvQTL",length(HBvQTL))
+#write.csv(HBvQTL, 
+          #"../../processed/DESEQ/DEG_QTL/sigDEGs_int_HBvQTL.csv")
 
 # DEG table, interaction O vs B
 OB.int_table <- as.data.frame(resSig_OB)
 OBvQTL <- OB.int_table %>%
-      filter(Gene %in% iis.qtl$fbgn_id)                      
+      filter(Gene %in% iis.qtl$fbgn_id)  
+OBvQTL$analysis <- rep("OBvQTL",length(OBvQTL))
 write.csv(OBvQTL, "../../processed/DESEQ/DEG_QTL/sigDEGs_int_OBvQTL.csv")
 
 # DEG table, interaction O vs H
 OH.int_table <- as.data.frame(resSig_OH)
 OHvQTL <- OH.int_table %>%
-      filter(Gene %in% iis.qtl$fbgn_id)                      
+      filter(Gene %in% iis.qtl$fbgn_id)  
+OHvQTL$analysis <- rep("OHvQTL",length(OHvQTL))
 write.csv(OHvQTL, "../../processed/DESEQ/DEG_QTL/sigDEGs_int_OHvQTL.csv")
 ```
 
@@ -269,6 +272,52 @@ write.csv(resSig_DRHS, "../../processed/DESEQ/DEGs_DRHS_0.05.csv", row.names = F
 mcols(resSig_DRHS)$description
 ```
 
+# Are QTL genes in IIS/TOR (Stanley et al 2017) represented
+# Tissue effect in the interaction model
+
+```{r}
+# DEG table, interaction C vs DR
+CDR.int_table <- as.data.frame(resSig_CDR)
+CDRvQTL <- CDR.int_table %>%
+      filter(Gene %in% iis.qtl$fbgn_id)                      
+write.csv(CDRvQTL, 
+          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_CDRvQTL.csv")
+
+# up and down lists
+up_CDRvQTL <- subset(CDRvQTL, log2FoldChange > 0)
+down_CDRvQTL <- subset(CDRvQTL, log2FoldChange < 0)
+write.csv(up_CDRvQTL, 
+          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_up_CDRvQTL.csv")
+write.csv(down_CDRvQTL, 
+          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_down_CDRvQTL.csv")
+
+# DEG table, interaction C vs HS
+CHS.int_table <- as.data.frame(resSig_CHS)
+CHSvQTL <- CHS.int_table %>%
+      filter(Gene %in% iis.qtl$fbgn_id)                      
+write.csv(CHSvQTL, "../../processed/DESEQ/DEG_QTL/sigDEGs_int_CHSvQTL.csv")
+
+up_CHSvQTL <- subset(CHSvQTL, log2FoldChange > 0)
+down_CHSvQTL <- subset(CHSvQTL, log2FoldChange < 0)
+write.csv(up_CHSvQTL, 
+          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_up_CHSvQTL.csv")
+write.csv(down_CHSvQTL, 
+          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_down_CHSvQTL.csv")
+
+# DEG table, interaction DR vs HS
+DRHS.int_table <- as.data.frame(resSig_DRHS)
+DRHSvQTL <- DRHS.int_table %>%
+      filter(Gene %in% iis.qtl$fbgn_id)                      
+write.csv(DRHSvQTL, "../../processed/DESEQ/DEG_QTL/sigDEGs_int_DRHSvQTL.csv")
+
+up_DRHSvQTL <- subset(DRHSvQTL, log2FoldChange > 0)
+down_DRHSvQTL <- subset(DRHSvQTL, log2FoldChange < 0)
+write.csv(up_DRHSvQTL, 
+          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_up_DRHSvQTL.csv")
+write.csv(down_DRHSvQTL, 
+          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_down_DRHSvQTL.csv")
+
+```
 
 # PCA
 
