@@ -284,12 +284,12 @@ write.csv(CDRvQTL,
           "../../processed/DESEQ/DEG_QTL/sigDEGs_int_CDRvQTL.csv")
 
 # up and down lists
-up_CDRvQTL <- subset(CDRvQTL, log2FoldChange > 0)
-down_CDRvQTL <- subset(CDRvQTL, log2FoldChange < 0)
-write.csv(up_CDRvQTL, 
-          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_up_CDRvQTL.csv")
-write.csv(down_CDRvQTL, 
-          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_down_CDRvQTL.csv")
+#up_CDRvQTL <- subset(CDRvQTL, log2FoldChange > 0)
+#down_CDRvQTL <- subset(CDRvQTL, log2FoldChange < 0)
+#write.csv(up_CDRvQTL, 
+          #"../../processed/DESEQ/DEG_QTL/sigDEGs_int_up_CDRvQTL.csv")
+#write.csv(down_CDRvQTL, 
+          #"../../processed/DESEQ/DEG_QTL/sigDEGs_int_down_CDRvQTL.csv")
 
 # DEG table, interaction C vs HS
 CHS.int_table <- as.data.frame(resSig_CHS)
@@ -297,25 +297,11 @@ CHSvQTL <- CHS.int_table %>%
       filter(Gene %in% iis.qtl$fbgn_id)                      
 write.csv(CHSvQTL, "../../processed/DESEQ/DEG_QTL/sigDEGs_int_CHSvQTL.csv")
 
-up_CHSvQTL <- subset(CHSvQTL, log2FoldChange > 0)
-down_CHSvQTL <- subset(CHSvQTL, log2FoldChange < 0)
-write.csv(up_CHSvQTL, 
-          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_up_CHSvQTL.csv")
-write.csv(down_CHSvQTL, 
-          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_down_CHSvQTL.csv")
-
 # DEG table, interaction DR vs HS
 DRHS.int_table <- as.data.frame(resSig_DRHS)
 DRHSvQTL <- DRHS.int_table %>%
       filter(Gene %in% iis.qtl$fbgn_id)                      
 write.csv(DRHSvQTL, "../../processed/DESEQ/DEG_QTL/sigDEGs_int_DRHSvQTL.csv")
-
-up_DRHSvQTL <- subset(DRHSvQTL, log2FoldChange > 0)
-down_DRHSvQTL <- subset(DRHSvQTL, log2FoldChange < 0)
-write.csv(up_DRHSvQTL, 
-          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_up_DRHSvQTL.csv")
-write.csv(down_DRHSvQTL, 
-          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_down_DRHSvQTL.csv")
 
 ```
 
