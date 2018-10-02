@@ -317,6 +317,7 @@ qtl_data <- cbind(qtl_genes,qtl_genesFB)
 qtl_data <- qtl_data %>%
   select(-9,-10) %>%
   rename(Gene = submittedID)
+write.csv(qtl_data, "../../processed/DESEQ/DEG_QTL/qtl_data.csv")
 ```
 
 # PCA
