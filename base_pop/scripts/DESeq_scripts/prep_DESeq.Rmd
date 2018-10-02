@@ -216,23 +216,22 @@ iis.qtl <- read.csv("../../processed/DESEQ/DEG_QTL/iis_genelist.csv",
 HB.int_table <- as.data.frame(resSig_HB)
 HBvQTL <- HB.int_table %>%
       filter(Gene %in% iis.qtl$fbgn_id)
-HBvQTL$analysis <- rep("HBvQTL",length(HBvQTL))
-#write.csv(HBvQTL, 
-          #"../../processed/DESEQ/DEG_QTL/sigDEGs_int_HBvQTL.csv")
+HBvQTL$comparison <- rep("HBvQTL",length(HBvQTL))
 
 # DEG table, interaction O vs B
 OB.int_table <- as.data.frame(resSig_OB)
 OBvQTL <- OB.int_table %>%
       filter(Gene %in% iis.qtl$fbgn_id)  
-OBvQTL$analysis <- rep("OBvQTL",length(OBvQTL))
-write.csv(OBvQTL, "../../processed/DESEQ/DEG_QTL/sigDEGs_int_OBvQTL.csv")
+OBvQTL$comparison <- rep("OBvQTL",length(OBvQTL))
 
 # DEG table, interaction O vs H
 OH.int_table <- as.data.frame(resSig_OH)
 OHvQTL <- OH.int_table %>%
       filter(Gene %in% iis.qtl$fbgn_id)  
-OHvQTL$analysis <- rep("OHvQTL",length(OHvQTL))
-write.csv(OHvQTL, "../../processed/DESEQ/DEG_QTL/sigDEGs_int_OHvQTL.csv")
+OHvQTL$comparison <- rep("OHvQTL",length(20))
+
+qtl_tissueGenes <- rbind(HBvQTL,OBvQTL,OHvQTL)
+write.csv(qtl_tissueGenes, "../../processed/DESEQ/DEG_QTL/DEqtl_tissueGenes.csv")
 ```
 
 # pairwise comparisions (tissue effect, interaction model)
@@ -279,30 +278,45 @@ mcols(resSig_DRHS)$description
 # DEG table, interaction C vs DR
 CDR.int_table <- as.data.frame(resSig_CDR)
 CDRvQTL <- CDR.int_table %>%
-      filter(Gene %in% iis.qtl$fbgn_id)                      
-write.csv(CDRvQTL, 
-          "../../processed/DESEQ/DEG_QTL/sigDEGs_int_CDRvQTL.csv")
+      filter(Gene %in% iis.qtl$fbgn_id)
+CDRvQTL$comparison <- rep("CDRvQTL",length(2))
 
 # up and down lists
 #up_CDRvQTL <- subset(CDRvQTL, log2FoldChange > 0)
 #down_CDRvQTL <- subset(CDRvQTL, log2FoldChange < 0)
 #write.csv(up_CDRvQTL, 
           #"../../processed/DESEQ/DEG_QTL/sigDEGs_int_up_CDRvQTL.csv")
-#write.csv(down_CDRvQTL, 
-          #"../../processed/DESEQ/DEG_QTL/sigDEGs_int_down_CDRvQTL.csv")
 
 # DEG table, interaction C vs HS
 CHS.int_table <- as.data.frame(resSig_CHS)
 CHSvQTL <- CHS.int_table %>%
-      filter(Gene %in% iis.qtl$fbgn_id)                      
-write.csv(CHSvQTL, "../../processed/DESEQ/DEG_QTL/sigDEGs_int_CHSvQTL.csv")
+      filter(Gene %in% iis.qtl$fbgn_id)  
+CHSvQTL$comparison <- rep("CHSvQTL",length(1))
 
 # DEG table, interaction DR vs HS
 DRHS.int_table <- as.data.frame(resSig_DRHS)
 DRHSvQTL <- DRHS.int_table %>%
-      filter(Gene %in% iis.qtl$fbgn_id)                      
-write.csv(DRHSvQTL, "../../processed/DESEQ/DEG_QTL/sigDEGs_int_DRHSvQTL.csv")
+      filter(Gene %in% iis.qtl$fbgn_id)
+DRHSvQTL$comparison <- rep("DRHSvQTL",length(2))
 
+qtl_dietGenes <- rbind(CDRvQTL,CHSvQTL,DRHSvQTL)
+write.csv(qtl_dietGenes, "../../processed/DESEQ/DEG_QTL/DEqtl_dietGenes.csv")
+
+qtl_genes <- rbind(qtl_tissueGenes,qtl_dietGenes)
+write.csv(qtl_genes, "../../processed/DESEQ/DEG_QTL/qtl_genes_all.csv")
+
+qtl_genesFB <- read.csv("../../processed/DESEQ/DEG_QTL/qtl_genes_all_FlyBase.csv",
+                     stringsAsFactors = FALSE)
+
+colnames(qtl_genesFB)[colnames(qtl_genesFB)=="X.SUBMITTED.ID"] <- "submittedID"
+colnames(qtl_genes)[colnames(qtl_genes)=="Gene"] <- "submittedID"
+qtl_genesFB <- qtl_genesFB %>%
+  select(-GO_BIOLOGICAL_PROCESS,-GO_CELLULAR_COMPONENT,-GO_MOLECULAR_FUNCTION, -NAME)
+qtl_data <- cbind(qtl_genes,qtl_genesFB)
+
+qtl_data <- qtl_data %>%
+  select(-9,-10) %>%
+  rename(Gene = submittedID)
 ```
 
 # PCA
