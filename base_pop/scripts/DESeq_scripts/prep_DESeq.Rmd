@@ -142,12 +142,12 @@ lrt.int <- DESeq(dds.02, test="LRT", reduced=~ SV1 + batch + tissue + treatment)
 lrt.int <- lrt.int[which(mcols(lrt.int)$fullBetaConv),]
 lrt.int <- results(lrt.int, alpha = 0.05)
 
-# pairwise comparisions (treatment effect)
+# pairwise comparisions (treatment effect assuming interaction)
 rr1 <- results(dds_deseq.02, contrast=c('tissue', "H","B"), alpha = 0.05)
 rr2 <- results(dds_deseq.02, contrast=c('tissue', "O","B"), alpha = 0.05)
 rr3 <- results(dds_deseq.02, contrast=c('tissue', "O","H"), alpha = 0.05)
 
-# Get list of DEGs
+# Get lists of DEGs
 resSig_lrt.int <- subset(lrt.int, padj < 0.05)
 summary(resSig_lrt.int)
 sum(resSig_lrt.int$padj < 0.05, na.rm = TRUE)
@@ -174,7 +174,7 @@ write.csv(resSig_lrt.tissue, "../../processed/DESEQ/DEGs_lrt.tissue_0.05.csv", r
 write.csv(resSig_lrt.treatment, "../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv", row.names = FALSE)
 
 
-# Gene lists for comparisons
+# Gene lists for comparisons - treatment effects
 resSig_HB <- subset(rr1, padj < 0.05)
 summary(resSig_HB)
 sum(resSig_HB$padj < 0.05, na.rm = TRUE)
@@ -317,6 +317,7 @@ qtl_data <- cbind(qtl_genes,qtl_genesFB)
 qtl_data <- qtl_data %>%
   select(-9,-10) %>%
   rename(Gene = submittedID)
+(qtl_data <- qtl_data[order(qtl_data$SYMBOL), ])
 write.csv(qtl_data, "../../processed/DESEQ/DEG_QTL/qtl_data.csv")
 ```
 

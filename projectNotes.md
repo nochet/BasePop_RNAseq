@@ -123,9 +123,11 @@ STEP9B:
 
 DESeq vs Ballgown, see https://support.bioconductor.org/p/107011/
 
+### 2018-10-02
+2) Use GOrilla for functional analysis of each list of DEGs a) as a whole and b) up- down- separately
 
 ### 2018-09-04 (EN)
-Run an model to test effect of tissue x treatment interaction on normalized batch-controlled gene-wise data:
+Run a model in DESeq2 to test effect of tissue x treatment interaction on normalized batch-controlled gene-wise data:
 dds.02 <- DESeqDataSetFromMatrix(countData = countdata, 
                                    colData = phenDat.sva, 
                                    design = ~ SV1 + batch + tissue*treatment)
@@ -147,7 +149,6 @@ resulted in tables of DEGs.
 1) I compiled a list of 26 genes previously identified in QTL studies of diet treatments (Stanley et al, 2017): `/processed/DESEQ/DEG_QTL/iis_genelist.csv"`. I identify any of these which are also significantly expressed in this study: files written to `/processed/DESEQ/DEG_QTL/`
 
 Genes identified are collected in one file: `/processed/DESEQ/DEG_QTL/qtl_genes_all_FlyBase.csv`. Also present in this file is FlyBase genome and functional data for each gene from a batch search. 
-
 
 ### 2018-08-30 (EGK)
 
