@@ -91,3 +91,45 @@ Fast-forward
  projectNotes.md                               | 5 [32m+++[m[31m--[m
  2 files changed, 7 insertions(+), 5 deletions(-)
 ]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
+warning: CRLF will be replaced by LF in base_pop/processed/DESEQ/DEGs_lrt_int_DAVIDConversion.csv.
+The file will have its original line endings in your working directory.
+warning: CRLF will be replaced by LF in base_pop/processed/DESEQ/REVIGO_CHS.csv.
+The file will have its original line endings in your working directory.
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "GO tables"
+[master 2cfb270] GO tables
+ 11 files changed, 2015 insertions(+), 5 deletions(-)
+ rewrite .Rproj.user/646C9B94/console06/INDEX001 (85%)
+ rename {base_pop/documents => Tutorials}/Analyzing RNA-seq data with DESeq2.pdf.pdf (100%)
+ rename {base_pop/documents => Tutorials}/DESeq2.pdf.pdf (100%)
+ create mode 100644 Tutorials/GOplot 1.0.2.pdf
+ rename {base_pop/documents => Tutorials}/beginner_DESeq2.pdf (100%)
+ rename {base_pop/documents => Tutorials}/sva_tut.pdf (100%)
+ create mode 100644 base_pop/processed/DESEQ/DEGs_lrt_int_DAVIDConversion.csv
+ create mode 100644 base_pop/processed/DESEQ/DEGs_lrt_int_DAVIDConversion.txt
+ create mode 100644 base_pop/processed/DESEQ/REVIGO_CHS.csv
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
+Counting objects: 17, done.
+Delta compression using up to 8 threads.
+Compressing objects:   5% (1/17)   Compressing objects:  11% (2/17)   Compressing objects:  17% (3/17)   Compressing objects:  23% (4/17)   Compressing objects:  29% (5/17)   Compressing objects:  35% (6/17)   Compressing objects:  41% (7/17)   Compressing objects:  47% (8/17)   Compressing objects:  52% (9/17)   Compressing objects:  58% (10/17)   Compressing objects:  64% (11/17)   Compressing objects:  70% (12/17)   Compressing objects:  76% (13/17)   Compressing objects:  82% (14/17)   Compressing objects:  88% (15/17)   Compressing objects:  94% (16/17)   Compressing objects: 100% (17/17)   Compressing objects: 100% (17/17), done.
+Writing objects:   5% (1/17)   Writing objects:  11% (2/17)   Writing objects:  17% (3/17)   Writing objects:  23% (4/17)   Writing objects:  29% (5/17)   Writing objects:  35% (6/17)   Writing objects:  41% (7/17)   Writing objects:  47% (8/17)   Writing objects:  52% (9/17)   Writing objects:  52% (9/17), 1.07 MiB | 203.00 KiB/s   Writing objects:  52% (9/17), 1.19 MiB | 203.00 KiB/s   Writing objects:  58% (10/17), 1.31 MiB | 197.00 KiB/s   Writing objects:  64% (11/17), 1.31 MiB | 197.00 KiB/s   Writing objects:  70% (12/17), 1.31 MiB | 197.00 KiB/s   Writing objects:  76% (13/17), 1.31 MiB | 197.00 KiB/s   Writing objects:  82% (14/17), 1.31 MiB | 197.00 KiB/s   Writing objects:  94% (16/17), 1.31 MiB | 197.00 KiB/s   Writing objects: 100% (17/17), 1.31 MiB | 197.00 KiB/s   Writing objects: 100% (17/17), 1.36 MiB | 197.00 KiB/s, done.
+Total 17 (delta 11), reused 0 (delta 0)
+remote: Resolving deltas:   0% (0/11)   [Kremote: Resolving deltas:   9% (1/11)   [Kremote: Resolving deltas:  18% (2/11)   [Kremote: Resolving deltas:  27% (3/11)   [Kremote: Resolving deltas:  36% (4/11)   [Kremote: Resolving deltas:  45% (5/11)   [Kremote: Resolving deltas:  54% (6/11)   [Kremote: Resolving deltas:  72% (8/11)   [Kremote: Resolving deltas:  81% (9/11)   [Kremote: Resolving deltas:  90% (10/11)   [Kremote: Resolving deltas: 100% (11/11)   [Kremote: Resolving deltas: 100% (11/11), completed with 9 local objects.[K
+To https://github.com/nochet/BasePop_RNAseq.git
+   d95792b..2cfb270  master -> master
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
+	[31mmodified:   base_pop/scripts/DESeq_scripts/prep_DESeq.Rmd[m
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	[31mbase_pop/processed/DESEQ/normExpr_countData.csv[m
+
+no changes added to commit (use "git add" and/or "git commit -a")
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
