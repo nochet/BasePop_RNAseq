@@ -133,3 +133,555 @@ Untracked files:
 
 no changes added to commit (use "git add" and/or "git commit -a")
 ]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "data for GO analysis"
+[master b1a52ce] data for GO analysis
+ 3 files changed, 17783 insertions(+)
+ create mode 100644 base_pop/processed/DESEQ/normExpr_countData.csv
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
+Counting objects: 13, done.
+Delta compression using up to 8 threads.
+Compressing objects:   7% (1/13)   Compressing objects:  15% (2/13)   Compressing objects:  23% (3/13)   Compressing objects:  30% (4/13)   Compressing objects:  38% (5/13)   Compressing objects:  46% (6/13)   Compressing objects:  53% (7/13)   Compressing objects:  61% (8/13)   Compressing objects:  69% (9/13)   Compressing objects:  76% (10/13)   Compressing objects:  84% (11/13)   Compressing objects:  92% (12/13)   Compressing objects: 100% (13/13)   Compressing objects: 100% (13/13), done.
+Writing objects:   7% (1/13)   Writing objects:  15% (2/13)   Writing objects:  23% (3/13)   Writing objects:  30% (4/13)   Writing objects:  38% (5/13)   Writing objects:  46% (6/13)   Writing objects:  53% (7/13)   Writing objects:  61% (8/13)   Writing objects:  69% (9/13)   Writing objects:  69% (9/13), 1.08 MiB | 148.00 KiB/s   Writing objects:  76% (10/13), 1.08 MiB | 148.00 KiB/s   Writing objects:  84% (11/13), 1.08 MiB | 148.00 KiB/s   Writing objects:  92% (12/13), 1.08 MiB | 148.00 KiB/s   Writing objects: 100% (13/13), 1.08 MiB | 148.00 KiB/s   Writing objects: 100% (13/13), 1.14 MiB | 148.00 KiB/s, done.
+Total 13 (delta 9), reused 0 (delta 0)
+remote: Resolving deltas:   0% (0/9)   [Kremote: Resolving deltas:  11% (1/9)   [Kremote: Resolving deltas:  22% (2/9)   [Kremote: Resolving deltas:  33% (3/9)   [Kremote: Resolving deltas:  44% (4/9)   [Kremote: Resolving deltas:  55% (5/9)   [Kremote: Resolving deltas:  66% (6/9)   [Kremote: Resolving deltas:  77% (7/9)   [Kremote: Resolving deltas:  88% (8/9)   [Kremote: Resolving deltas: 100% (9/9)   [Kremote: Resolving deltas: 100% (9/9), completed with 9 local objects.[K
+To https://github.com/nochet/BasePop_RNAseq.git
+   2cfb270..b1a52ce  master -> master
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ pu[K[Kgit pull
+Already up-to-date.
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ history
+   11  git status
+   12  git add .
+   13  git commit -m "new batch effects script"
+   14  git push
+   15  git pull
+   16  cd ..
+   17  cd early_experience/
+   18  touch ProjectNotes.md
+   19  ls
+   20  git status
+   21  git add .
+   22  git commit -m "Initial Process"
+   23  git push
+   24  cd ..
+   25  cd BasePop_RNAseq
+   26  git pull
+   27  git status
+   28  git add -A
+   29  git commit -m "split scripts directory"
+   30  git push
+   31  ssh ngomae@lewis.rnet.missouri.edu
+   32  ssh ngomae@lewis.rnet.missouri.edu
+   33  ssh engoma@nivalis.biology.missouri.edu
+   34  quit() ssh engoma@nivalis.biology.missouri.edu
+   35  cd ~
+   36  ssh engoma@nivalis.biology.missouri.edu
+   37  cd MyGithub/BasePop_RNAseq/base_pop/processed/
+   38  ls
+   39  git status
+   40  git add gene_count_matrix.csv
+   41  git commit -m "minor change to matrix"
+   42  git push
+   43  ssh engoma@nivalis.biology.missouri.edu
+   44  ssh engoma@nivalis.biology.missouri.edu
+   45  cd ..
+   46  cd BasePop_RNAseq
+   47  git pull
+   48  git pull
+   49  git pull
+   50  git pull
+   51  git pull
+   52  cd ..
+   53  cd ~/scripts/
+   54  ls
+   55  git add -A
+   56  cd ..
+   57  cd MyGithub/BasePop_RNAseq/base_pop/
+   58  git add -A
+   59  git commit -m ".py script"
+   60  git push
+   61  cd scripts/
+   62  ls
+   63  cd DESeq_scripts/
+   64  ls
+   65  python
+   66  CD ../..
+   67  cd ../..
+   68  git pull
+   69  git status
+   70  git add -A
+   71  git commit -m "DESeq things"
+   72  git push
+   73  git add -A
+   74  git commit -m "DESeq .py things"
+   75  git push
+   76  git add -A
+   77  git commit -m "command list"
+   78  git push
+   79  git add -A
+   80  git status
+   81  git commit -m "same things"
+   82  git push
+   83  git pull
+   84  ssh engoma@nivalis.biology.missouri.edu
+   85  ssh ngomae@lewis.rnet.missouri.edu
+   86  ssh ngomae@lewis.rnet.missouri.edu
+   87  cd MyGithub/BasePop_RNAseq/base_pop/processed/
+   88  ls
+   89  git pull
+   90  git pull
+   91  ssh engoma@nivalis.biology.missouri.edu
+   92  ssh pawtk4@lewis.rnet.missouri.edu
+   93  git pull
+   94  git pull
+   95  git pull
+   96  git status
+   97  git add -A
+   98  git commit -m "added to ProjNotes"
+   99  git push
+  100  cd ~
+  101  ssh engoma@nivalis.biology.missouri.edu
+  102  ssh engoma@nivalis.biology.missouri.edu
+  103  ssh engoma@nivalis.biology.missouri.edu
+  104  ssh ngomae@lewis.rnet.missouri.edu
+  105  ssh engoma@nivalis.biology.missouri.edu
+  106  exit
+  107  cd MyGithub/
+  108  git clone https://osf.io/jwd3t/
+  109  git clone  https://github.com/IndrajeetPatil/ggstatsplot.git
+  110  cd MyGithub/
+  111  git clone https://github.com/EGKingLab/fecundity_estimation.git
+  112  cd h2lifespan
+  113  git pull
+  114  cd ..
+  115  BasePop_RNAseq/base_pop/
+  116  ls
+  117  cd BasePop_RNAseq/base_pop/
+  118  ls
+  119  git pull
+  120  git pull
+  121  git pull
+  122  git status
+  123  git status
+  124  git add -A
+  125  git commit -m "project notes updated"
+  126  git push
+  127  git pull
+  128  cd MyGithub/
+  129  git pull
+  130  cd fecundity_estimation/
+  131  git pull
+  132  cd ..
+  133  cd h2lifespan
+  134  git pull
+  135  cd MyGithub/h2lifespan
+  136  git pull
+  137  git pull
+  138  cd MyGithub/
+  139  git clone https://github.com/mani2012/BatchQC.git
+  140  cd Desktop/
+  141  ls
+  142  cd rna-seq_data_assemble/
+  143  ls
+  144  cd ls
+  145  ls
+  146  cd ThermTolBallgown/
+  147  ls
+  148  grep -li assemb *.gtf > ./therm_gtf_list.txt
+  149  ls
+  150  cat therm_gtf_list.txt 
+  151  cd ..
+  152  ls
+  153  cd LearnMemBallgown/
+  154  grep -li assemb *.gtf > ./learnMem_gtf_list.txt
+  155  ls
+  156  cd ..
+  157  ls
+  158  cd ActBallgown/
+  159  ls
+  160  grep -li assemb *.gtf > ./act_gtf_list.txt
+  161  ls
+  162  ssh engoma@nivalis.biology.missouri.edu
+  163  ssh engoma@nivalis.biology.missouri.edu
+  164  cd MyGithub/BasePop_RNAseq
+  165  git pull
+  166  cd MyGithub/BasePop_RNAseq
+  167  git status
+  168  git add -A
+  169  git commit -m "miscel. documentation"
+  170  git push
+  171  cd ~
+  172  cd MyGithub/BasePop_RNAseq
+  173  git pull
+  174  cd ~/MyGithub/BasePop_RNAseq
+  175  git pull
+  176  cd ..
+  177  ls
+  178  cd h2lifespan
+  179  git pull
+  180  cd ..
+  181  cd fecundity_estimation/
+  182  ls
+  183  git pull
+  184  cd ..
+  185  cd ~/MyGithub/BasePop_RNAseq
+  186  git pull
+  187  ls
+  188  cs scripts/
+  189  ls
+  190  cd scripts/
+  191  ls
+  192  cat latlon_1.py 
+  193  chmod +u latlon_1.py 
+  194  ls -la -h
+  195  cd ~
+  196  cd MyGithub/
+  197  ls
+  198  cd ..
+  199  ls
+  200  cd MyGithub/
+  201  ls
+  202  cd PCfB/
+  203  ls
+  204  cd examples/
+  205  ls
+  206  cat Marrus_claudanielis.txt 
+  207  latlon_1.py 
+  208  ../../scripts/latlon_1.py 
+  209  ../scripts/latlon_1.py 
+  210  ../scripts/latlon_1.py 
+  211  ../scripts/latlon_1.py 
+  212  cd MyGithub/BasePop_RNAseq
+  213  git pull
+  214  git status
+  215  cd MyGithub/BasePop_RNAseq
+  216  git status
+  217  git pull
+  218  git status
+  219  git add -A
+  220  git commit -m "perl script"
+  221  git push
+  222  git pull
+  223  ssh ngomae@lewis.rnet.missouri.edu
+  224  ssh ngomae@lewis.rnet.missouri.edu
+  225  cd MyGithub/BasePop_RNAseq
+  226  git pull
+  227  ssh ngomae@lewis.rnet.missouri.edu
+  228  s
+  229  ls
+  230  ssh ngomae@lewis.rnet.missouri.edu
+  231  ssh ngomae@lewis.rnet.missouri.edu
+  232  ssh ngomae@lewis.rnet.missouri.edu
+  233  ssh ngomae@lewis.rnet.missouri.edu
+  234  ssh ngomae@lewis.rnet.missouri.edu
+  235  cd MyGithub/
+  236  scp -r engoma@nivalis.biology.missouri.edu:~/MyGithub/BasePop_RNAseq/base_pop/scripts/assembly/Set_up_arrays_new.Rmd .
+  237  ssh engoma@nivalis.biology.missouri.edu
+  238  ssh engoma@nivalis.biology.missouri.edu
+  239  ssh engoma@nivalis.biology.missouri.edu
+  240  s
+  241  ssh engoma@nivalis.biology.missouri.edu
+  242  ssh ngomae@lewis.rnet.missouri.edu
+  243  ssh ngomae@lewis.rnet.missouri.edu
+  244  xit
+  245  ssh engoma@nivalis.biology.missouri.edu
+  246  ssh engoma@nivalis.biology.missouri.edu
+  247  ssh engoma@nivalis.biology.missouri.edu
+  248  ssh engoma@nivalis.biology.missouri.edu
+  249  ssh ngomae@lewis.rnet.missouri.edu
+  250  ano S02a_samtoolsSort.txt
+  251  ssh ngomae@lewis.rnet.missouri.edu
+  252  ssh ngomae@lewis.rnet.missouri.edu
+  253  ssh ngomae@lewis.rnet.missouri.edu
+  254  ssh ngomae@lewis.rnet.missouri.edu
+  255  ssh ngomae@lewis.rnet.missouri.edu
+  256  cd MyGithub/BasePop_RNAseq
+  257  git pull
+  258  git pull
+  259  git status
+  260  git add -A
+  261  git commit -m "arrays code"
+  262  git push
+  263  git pull
+  264  git pull
+  265  cd base_pop/processed/
+  266  ls
+  267  python
+  268  git status
+  269  git add -A
+  270  cd ../..
+  271  git add -A
+  272  git commit -m "a .csv with split column"
+  273  git push
+  274  git status
+  275  git add -A
+  276  git commit -m "a dot csv with renamed headers"
+  277  git push
+  278  git pull
+  279  git pull
+  280  git pull
+  281  git pull
+  282  git pull
+  283  git pull
+  284  git pull
+  285  git pull
+  286  git status
+  287  git add -A
+  288  git commit -m "path list to assembled gtfs"
+  289  git push
+  290  git pull
+  291  git add -A
+  292  git commit -m "minor formating to gene count table csv"
+  293  git push
+  294  git pull
+  295  git add -A
+  296  git commit -m "Patricka things"
+  297  git push
+  298  cd ~
+  299  cd MyGithub/BasePop_RNAseq
+  300  git pull
+  301  cd ~/MyGithub/BasePop_RNAseq
+  302  git pull
+  303  git pull
+  304  cd ..
+  305  cd PCfB/
+  306  ls
+  307  ls scripts/
+  308  cd --
+  309  pwd
+  310  cd MyGithub/PCfB/
+  311  cd --
+  312  cd MyGithub/PCfB/
+  313  ls
+  314  latlon_1.py 
+  315  cd ..
+  316  cd PCfB/examples/
+  317  latlon_1.py 
+  318  latlon_1.py 
+  319  cd ..
+  320  ls
+  321  ls sandbox/
+  322  ls examples/
+  323  latlon_1.py 
+  324  pwd
+  325  latlon_1.py 
+  326  latlon_1.py 
+  327  latlon_1.py 
+  328  latlon_1.py 
+  329  latlon_1.py 
+  330  latlon_1.py 
+  331  latlon_1.py 
+  332  latlon_1.py 
+  333  latlon_1.py 
+  334  cd examples/
+  335  ls
+  336  latlon_1.py 
+  337  latlon_1.py 
+  338  latlon_1.py 
+  339  latlon_1.py 
+  340  latlon_1.py 
+  341  latlon_1.py 
+  342  latlon_1.py 
+  343  latlon_1.py 
+  344  latlon_1.py 
+  345  latlon_1.py 
+  346  cd ~/MyGithub/BasePop_RNAseq
+  347  git pull
+  348  git pull
+  349  git pull
+  350  git pull
+  351  git pull
+  352  git pull
+  353  sudo -rf /Library/Application\ Support/Malwarebytes/
+  354  sudo -rf /Library/Application\ Support/Malwarebytes/MBAM/Engine.bundle/Contents/PlugIns/FrontendAgent.app/Contents/MacOS/FrontendAgent 
+  355  sudo -rf /
+  356  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/PlugIns/FrontendAgent.app/Contents/MacOS/FrontendAgent
+  357  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/Alamofire.framework/Versions/A/Alamofire
+  358  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/Log4swift.framework/Versions/A/Log4swift
+  359  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/RxCocoa.framework/Versions/A/RxCocoa
+  360  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/RxSwift.framework/Versions/A/RxSwift
+  361  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/Swinject.framework/Versions/A/Swinject
+  362  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/CommonKit.framework/Versions/A/CommonKit
+  363  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/SettingsKit.framework/Versions/A/SettingsKit
+  364  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/ReportsKit.framework/Versions/A/ReportsKit
+  365  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/RTProtectionKit.framework/Versions/A/RTProtectionKit
+  366  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftAppKit.dylib
+  367  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftCore.dylib
+  368  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftCoreData.dylib
+  369  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftCoreFoundation.dylib
+  370  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftCoreGraphics.dylib
+  371  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftCoreImage.dylib
+  372  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftDarwin.dylib
+  373  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftDispatch.dylib
+  374  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftFoundation.dylib
+  375  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftIOKit.dylib
+  376  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftMetal.dylib
+  377  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftObjectiveC.dylib
+  378  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftQuartzCore.dylib
+  379  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftXPC.dylib
+  380  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftos.dylib
+  381  /private/var/db/mds/messages/se_SecurityMessages
+  382  /private/var/db/mds/system/mdsDirectory.db
+  383  /usr/share/icu/icudt55l.dat
+  384  /Library/Keychains/System.keychain
+  385  /System/Library/Caches/com.apple.IntlDataCache.le.kbdx
+  386  /System/Library/Fonts/Keyboard.ttf
+  387  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/SystemAppearance.car
+  388  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/GraphiteAppearance.car
+  389  /System/Library/Fonts/SFNSText-Regular.otf
+  390  /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Resources/Extras2.rsrc
+  391  /System/Library/Fonts/SFNSDisplay-Regular.otf
+  392  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/VibrantLightAppearance.car
+  393  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/Assets.car
+  394  /System/Library/Keyboard Layouts/AppleKeyboardLayouts.bundle/Contents/Resources/AppleKeyboardLayouts-L.dat
+  395  /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vImage.framework/Versions/A/Libraries/libCGInterfaces.dylib
+  396  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/PlugIns/FrontendAgent.app/Contents/Resources/Assets.car
+  397  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/DarkAppearance.car
+  398  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/GraphiteDarkAppearance.car
+  399  /System/Library/Fonts/Helvetica.dfont
+  400  /System/Library/Fonts/HelveticaNeueDeskInterface.ttc
+  401  /private/var/folders/33/g2k_ll7s40l6vhn3xxfz8j58cdw_9_/0/com.apple.LaunchServices-134417212714.csstore
+  402  /usr/lib/dyld
+  403  /private/var/db/dyld/dyld_shared_cache_x86_64h
+  404  /dev/null
+  405  /dev/null
+  406  /dev/null
+  407  count=2, state=0x12
+  408  FNetwork.defaultStorageSession
+  409  /dev/random
+  410  /Users/ngomae/Library/Caches/com.crashlytics.data/com.malwarebytes.mbam.frontend.agent/v3/active/864457ebcbff4cfc885330b431ff0046/sdk.log
+  411  /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Resources/Extras2.rsrc
+  412  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/VibrantLightAppearance.car
+  413  ->0x46c4a6f041d83979
+  414  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/SystemAppearance.car
+  415  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/GraphiteAppearance.car
+  416  ->0x46c4a6f041d866c9
+  417  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/Assets.car
+  418  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/DarkAppearance.car
+  419  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/GraphiteDarkAppearance.car
+  420  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/PlugIns/FrontendAgent.app/Contents/Resources/Assets.car
+  421  sudo -rf /
+  422  /Library/Application Support/Malwarebytes
+  423  rm /
+  424  rm //
+  425  rm /
+  426  /Library/Application Support/Malwarebytes
+  427  cd MyGithub/BasePop_RNAseq
+  428  git pull
+  429  git pull
+  430  git pull
+  431  git pull
+  432  git pull
+  433  ssh engoma@nivalis.biology.missouri.edu
+  434  git pull
+  435  cd MyGithub/
+  436  git clone Quick Time files (.mov)
+  437  git clone https://github.com/EGKingLab/h2lifespan.git
+  438  git pull
+  439  cd ..
+  440  cd MyGithub/BasePop_RNAseq
+  441  git status
+  442  git add -A
+  443  git commit -m "list of IIS/TOR qtl genes"
+  444  git push
+  445  git add -A
+  446  git commit -m "iis gene list increased"
+  447  git push
+  448  git add -A
+  449  git commit -m "iis list again"
+  450  git status
+  451  git add -A
+  452  git commit -m "iis list again"
+  453  git push
+  454  git pull
+  455  git pull
+  456  git pull
+  457  git pull
+  458  git pull
+  459  git status
+  460  git add -A
+  461  git commit -m "deleted up-, down- lists"
+  462  git push
+  463  git pull
+  464  git pull
+  465  git pull
+  466  git status
+  467  git add -A
+  468  git commit -m "FlyBase report of qtl genes csv"
+  469  git push
+  470  git add -A
+  471  git commit -m "FlyBase file trimmed"
+  472  git push
+  473  cd MyGithub/
+  474  ls
+  475  cd BasePop_RNAseq
+  476  git status
+  477  git pull
+  478  git add -A
+  479  git commit -m "modified xlsx tables"
+  480  git push
+  481  git pull
+  482  git pull
+  483  java -version
+  484  echo -n | openssl s_client -connect david.ncifcrf.gov:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ncifcrf.cert
+  485  echo -n | openssl s_client -connect david.ncifcrf.gov:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ncifcrf.cert
+  486  openssl x509 -in ncifcrf.cert -text
+  487  david<-DAVIDWebService(email="user@email", url="https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap12Endpoint/")
+  488  daviddavid<-DAVIDWebService$new()
+  489  RDAVIDWebService
+  490  R
+  491  R
+  492  R CMD javareconf
+  493  options(prompt="R> ", continue="+  ", width=70, useFancyQuotes=FALSE, digits=4)
+  494  R
+  495  R CMD javareconf
+  496  sudo R CMD javareconf
+  497  java -version
+  498  echo -n | openssl s_client -connect david.ncifcrf.gov:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ncifcrf.cert
+  499  openssl x509 -in ncifcrf.cert -text
+  500  git status
+  501  git pull
+  502  git add -A
+  503  git commit -m "GO tables"
+  504  git push
+  505  git status
+  506  git add -A
+  507  git commit -m "data for GO analysis"
+  508  git push
+  509  git pull
+  510  history
+]0;~/MyGithub/BasePop_RNAseq[?1034hBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git ststus
+git: 'ststus' is not a git command. See 'git --help'.
+
+Did you mean this?
+	status
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
+	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954.env[m
+	[31mmodified:   .Rproj.user/646C9B94/console06/INDEX001[m
+	[31mmodified:   .Rproj.user/646C9B94/pcs/files-pane.pper[m
+	[31mmodified:   .Rproj.user/646C9B94/pcs/source-pane.pper[m
+	[31mmodified:   .Rproj.user/646C9B94/pcs/windowlayoutstate.pper[m
+	[31mmodified:   .Rproj.user/646C9B94/sources/prop/INDEX[m
+	[31mmodified:   base_pop/scripts/DESeq_scripts/prep_DESeq.Rmd[m
+	[31mmodified:   projectNotes.md[m
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	[31mbase_pop/processed/DESEQ/Func_Anot_Clust-Int.txt[m
+	[31mbase_pop/processed/DESEQ/Func_Anot_Clust-Int_high.txt[m
+	[31mbase_pop/processed/DESEQ/Func_Anot_Clust-Int_highest.txt[m
+	[31mbase_pop/processed/DESEQ/Funct_Anot_Chart_Int.txt[m
+	[31mbase_pop/processed/DESEQ/Funct_Anot_Table_int.txt[m
+	[31mbase_pop/processed/DESEQ/KEGG_int.png[m
+	[31mbase_pop/processed/DESEQ/up_keywords_oxidoreductase_int.txt[m
+	[31mbase_pop/scripts/DESeq_scripts/GO_deseq.Rmd[m
+
+no changes added to commit (use "git add" and/or "git commit -a")
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -m[KA

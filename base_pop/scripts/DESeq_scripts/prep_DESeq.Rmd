@@ -172,6 +172,7 @@ resSig_lrt.treatment$Gene <- rownames(resSig_lrt.treatment)
 resSig_lrt.treatment <- resSig_lrt.treatment[, c(7,1:6)]
 resSig_lrt.treatment <- resSig_lrt.treatment[order(resSig_lrt.treatment$padj), ]
 
+write.csv(dds_deseq.02, "../../processed/DESEQ/dds_deseq.02.csv", row.names = FALSE)
 write.csv(resSig_lrt.int, "../../processed/DESEQ/DEGs_lrt.int_0.05.csv", row.names = FALSE)
 write.csv(resSig_lrt.tissue, "../../processed/DESEQ/DEGs_lrt.tissue_0.05.csv", row.names = FALSE)
 write.csv(resSig_lrt.treatment, "../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv", row.names = FALSE)

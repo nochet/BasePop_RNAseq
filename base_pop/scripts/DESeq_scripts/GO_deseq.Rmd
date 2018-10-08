@@ -1,0 +1,123 @@
+---
+title: "GO Analysis"
+author: "Enoch Ng'oma"
+date: "October 6, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(GOplot)
+library(tidyverse)
+```
+
+# Data
+
+```{r}
+# Data frame of normalized batch-controlled expression data (17737 x 54)
+
+normExprDat <- read.csv("../../processed/DESEQ/normExpr_countData.csv", 
+                 stringsAsFactors = FALSE)
+
+# Data frame of differentially expressed genes (adjusted p-value < 0.05)
+# DEGs for the tissue*treatment interaction (977 x 7)
+
+degs_int <- read.csv("../../processed/DESEQ/dds_deseq.02.csv")
+names(degs_int)[1]<-"ID"
+degs_int$ID <- toupper(degs_int$ID)
+
+sigDEGs_int <- read.csv("../../processed/DESEQ/DEGs_lrt.int_0.05.csv")
+names(sigDEGs_int)[1]<-"ID"
+names(sigDEGs_int)[3] <- "logFC"
+names(sigDEGs_int)[7] <- "adj.P.Val" 
+sigDEGs_int$ID <- toupper(sigDEGs_int$ID)
+sigDEGs_int <- select(anot, Category, ID, Term, Genes, Benjamini)
+
+# Data frame of DAVID Functional Annotation Chart (246 x 13)
+func_anotChart_int <- read.table("../../processed/DESEQ/Funct_Anot_Chart_int.txt", 
+                                 header = TRUE,stringsAsFactors = FALSE, sep = "\t")
+```
+
+# Prep Functional Annotation Chart Int Dataframe
+
+```{r}
+# sort by Category
+anot <- func_anotChart_int[order(func_anotChart_int$Category), ]
+# retain GO terms only
+anot <- anot[grep('GOTERM_', anot$Category),]
+
+# remove excess chars from rownames
+anot <- anot %>%
+  mutate(Category = str_split(Category, "_", simplify = TRUE)[,2])
+
+# split Term column
+anot <- separate(anot, col = Term, into = c("ID", "Term"), sep = "\\~")
+anot <- select(anot, Category, ID, Term, Genes, Benjamini)
+names(anot)[5]<-"adj_pval"
+```
+
+# GOplot
+
+```{r}
+# filter DEGs by GO genes
+deg_anot <- sigDEGs_int %>%
+      filter(ID %in% anot$Genes)
+
+
+# Generate the plotting object
+circ <- circle_dat(anot, sigDEGs_int)
+
+# Generate a simple barplot
+GOBar(subset(circ, category == 'BP'))
+
+# Facet the barplot according to the categories of the terms 
+GOBar(circ, display = 'multiple')
+
+# Facet the barplot, add a title and change the colour scale for the z-score
+GOBar(circ, display = 'multiple', title = 'Z-score coloured barplot', zsc.col = c('yellow', 'black', 'cyan'))
+```
+
+# Bubble plot
+
+```{r}
+# Generate the bubble plot with a label threshold of 3
+GOBubble(circ, labels = 3)
+
+# Add a title, change the colour of the circles, facet the plot according to the categories and change the label threshold
+GOBubble(circ, title = 'Bubble plot', colour = c('orange', 'darkred', 'gold'), display = 'multiple', labels = 3)
+
+# Reduce redundant terms with a gene overlap >= 0.75...
+reduced_circ <- reduce_overlap(circ, overlap = 0.75)
+# ...and plot it
+GOBubble(reduced_circ, labels = 2.8)
+```
+
+# Circular visualization of the results of gene- annotation enrichment analysis (GOCircle)
+
+```{r}
+# Generate a circular visualization of the results of gene- annotation enrichment analysis
+GOCircle(circ)
+
+# Generate a circular visualization of selected terms
+IDs <- c('GO:005514', 'GO:0005975', 'GO:0006730', 'GO:0006508', 'GO:0046323')
+GOCircle(circ, nsub = IDs)
+
+# Generate a circular visualization for 10 terms
+GOCircle(circ, nsub = 10)
+```
+
+# Display of the relationship between genes and terms (GOChord)
+
+```{r}
+# Define a list of genes which you think are interesting to look at. The item EC$genes of the toy 
+# sample contains the data frame of selected genes and their logFC. Have a look...
+head(EC$genes)
+```
+
+
+
+
+
+
+

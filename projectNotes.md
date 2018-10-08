@@ -123,8 +123,18 @@ STEP9B:
 
 DESeq vs Ballgown, see https://support.bioconductor.org/p/107011/
 
+
+### 2018-10-07 (EN)
+DAVID web tool for Gene Ontology Analysis. I used the Functional Annotation Tool to get GO terms in all 3 categories (BP, MF and CC). Also obtained annotation chart and table
+969 genes sig differentiated (padj<0.05, LRT) from the interaction model, `dds.02`
+
+`GO_deseq.Rmd`
+GOplot to visualize: https://cran.r-project.org/web/packages/GOplot/vignettes/GOplot_vignette.html 
+
+
 ### 2018-10-02
 2) Use GOrilla for functional analysis of each list of DEGs a) as a whole and b) up- down- separately
+Discontinued.
 
 ### 2018-09-04 (EN)
 Run a model in DESeq2 to test effect of tissue x treatment interaction on normalized batch-controlled gene-wise data:
