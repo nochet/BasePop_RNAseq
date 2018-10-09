@@ -15,28 +15,26 @@ library(tidyverse)
 # Data
 
 ```{r}
-# Data frame of normalized batch-controlled expression data (17737 x 54)
-
+# Dataframe of normalized batch-controlled expression data (17737 x 54)
 normExprDat <- read.csv("../../processed/DESEQ/normExpr_countData.csv", 
                  stringsAsFactors = FALSE)
 
-# Data frame of differentially expressed genes (adjusted p-value < 0.05)
+# Dataframe of differentially expressed genes (adjusted p-value < 0.05)
 # DEGs for the tissue*treatment interaction (977 x 7)
+#degs_int <- read.csv("../../processed/DESEQ/dds_deseq.02.csv")
+#names(degs_int)[1]<-"ID"
+#degs_int$ID <- toupper(degs_int$ID)
 
-degs_int <- read.csv("../../processed/DESEQ/dds_deseq.02.csv")
-names(degs_int)[1]<-"ID"
-degs_int$ID <- toupper(degs_int$ID)
-
+# Dataframe of selected genes (i.e. significant in the LRT)
 sigDEGs_int <- read.csv("../../processed/DESEQ/DEGs_lrt.int_0.05.csv")
 names(sigDEGs_int)[1]<-"ID"
 names(sigDEGs_int)[3] <- "logFC"
 names(sigDEGs_int)[7] <- "adj.P.Val" 
 sigDEGs_int$ID <- toupper(sigDEGs_int$ID)
-sigDEGs_int <- select(anot, Category, ID, Term, Genes, Benjamini)
 
-# Data frame of DAVID Functional Annotation Chart (246 x 13)
+# Dataframe of DAVID Functional Annotation Chart (246 x 13)
 func_anotChart_int <- read.table("../../processed/DESEQ/Funct_Anot_Chart_int.txt", 
-                                 header = TRUE,stringsAsFactors = FALSE, sep = "\t")
+                                 stringsAsFactors = FALSE, header = TRUE,sep = "\t")
 ```
 
 # Prep Functional Annotation Chart Int Dataframe
@@ -53,6 +51,11 @@ anot <- anot %>%
 
 # split Term column
 anot <- separate(anot, col = Term, into = c("ID", "Term"), sep = "\\~")
+
+# change multiple columns to factor
+names <- c('Category','ID','Term','Genes')
+anot[, names] <- lapply(anot[, names], factor)
+
 anot <- select(anot, Category, ID, Term, Genes, Benjamini)
 names(anot)[5]<-"adj_pval"
 ```
@@ -60,22 +63,15 @@ names(anot)[5]<-"adj_pval"
 # GOplot
 
 ```{r}
-# filter DEGs by GO genes
-deg_anot <- sigDEGs_int %>%
-      filter(ID %in% anot$Genes)
-
-
 # Generate the plotting object
 circ <- circle_dat(anot, sigDEGs_int)
 
-# Generate a simple barplot
+# A simple barplot
 GOBar(subset(circ, category == 'BP'))
 
-# Facet the barplot according to the categories of the terms 
-GOBar(circ, display = 'multiple')
-
 # Facet the barplot, add a title and change the colour scale for the z-score
-GOBar(circ, display = 'multiple', title = 'Z-score coloured barplot', zsc.col = c('yellow', 'black', 'cyan'))
+GOBar(circ, display = 'multiple', title = 'Z-score coloured barplot', 
+      zsc.col = c('yellow', 'black', 'cyan'))
 ```
 
 # Bubble plot
@@ -103,8 +99,8 @@ GOCircle(circ)
 IDs <- c('GO:005514', 'GO:0005975', 'GO:0006730', 'GO:0006508', 'GO:0046323')
 GOCircle(circ, nsub = IDs)
 
-# Generate a circular visualization for 10 terms
-GOCircle(circ, nsub = 10)
+# Generate a circular visualization for 10 terms (care!)
+#GOCircle(circ, nsub = 10)
 ```
 
 # Display of the relationship between genes and terms (GOChord)
@@ -112,7 +108,31 @@ GOCircle(circ, nsub = 10)
 ```{r}
 # Define a list of genes which you think are interesting to look at. The item EC$genes of the toy 
 # sample contains the data frame of selected genes and their logFC. Have a look...
-head(EC$genes)
+head(sigDEGs_int)
+sigGenes <- select(sigDEGs_int, ID, logFC)
+#sigGenes <- subset(sigGenes, sigGenes$logFC>=1.5)
+#circ <- circle_dat(anot, sigGenes)
+
+# select some of the significant enriched processes
+eproc <- c('oxidation-reduction process',
+           'carbohydrate metabolic process',
+           'one-carbon metabolic process',
+           'proteolysis',
+           'glucose import')
+
+# binary matrix
+chord <- chord_dat(circ, sigGenes, eproc)
+
+# Generate the matrix with a list of selected genes
+chord <- chord_dat(data = circ, genes = sigGenes)
+
+# Generate the matrix with selected processes
+chord <- chord_dat(data = circ, process = eproc)
+
+# Create the plot
+chord <- as.data.frame(chord)
+GOChord(chord, space = 0.02, gene.order = 'logFC', gene.space = 0.25, gene.size = 5)
+
 ```
 
 
