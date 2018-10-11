@@ -124,6 +124,23 @@ STEP9B:
 DESeq vs Ballgown, see https://support.bioconductor.org/p/107011/
 
 
+
+
+
+
+### 2018-10-10 (EN)
+Download a precomputed gene annotation file for use in GO analysis
+Fbgn annotation file "Genes:fbgn_annotation_ID_fb_2018_04.tsv"
+http://flybase.org/cgi-bin/get_static_page.pl?file=bulkdata7.html&title=Current%20Release
+
+### 2018-10-09
+Convert FBgn symbols to name and annotation symbols for use with GO analysis packages
+Go to FlyBase ID Converter tool: http://flybase.org/convert/id
+Paste list of FBgn.. and choose 'Validate and Convert' to 'Genes'
+On result page choose 'BatchDownload'
+Select Symbol, Name, Annotation Symbol, FlyBase ID. Push 'Get Field Data'
+Press 'Download as a file'
+
 ### 2018-10-07 (EN)
 DAVID web tool for Gene Ontology Analysis. I used the Functional Annotation Tool to get GO terms in all 3 categories (BP, MF and CC). Also obtained annotation chart and table
 969 genes sig differentiated (padj<0.05, LRT) from the interaction model, `dds.02`

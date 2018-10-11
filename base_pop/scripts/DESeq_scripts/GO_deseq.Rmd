@@ -15,22 +15,33 @@ library(tidyverse)
 # Data
 
 ```{r}
-# Dataframe of normalized batch-controlled expression data (17737 x 54)
-normExprDat <- read.csv("../../processed/DESEQ/normExpr_countData.csv", 
+# Fbgn annotation file "Genes:fbgn_annotation_ID_fb_2018_04.tsv"
+
+FbAnnotIds <- read.csv("../../processed/DESEQ/fbgn_annotation_ID_fb_2018_04.csv",
                  stringsAsFactors = FALSE)
 
-# Dataframe of differentially expressed genes (adjusted p-value < 0.05)
-# DEGs for the tissue*treatment interaction (977 x 7)
-#degs_int <- read.csv("../../processed/DESEQ/dds_deseq.02.csv")
-#names(degs_int)[1]<-"ID"
-#degs_int$ID <- toupper(degs_int$ID)
+anotFbgn <- subset(FbAnnotIds, FbAnnotIds$organism_abbreviation=="Dmel")
+anotFbgn <- select(anotFbgn, primary_FBgn, annotation_ID)
+names(anotFbgn)[1]<-"ID"
+anotFbgn$ID <- toupper(anotFbgn$ID)
 
-# Dataframe of selected genes (i.e. significant in the LRT)
-sigDEGs_int <- read.csv("../../processed/DESEQ/DEGs_lrt.int_0.05.csv")
-names(sigDEGs_int)[1]<-"ID"
-names(sigDEGs_int)[3] <- "logFC"
-names(sigDEGs_int)[7] <- "adj.P.Val" 
-sigDEGs_int$ID <- toupper(sigDEGs_int$ID)
+# Dataframe of genes significant in the LRT test
+sigInt <- read.csv("../../processed/DESEQ/DEGs_lrt.int_0.05.csv")
+names(sigInt)[1]<-"ID"
+names(sigInt)[3] <- "logFC"
+names(sigInt)[7] <- "adj.P.Val" 
+sigInt$ID <- toupper(sigInt$ID)
+
+# Search and merge sigDEGs_int with filtered anotation file
+sigInt <- merge(as.data.frame(anotFbgn), 
+                       as.data.frame(sigInt), 
+                       by="ID", sort=FALSE)
+
+# export file for GO in DAVID
+dfile <- select(sigInt, ID)
+names(dfile) <- NULL
+write.csv(dfile, "../../processed/DESEQ/int_forDAVID.csv", row.names = FALSE)
+
 
 # Dataframe of DAVID Functional Annotation Chart (246 x 13)
 func_anotChart_int <- read.table("../../processed/DESEQ/Funct_Anot_Chart_int.txt", 
@@ -64,7 +75,7 @@ names(anot)[5]<-"adj_pval"
 
 ```{r}
 # Generate the plotting object
-circ <- circle_dat(anot, sigDEGs_int)
+circ <- circle_dat(anot, sigInt)
 
 # A simple barplot
 GOBar(subset(circ, category == 'BP'))
@@ -83,6 +94,9 @@ GOBubble(circ, labels = 3)
 # Add a title, change the colour of the circles, facet the plot according to the categories and change the label threshold
 GOBubble(circ, title = 'Bubble plot', colour = c('orange', 'darkred', 'gold'), display = 'multiple', labels = 3)
 
+# Colour the background according to the category
+GOBubble(circ, title = 'Bubble plot with background colour', display = 'multiple', bg.col = T, labels = 3)
+
 # Reduce redundant terms with a gene overlap >= 0.75...
 reduced_circ <- reduce_overlap(circ, overlap = 0.75)
 # ...and plot it
@@ -93,7 +107,7 @@ GOBubble(reduced_circ, labels = 2.8)
 
 ```{r}
 # Generate a circular visualization of the results of gene- annotation enrichment analysis
-GOCircle(circ)
+GOCircle(circ, nsub=12)
 
 # Generate a circular visualization of selected terms
 IDs <- c('GO:005514', 'GO:0005975', 'GO:0006730', 'GO:0006508', 'GO:0046323')
@@ -108,9 +122,10 @@ GOCircle(circ, nsub = IDs)
 ```{r}
 # Define a list of genes which you think are interesting to look at. The item EC$genes of the toy 
 # sample contains the data frame of selected genes and their logFC. Have a look...
-head(sigDEGs_int)
-sigGenes <- select(sigDEGs_int, ID, logFC)
-#sigGenes <- subset(sigGenes, sigGenes$logFC>=1.5)
+head(sigInt)
+sigGenes <- select(sigInt, ID, logFC)
+#sigGenes <- subset(sigGenes, sigGenes$logFC>=2.5)
+#sigGenes <- sigGenes[1:37,]
 #circ <- circle_dat(anot, sigGenes)
 
 # select some of the significant enriched processes
@@ -118,24 +133,53 @@ eproc <- c('oxidation-reduction process',
            'carbohydrate metabolic process',
            'one-carbon metabolic process',
            'proteolysis',
-           'glucose import')
+           'glucose import',
+           'hexose transmembrane transport',
+           'glucose homeostasis')
 
 # binary matrix
-chord <- chord_dat(circ, sigGenes, eproc)
+chord <- chord_dat(circ, sigInt, eproc)
 
 # Generate the matrix with a list of selected genes
-chord <- chord_dat(data = circ, genes = sigGenes)
+chord <- chord_dat(data = circ, genes = sigInt)
 
 # Generate the matrix with selected processes
 chord <- chord_dat(data = circ, process = eproc)
 
 # Create the plot
-chord <- as.data.frame(chord)
-GOChord(chord, space = 0.02, gene.order = 'logFC', gene.space = 0.25, gene.size = 5)
+#chord <- as.data.frame(chord)
+GOChord(chord, space = 0.02, 
+        #gene.order = 'logFC',
+        nlfc=0, 
+        gene.space = 0.25, 
+        gene.size = 5, 
+        process.label=5)
 
 ```
 
+# Heatmap of genes and terms (GOHeat)
 
+```{r}
+# First, we use the chord object without logFC column to create the heatmap
+GOHeat(chord[,-8], nlfc = 0)
+GOHeat(chord, nlfc = 0, fill.col = c('red', 'yellow', 'green'))
+```
+
+# Golden eye (GOCluster)
+
+```{r}
+GOCluster(circ, eproc, clust.by = 'logFC',nlfc=0, term.width = 2)
+GOCluster(circ, eproc, clust.by = 'term', lfc.col = c('darkgoldenrod1', 'black', 'cyan1'))
+```
+
+# Venn diagram (GOVenn)
+
+```{r}
+l1 <- subset(circ, term == 'oxidation-reduction process', c(sigInt,logFC))
+l2 <- subset(circ, term == 'carbohydrate metabolic process', c(sigInt,logFC))
+l3 <- subset(circ, term == 'glucose import', c(sigInt,logFC))
+GOVenn(l1,l2,l3, label = c('oxidation-reduction process', 'carbohydrate metabolic process', 'glucose import'))
+```
 
 
 
