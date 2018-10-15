@@ -123,6 +123,9 @@ STEP9B:
 
 DESeq vs Ballgown, see https://support.bioconductor.org/p/107011/
 
+Precomputed FlyBase files:
+http://flybase.org/cgi-bin/get_static_page.pl?file=bulkdata7.html&title=Current%20Release
+
 
 
 
