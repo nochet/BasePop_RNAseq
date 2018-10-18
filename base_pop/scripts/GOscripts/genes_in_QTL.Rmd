@@ -1,0 +1,61 @@
+---
+title: "genes_in_QTL"
+author: "Enoch Ng'oma"
+date: "10/18/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+```
+
+# Function
+
+```{r}
+DEunderPeak <- function(DEgenes, arm, upper, lower)
+{
+  #DEgenes is a data frame with differentially expressed genes including chromosome (chr)
+  # gene start (startp) and gene stop (stopp)
+  
+  #upper is the upper bound of the QTL CI in release 6 coordinates
+  #lower is the lower bound of the QTL CI in release 6 coordinates
+  
+  lw <- (which(DEgenes$chr==arm & 
+                 ((DEgenes$startp <= upper & DEgenes$stopp >= lower))))  
+  
+  return(DEgenes[lw,])
+}
+```
+
+# Data
+
+```{r}
+# gene map table
+gmtable <- read.csv("../../processed/DESEQ/gene_map_table.csv", 
+                 stringsAsFactors = FALSE)
+gmtable$gname[gmtable$gname == "d"] <- "CG42840" 
+  
+# treatment effect DEGs
+DEGs_treat <- read.csv("../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv")
+names(DEGs_treat)[1]<-"FBgn"
+names(DEGs_treat)[3] <- "log2FC"
+DEGs_treat$FBgn <- as.character(DEGs_treat$FBgn)
+
+# merge
+merge_treat <- inner_join(DEGs_treat,gmtable, by="FBgn")
+
+# # 3 genes drop out of DEGs_treat
+which(!(DEGs_treat$FBgn %in% gmtable$FBgn))
+DEGs_treat[c(214,1257,1668),]
+```
+
+
+
+
+
+
+
+
+

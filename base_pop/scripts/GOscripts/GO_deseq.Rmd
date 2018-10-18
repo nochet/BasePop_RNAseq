@@ -193,40 +193,7 @@ l3 <- subset(circ, term == 'glucose import', c(sigGenes,logFC))
 GOVenn(l1,l2,l3, label = c('oxidation-reduction process', 'carbohydrate metabolic process', 'glucose import'))
 ```
 
-# Controlled Vocabularies
 
-```{r}
-
-# gene.association.fb; gaf-version: 2.1; Date: 08/06/2018
-
-#gene.assoc <- read.table("../../processed/DESEQ/gene_association.txt",stringsAsFactors = FALSE, header = TRUE,sep = "\t")
-gene.assoc <- read.csv("../../processed/DESEQ/gene_association.csv", stringsAsFactors = FALSE)
-gene.assoc <- as.data.frame(gene.assoc[-c(1:5), ])
-colnames(gene.assoc)[1] <- "Gene"
-colnames(gene.assoc)[2] <- "FBgn_ID"
-
-# CV terms
-det_life <- read.csv("../../processed/DESEQ/CV_GO_0008340_determ_adult_lifespan.csv", stringsAsFactors = FALSE)
-colnames(det_life)[1] <- "Gene"
-
-# DEGs significant for effect of treatment
-degs_treat <- read.csv("../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv", stringsAsFactors = FALSE)
-#colnames(degs_treat)[1] <- "FBgn_ID"
-
-# DEGs for treatment effect that are included in CV: determination of adult lifespan (32 genes)
-xb <- inner_join(degs_treat,gene.assoc, by="Gene")
-
-# Search GO terms for these in the gene_association.fb
-xc <- inner_join(det_life, xb, by="Gene")
-xc <- xc[order(xc$GO_Category), ]
-xd <- subset(xc, xc$GO_Category=="P")
-xdu <- unique(xd$Gene)
-xe <- inner_join(xb, anotFbgn, by="Gene")
-
-# Search IDs in anot.trt that are in xd
-xf <- inner_join(anot.trt, xd, by="FBgn_ID")
-xf <- select(xf, -Genes)
-```
 
 
 
