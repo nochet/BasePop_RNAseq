@@ -35,8 +35,9 @@ DEunderPeak <- function(DEgenes, arm, upper, lower)
 # gene map table
 gmtable <- read.csv("../../processed/DESEQ/gene_map_table.csv", 
                  stringsAsFactors = FALSE)
+which(gmtable$gname == "d")
 gmtable$gname[gmtable$gname == "d"] <- "CG42840" 
-  
+
 # treatment effect DEGs
 DEGs_treat <- read.csv("../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv")
 names(DEGs_treat)[1]<-"FBgn"
@@ -49,8 +50,17 @@ merge_treat <- inner_join(DEGs_treat,gmtable, by="FBgn")
 # # 3 genes drop out of DEGs_treat
 which(!(DEGs_treat$FBgn %in% gmtable$FBgn))
 DEGs_treat[c(214,1257,1668),]
+
+# 214  FBgn0030737 maps to FBgn0286508 Had1, CG9914
+# 1257 FBgn0028336 maps to FBgn0286222 Fum1, CG4094
+# 1668 FBgn0037744 maps to FBgn0286506 Mpi, CG8417
+# all these have alternative mapping to transcription start sites FBsf... numbers
+# ignore for now
 ```
 
+```{r}
+gf <- DEunderPeak(merge_treat, X)
+```
 
 
 
