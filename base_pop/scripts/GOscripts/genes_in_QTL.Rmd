@@ -38,11 +38,13 @@ gmtable <- read.csv("../../processed/DESEQ/gene_map_table.csv",
 which(gmtable$gname == "d")
 gmtable$gname[gmtable$gname == "d"] <- "CG42840" 
 
+
 # treatment effect DEGs
 DEGs_treat <- read.csv("../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv")
 names(DEGs_treat)[1]<-"FBgn"
 names(DEGs_treat)[3] <- "log2FC"
 DEGs_treat$FBgn <- as.character(DEGs_treat$FBgn)
+
 
 # merge
 merge_treat <- inner_join(DEGs_treat,gmtable, by="FBgn")
@@ -51,16 +53,64 @@ merge_treat <- inner_join(DEGs_treat,gmtable, by="FBgn")
 which(!(DEGs_treat$FBgn %in% gmtable$FBgn))
 DEGs_treat[c(214,1257,1668),]
 
+# These genes are ignored for now:
 # 214  FBgn0030737 maps to FBgn0286508 Had1, CG9914
 # 1257 FBgn0028336 maps to FBgn0286222 Fum1, CG4094
 # 1668 FBgn0037744 maps to FBgn0286506 Mpi, CG8417
 # all these have alternative mapping to transcription start sites FBsf... numbers
-# ignore for now
+
+# iis data
+iis <- read.table("../../processed/DESEQ/DEG_QTL/iis_table1.txt",
+                  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+
+iis$chr <- str_split(iis$gene_location, ":",simplify=TRUE)[,1]
+iis$startp <- str_split(iis$bci, "-", simplify = TRUE)[,1]
+iis$stopp <- str_split(iis$bci, "-", simplify = TRUE)[,2]
+
+iis$startp <- as.numeric(iis$startp)
+
+# For now, exclude Slif (cross-centromere)
+which(iis$trait=="slif")
+iis <- iis[-19, ]
+
 ```
 
+# Filter merge_treat using iis
+
 ```{r}
-gf <- DEunderPeak(merge_treat, X)
+qtl_iis <- merge_treat %>%
+      filter(FBgn %in% iis$FBgn)
 ```
+
+# DEGs in QTL peaks
+
+```{r}
+gfX <- DEunderPeak(merge_treat,  arm="X", 
+                   upper = merge_treat$startp, lower = merge_treat$stopp)
+gf3L <- DEunderPeak(merge_treat,  arm="3L", 
+                  upper = merge_treat$startp, lower = merge_treat$stopp)
+gf2L <- DEunderPeak(merge_treat,  arm="2L", 
+                  upper = merge_treat$startp, lower = merge_treat$stopp)
+gf2R <- DEunderPeak(merge_treat,  arm="2R", 
+                  upper = merge_treat$startp, lower = merge_treat$stopp)
+gf3R <- DEunderPeak(merge_treat,  arm="3R", 
+                  upper = merge_treat$startp, lower = merge_treat$stopp)
+```
+
+# The cross-centromeric QTL (Slif)
+
+```{r}
+c <- subset(gmtable, gmtable$chr=="3L")
+# In FlyBase covert 3L:3L:20,930,000 from v5 to v6 (http://flybase.org/convert/coordinates) 3L:20936900
+cc <- subset(c,c$startp>=20936900) # left BCI slif in v6
+
+d <- subset(gmtable, gmtable$chr=="3R")
+# In FlyBase covert 3R:3,460,000 from v5 to v6 3R:7634278
+dd <- subset(d,d$stopp<=7634278)
+
+e <- rbind(cc,dd)
+```
+
 
 
 
