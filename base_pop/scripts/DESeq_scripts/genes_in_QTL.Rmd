@@ -82,19 +82,29 @@ qtl_iis <- merge_treat %>%
       filter(FBgn %in% iis$FBgn)
 ```
 
-# DEGs in QTL peaks
+# DEGs in iis QTL peaks
 
 ```{r}
-gfX <- DEunderPeak(merge_treat,  arm="X", 
-                   upper = merge_treat$startp, lower = merge_treat$stopp)
-gf3L <- DEunderPeak(merge_treat,  arm="3L", 
-                  upper = merge_treat$startp, lower = merge_treat$stopp)
-gf2L <- DEunderPeak(merge_treat,  arm="2L", 
-                  upper = merge_treat$startp, lower = merge_treat$stopp)
-gf2R <- DEunderPeak(merge_treat,  arm="2R", 
-                  upper = merge_treat$startp, lower = merge_treat$stopp)
-gf3R <- DEunderPeak(merge_treat,  arm="3R", 
-                  upper = merge_treat$startp, lower = merge_treat$stopp)
+# trans-eQTL
+Lip4_2L <- DEunderPeak(merge_treat,  arm="2L", 
+                  upper = 10710000, lower = 10250000)
+step_2L <- DEunderPeak(merge_treat,  arm="X", 
+                   upper = 15470000, lower =15390000)
+PRAS40_2R <- DEunderPeak(merge_treat,  arm="2R", 
+                   upper = 14780000, lower =13980000)
+PRAS40_2Rb <- DEunderPeak(merge_treat,  arm="2R", 
+                   upper = 14610000, lower =14270000)
+Ilp5_3L <- DEunderPeak(merge_treat,  arm="X", 
+                   upper = 22980000, lower =22600000)
+
+# Lifespan QTL
+LinDiscrDR_2R <- DEunderPeak(merge_treat,  arm="2R", 
+                   upper = 9630000, lower =6120000)
+LinDiscrDRC_2R <- DEunderPeak(merge_treat,  arm="2R", 
+                   upper = 9470000, lower =7710000)
+#MedLifeDRC_3R <- # BCI cross-centromere
+MedLifeDR_3L <-   DEunderPeak(merge_treat,  arm="3L", 
+                   upper = 3840000, lower =3230000)
 ```
 
 # The cross-centromeric QTL (Slif)

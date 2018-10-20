@@ -1042,4 +1042,4 @@ Total 10 (delta 6), reused 0 (delta 0)
 remote: Resolving deltas:   0% (0/6)   [Kremote: Resolving deltas:  16% (1/6)   [Kremote: Resolving deltas:  33% (2/6)   [Kremote: Resolving deltas:  50% (3/6)   [Kremote: Resolving deltas:  66% (4/6)   [Kremote: Resolving deltas:  83% (5/6)   [Kremote: Resolving deltas: 100% (6/6)   [Kremote: Resolving deltas: 100% (6/6), completed with 6 local objects.[K
 To https://github.com/nochet/BasePop_RNAseq.git
    e0fa9f9..34e10af  master -> master
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ 
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
