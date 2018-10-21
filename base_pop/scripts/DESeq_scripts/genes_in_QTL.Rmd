@@ -78,8 +78,8 @@ iis <- iis[-19, ]
 # Filter merge_treat using iis
 
 ```{r}
-qtl_iis <- merge_treat %>%
-      filter(FBgn %in% iis$FBgn)
+#qtl_iis <- merge_treat %>%
+      #filter(FBgn %in% iis$FBgn)
 ```
 
 # DEGs in iis QTL peaks
@@ -110,17 +110,50 @@ MedLifeDR_3L <-   DEunderPeak(merge_treat,  arm="3L",
 # The cross-centromeric QTL (Slif)
 
 ```{r}
+# get genes on the 3L side of QTL
 c <- subset(gmtable, gmtable$chr=="3L")
 # In FlyBase covert 3L:3L:20,930,000 from v5 to v6 (http://flybase.org/convert/coordinates) 3L:20936900
 cc <- subset(c,c$startp>=20936900) # left BCI slif in v6
 
+# search DEGs on the 3L side
+max(cc$stopp, na.rm = FALSE)
+Slif_3L <- DEunderPeak(cc,  arm="3L", 
+                  upper = max(cc$stopp, na.rm = FALSE), 
+                  lower = 20936900)
+slif <- subset(Slif_3L, Slif_3L$gname=="slif")
+
+
+# get genes on the 3R side of QTL
 d <- subset(gmtable, gmtable$chr=="3R")
 # In FlyBase covert 3R:3,460,000 from v5 to v6 3R:7634278
 dd <- subset(d,d$stopp<=7634278)
 
-e <- rbind(cc,dd)
+# search DEGs on the 3R side
+Slif_3R <- DEunderPeak(dd,  arm="3R", 
+                  upper = max(dd$stopp, na.rm = FALSE), 
+                  lower = min(dd$startp, na.rm = FALSE))
 ```
 
+# Table of all DEGs under peaks
+
+```{r}
+# add identifier colum to each list
+Lip4_2L$QTL <- "Lip4"
+step_2L$QTL <- "step"
+PRAS40_2R$QTL <- "PRAS40a"
+PRAS40_2Rb$QTL <- "PRAS40b"
+Ilp5_3L$QTL <- "Ilp5"
+LinDiscrDR_2R$QTL <- "LinDiscrA"
+LinDiscrDRC_2R$QTL <- "LinDiscrB"
+MedLifeDR_3L$QTL <- "MedLife" 
+MedLifeDRC_3R$QTL <- "MedlifeB"
+Slif_3L$QTL <- "slifA"
+Slif_3R$QTL <- "slifB"
+
+qtl_degs <- rbind(Lip4_2L,step_2L,PRAS40_2R,PRAS40_2Rb,Ilp5_3L,
+                  LinDiscrDR_2R,LinDiscrDRC_2R,MedLifeDR_3L,
+                  MedLifeDRC_3R,Slif_3L,Slif_3R)
+```
 
 
 
