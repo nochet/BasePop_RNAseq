@@ -152,14 +152,17 @@ MedLifeDR_3L$QTL <- "MedLife"
 Slif_3L$QTL <- "slifA"
 Slif_3R$QTL <- "slifB"
 
-pp <- list(Lip4_2L,step_2L,PRAS40_2R,PRAS40_2Rb,Ilp5_3L,
-                  LinDiscrDR_2R,LinDiscrDRC_2R,MedLifeDR_3L,
-                  Slif_3L,Slif_3R)
-
 qtl_degs <- rbind(Lip4_2L,step_2L,PRAS40_2R,PRAS40_2Rb,Ilp5_3L,
                   LinDiscrDR_2R,LinDiscrDRC_2R,MedLifeDR_3L,
                   Slif_3L,Slif_3R)
 
+pp <- list(Lip4_2L,step_2L,PRAS40_2R,PRAS40_2Rb,Ilp5_3L,
+                  LinDiscrDR_2R,LinDiscrDRC_2R,MedLifeDR_3L,
+                  Slif_3L,Slif_3R)
+str(pp)
+
+qtl_degs <- qtl_degs[order(qtl_degs$gname), ]
+qtl_degs$gname
 
 ```
 
