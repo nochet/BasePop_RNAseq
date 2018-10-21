@@ -29,7 +29,7 @@ gene_map_table$startp <- as.numeric(temp.s1[,1])
 
 gene_map_table$stopp <- as.numeric(str_split(temp.s1[,2],fixed("("),simplify = TRUE)[,1])
 
-write.csv(gene_map_table, "../../processed/DESEQ/gene_map_table.csv")
+write.csv(gene_map_table, "../../processed/DESEQ/DEG_QTL/gene_map_table.csv")
 
 #merge with DEseq gene list
 #subset to significant genes

@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-
+library(tidyverse)
 ```
 
 # Function
@@ -33,7 +33,7 @@ DEunderPeak <- function(DEgenes, arm, upper, lower)
 
 ```{r}
 # gene map table
-gmtable <- read.csv("../../processed/DESEQ/gene_map_table.csv", 
+gmtable <- read.csv("../../processed/DESEQ/DEG_QTL/gene_map_table.csv", 
                  stringsAsFactors = FALSE)
 which(gmtable$gname == "d")
 gmtable$gname[gmtable$gname == "d"] <- "CG42840" 
@@ -113,12 +113,13 @@ MedLifeDR_3L <-   DEunderPeak(merge_treat,  arm="3L",
 # get genes on the 3L side of QTL
 c <- subset(gmtable, gmtable$chr=="3L")
 # In FlyBase covert 3L:3L:20,930,000 from v5 to v6 (http://flybase.org/convert/coordinates) 3L:20936900
-cc <- subset(c,c$startp>=20936900) # left BCI slif in v6
+cc <- subset(c, c$startp>=20936900) # left BCI slif in v6
+cc <- inner_join(cc, DEGs_treat, by="FBgn")
 
 # search DEGs on the 3L side
-max(cc$stopp, na.rm = FALSE)
+cx <- max(cc$stopp, na.rm = FALSE)
 Slif_3L <- DEunderPeak(cc,  arm="3L", 
-                  upper = max(cc$stopp, na.rm = FALSE), 
+                  upper = max(cx, na.rm = FALSE), 
                   lower = 20936900)
 slif <- subset(Slif_3L, Slif_3L$gname=="slif")
 
