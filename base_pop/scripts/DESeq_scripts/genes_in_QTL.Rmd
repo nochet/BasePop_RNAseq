@@ -86,6 +86,7 @@ iis <- iis[-19, ]
 
 ```{r}
 # trans-eQTL
+# to do: extract BCIs programmatically from iis 
 Lip4_2L <- DEunderPeak(merge_treat,  arm="2L", 
                   upper = 10710000, lower = 10250000)
 step_2L <- DEunderPeak(merge_treat,  arm="X", 
@@ -123,11 +124,11 @@ Slif_3L <- DEunderPeak(cc,  arm="3L",
                   lower = 20936900)
 slif <- subset(Slif_3L, Slif_3L$gname=="slif")
 
-
 # get genes on the 3R side of QTL
 d <- subset(gmtable, gmtable$chr=="3R")
 # In FlyBase covert 3R:3,460,000 from v5 to v6 3R:7634278
 dd <- subset(d,d$stopp<=7634278)
+dd <- inner_join(dd, DEGs_treat, by="FBgn")
 
 # search DEGs on the 3R side
 Slif_3R <- DEunderPeak(dd,  arm="3R", 
@@ -147,13 +148,19 @@ Ilp5_3L$QTL <- "Ilp5"
 LinDiscrDR_2R$QTL <- "LinDiscrA"
 LinDiscrDRC_2R$QTL <- "LinDiscrB"
 MedLifeDR_3L$QTL <- "MedLife" 
-MedLifeDRC_3R$QTL <- "MedlifeB"
+#MedLifeDRC_3R$QTL <- "MedlifeB"
 Slif_3L$QTL <- "slifA"
 Slif_3R$QTL <- "slifB"
 
+pp <- list(Lip4_2L,step_2L,PRAS40_2R,PRAS40_2Rb,Ilp5_3L,
+                  LinDiscrDR_2R,LinDiscrDRC_2R,MedLifeDR_3L,
+                  Slif_3L,Slif_3R)
+
 qtl_degs <- rbind(Lip4_2L,step_2L,PRAS40_2R,PRAS40_2Rb,Ilp5_3L,
                   LinDiscrDR_2R,LinDiscrDRC_2R,MedLifeDR_3L,
-                  MedLifeDRC_3R,Slif_3L,Slif_3R)
+                  Slif_3L,Slif_3R)
+
+
 ```
 
 
