@@ -130,6 +130,16 @@ http://flybase.org/cgi-bin/get_static_page.pl?file=bulkdata7.html&title=Current%
 
 
 
+### 2018-10-20
+`genes_in_QTL.Rmd` 
+Code to scan past QTL peaks (Stanley et al 2017) for DEGs (tis study)
+Reads and pulses `"../../processed/gene_map_table_fb_2018_04.tsv"`. 
+A function, `DEunderPeak()` scans under QTL peaks.
+A prepared data frame is saved to `"../../processed/DESEQ/DEG_QTL/gene_map_table.csv")`.
+Steps:
+	- merge a dataframe of DEGs (`DEG_treat`) and the gene map table (`gmtable`) on FBgn
+	- read in data with QTL peaks `../../processed/DESEQ/DEG_QTL/iis_table1.txt`. This excludes peak that span the centromere
+	- scan through trans eQTL and lifespan peaks for DEGs
 
 ### 2018-10-10 (EN)
 Download a precomputed gene annotation file for use in GO analysis
