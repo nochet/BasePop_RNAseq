@@ -130,6 +130,13 @@ http://flybase.org/cgi-bin/get_static_page.pl?file=bulkdata7.html&title=Current%
 
 
 
+### 2018-10-21
+Scanned Stanley et al 2017 trans-eQTL and lifespan QTL for DEGs - see R object `qtl_degs`
+Split `prep_DESeq.Rmd` script into:
+	`prep_DESeq.Rmd`: runs batch control of Stringtie output using SVA
+	`BaseP_DESeq.Rmd`: Differential expression models with DESeq2
+	`BaseP_DESeq_Visuals.Rmd`: plots to visualize expression data
+
 ### 2018-10-20
 `genes_in_QTL.Rmd` 
 Code to scan past QTL peaks (Stanley et al 2017) for DEGs (tis study)

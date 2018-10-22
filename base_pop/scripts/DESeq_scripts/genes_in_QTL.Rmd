@@ -161,8 +161,8 @@ pp <- list(Lip4_2L,step_2L,PRAS40_2R,PRAS40_2Rb,Ilp5_3L,
                   Slif_3L,Slif_3R)
 str(pp)
 
-qtl_degs <- qtl_degs[order(qtl_degs$gname), ]
-qtl_degs$gname
+qtl_degs <- qtl_degs[order(qtl_degs$QTL), ]
+subset(qtl_degs,qtl_degs$QTL=="Lip4")
 
 ```
 

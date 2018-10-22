@@ -1,0 +1,124 @@
+---
+title: "Visualizing DE of Base Population RNASeq using DESeq2"
+author: "Enoch Ng'oma"
+date: "10/21/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# PCA
+
+```{r}
+
+vsd.01 <- varianceStabilizingTransformation(dds_deseq.01, blind = TRUE)
+vsd.02 <- varianceStabilizingTransformation(dds_deseq.02, blind = TRUE)
+
+print(plotPCA(vsd.01, intgroup=c("treatment", "tissue")))
+plotPCA(vsd.01, intgroup=c("tissue"), returnData=FALSE)
+plotPCA(vsd.01, intgroup=c("treatment"), returnData=FALSE)
+
+print(plotPCA(vsd.02, intgroup=c("treatment", "tissue")))
+plotPCA(vsd.02, intgroup=c("tissue"), returnData=FALSE)
+plotPCA(vsd.02, intgroup=c("treatment"), returnData=FALSE)
+```
+
+
+
+```{r}
+## Merge with normalized count data
+res.dds_table <- merge(as.data.frame(res.dds), 
+                       as.data.frame(counts(dds_deseq, normalized=TRUE)), 
+                       by="row.names", sort=FALSE)
+names(res.dds_table)[1] <- "Gene"
+
+#save(res.dds, file = "../../processed/DESEQ/res.dds.Rda")
+#save(dds_deseq, file = "../../processed/DESEQ/dds_deseq.Rda")
+#save(res.dds_table, file = "../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+#write.csv(res.dds_table, 
+          #"../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.csv", row.names=TRUE)
+
+load("../../processed/DESEQ/res.dds.Rda")
+load("../../processed/DESEQ/dds_deseq.Rda")
+load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+# Examine plot of p-values
+hist(res.dds$pvalue, breaks=50, col="grey")
+
+# Examine independent filtering
+metadata(res.dds)$filterThreshold
+
+plot(metadata(res.dds)$filterNumRej, type="b", xlab="quantiles of baseMean", ylab="number of rejections")
+```
+
+# MA plot
+
+```{r}
+load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+# Could do with built-in DESeq2 function:
+DESeq2::plotMA(dds_deseq, ylim=c(-5,5))
+
+# Alternatively
+maplot <- function (res.dds_table, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
+  with(res.dds_table, plot(baseMean, log2FoldChange, pch=20, cex=.5, log="x", ...))
+  with(subset(res.dds_table, padj<thresh), points(baseMean, log2FoldChange, col="red", pch=20, cex=1.5))
+  if (labelsig) {
+    require(calibrate)
+    with(subset(res.dds_table, padj<thresh), textxy(baseMean, log2FoldChange, labs="Gene", cex=textcx, col=2))
+  }
+}
+png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
+maplot(res.dds_table, ylim=c(-2,2), main="MA Plot")
+dev.off()
+```
+
+# Volcano plot
+
+```{r}
+load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+par(mar=c(5,5,5,5), cex=1.0, cex.main=1.4, cex.axis=1.4, cex.lab=1.4)
+
+topT <- as.data.frame(res.dds_table)
+
+#Adjusted P values (FDR Q values)
+with(topT, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1.0, xlab=bquote(~Log[2]~fold~change), ylab=bquote(~-log[10]~Q~value)))
+
+with(subset(topT, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
+
+with(subset(topT, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(topT), topT$padj<0.05 & abs(topT$log2FoldChange)>2), cex=0.8, pos=3))
+
+#Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
+abline(v=0, col="black", lty=3, lwd=1.0)
+abline(v=-2, col="black", lty=4, lwd=2.0)
+abline(v=2, col="black", lty=4, lwd=2.0)
+abline(h=-log10(max(topT$pvalue[topT$padj<0.05], na.rm=TRUE)), col="black", lty=4, lwd=2.0)
+```
+
+```{r}
+#dev.off()
+with(res.dds_table, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-5,5), ylim=c(0,25)))
+
+# Add colored points: red if padj<0.05, orange of log2FC>1, green if both)
+with(subset(res.dds_table, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+with(subset(res.dds_table, abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="orange"))
+with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="green"))
+
+# Label points with the textxy function from the calibrate plot
+library(calibrate)
+with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -log10(pvalue), labs=Gene, cex=.8))
+```
+
+# Look at highly DE genes
+
+```{r}
+highDown <- which(topT$log2FoldChange < -5)
+topT[highDown,]
+
+highUp <- which(topT$log2FoldChange > 5)
+topT[highUp,]
+```
