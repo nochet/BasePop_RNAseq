@@ -131,7 +131,7 @@ resSig_OH <- resSig_OH[, c(7,1:6)]
 (resSig_OH <- resSig_OH[order(resSig_OH$padj), ])
 write.csv(resSig_OH, "../../processed/DESEQ/DEGs_OH_0.05.csv", row.names = FALSE)
 
-# Background list - all gene_ids
+# Background list - all gene_ids for GO term enrichment
 bList <- as.data.frame(rownames(pl3c))
 write.csv(bList, "../../processed/DESEQ/gene_background_list.csv")
 ```

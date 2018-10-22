@@ -88,7 +88,7 @@ all(rownames(phenDat.sva) %in% colnames(countdata))
 countdata <- countdata[, rownames(phenDat.sva)]
 all(rownames(phenDat.sva) == colnames(countdata))
 
-# Write a background file for GO analysis
+# Write a background file for DE and GO analysis
 write.csv(countdata, "../../processed/DESEQ/normExpr_countData.csv", row.names = FALSE)
 ```
 
