@@ -45,11 +45,17 @@ names(DEGs_treat)[1]<-"FBgn"
 names(DEGs_treat)[3] <- "log2FC"
 DEGs_treat$FBgn <- as.character(DEGs_treat$FBgn)
 
+#Interaction effect DEGs
+DEGs_int <- read.csv("../../processed/DESEQ/DEGs_lrt.int_0.05.csv")
+names(DEGs_int)[1]<-"FBgn"
+names(DEGs_int)[3] <- "log2FC"
+DEGs_int$FBgn <- as.character(DEGs_int$FBgn)
 
 # merge
 merge_treat <- inner_join(DEGs_treat,gmtable, by="FBgn")
+merge_int <- inner_join(DEGs_int,gmtable, by="FBgn")
 
-# # 3 genes drop out of DEGs_treat
+# 3 genes drop out of DEGs_treat
 which(!(DEGs_treat$FBgn %in% gmtable$FBgn))
 DEGs_treat[c(214,1257,1668),]
 
@@ -58,6 +64,8 @@ DEGs_treat[c(214,1257,1668),]
 # 1257 FBgn0028336 maps to FBgn0286222 Fum1, CG4094
 # 1668 FBgn0037744 maps to FBgn0286506 Mpi, CG8417
 # all these have alternative mapping to transcription start sites FBsf... numbers
+
+# 3 genes drop out of DEGs_int
 
 # iis data
 iis <- read.table("../../processed/DESEQ/DEG_QTL/iis_table1.txt",
@@ -72,7 +80,22 @@ iis$startp <- as.numeric(iis$startp)
 # For now, exclude Slif (cross-centromere)
 which(iis$trait=="slif")
 iis <- iis[-19, ]
+```
 
+
+
+```{r}
+load("../../processed/DESEQ/DEG_QTL/all_iisPeak.Rda")
+#R6pos = peak position in v6
+
+transQTL <- subset(allPeak, allPeak$id==c('Ilp5','step'))
+transQTL <- select(transQTL, id, R6pos, R6st)
+colnames(transQTL)[1] <- "QTL"
+tQTL.targets <- rbind(step_2L,step_2L.int,Ilp5_3L)
+
+# Find distance of DEGs to  qtl position
+distt <- inner_join(tQTL.targets,transQTL, by="QTL")
+distt$dista <-  
 ```
 
 # Filter merge_treat using iis
@@ -82,19 +105,13 @@ iis <- iis[-19, ]
       #filter(FBgn %in% iis$FBgn)
 ```
 
-# DEGs in iis QTL peaks
+# DEGs in iis QTL peaks for the effect of treatment
 
 ```{r}
 # trans-eQTL
 # to do: extract BCIs programmatically from iis 
-Lip4_2L <- DEunderPeak(merge_treat,  arm="2L", 
-                  upper = 10710000, lower = 10250000)
 step_2L <- DEunderPeak(merge_treat,  arm="X", 
                    upper = 15470000, lower =15390000)
-PRAS40_2R <- DEunderPeak(merge_treat,  arm="2R", 
-                   upper = 14780000, lower =13980000)
-PRAS40_2Rb <- DEunderPeak(merge_treat,  arm="2R", 
-                   upper = 14610000, lower =14270000)
 Ilp5_3L <- DEunderPeak(merge_treat,  arm="X", 
                    upper = 22980000, lower =22600000)
 
@@ -103,73 +120,127 @@ LinDiscrDR_2R <- DEunderPeak(merge_treat,  arm="2R",
                    upper = 9630000, lower =6120000)
 LinDiscrDRC_2R <- DEunderPeak(merge_treat,  arm="2R", 
                    upper = 9470000, lower =7710000)
-#MedLifeDRC_3R <- # BCI cross-centromere
 MedLifeDR_3L <-   DEunderPeak(merge_treat,  arm="3L", 
                    upper = 3840000, lower =3230000)
-```
-
-# The cross-centromeric QTL (Slif)
-
-```{r}
-# get genes on the 3L side of QTL
-c <- subset(gmtable, gmtable$chr=="3L")
-# In FlyBase covert 3L:3L:20,930,000 from v5 to v6 (http://flybase.org/convert/coordinates) 3L:20936900
-cc <- subset(c, c$startp>=20936900) # left BCI slif in v6
-cc <- inner_join(cc, DEGs_treat, by="FBgn")
-
-# search DEGs on the 3L side
-cx <- max(cc$stopp, na.rm = FALSE)
-Slif_3L <- DEunderPeak(cc,  arm="3L", 
-                  upper = max(cx, na.rm = FALSE), 
-                  lower = 20936900)
-slif <- subset(Slif_3L, Slif_3L$gname=="slif")
-
-# get genes on the 3R side of QTL
-d <- subset(gmtable, gmtable$chr=="3R")
-# In FlyBase covert 3R:3,460,000 from v5 to v6 3R:7634278
-dd <- subset(d,d$stopp<=7634278)
-dd <- inner_join(dd, DEGs_treat, by="FBgn")
-
-# search DEGs on the 3R side
-Slif_3R <- DEunderPeak(dd,  arm="3R", 
-                  upper = max(dd$stopp, na.rm = FALSE), 
-                  lower = min(dd$startp, na.rm = FALSE))
 ```
 
 # Table of all DEGs under peaks
 
 ```{r}
 # add identifier colum to each list
-Lip4_2L$QTL <- "Lip4"
 step_2L$QTL <- "step"
-PRAS40_2R$QTL <- "PRAS40a"
-PRAS40_2Rb$QTL <- "PRAS40b"
 Ilp5_3L$QTL <- "Ilp5"
 LinDiscrDR_2R$QTL <- "LinDiscrA"
 LinDiscrDRC_2R$QTL <- "LinDiscrB"
 MedLifeDR_3L$QTL <- "MedLife" 
-#MedLifeDRC_3R$QTL <- "MedlifeB"
-Slif_3L$QTL <- "slifA"
-Slif_3R$QTL <- "slifB"
 
-qtl_degs <- rbind(Lip4_2L,step_2L,PRAS40_2R,PRAS40_2Rb,Ilp5_3L,
-                  LinDiscrDR_2R,LinDiscrDRC_2R,MedLifeDR_3L,
-                  Slif_3L,Slif_3R)
 
-pp <- list(Lip4_2L,step_2L,PRAS40_2R,PRAS40_2Rb,Ilp5_3L,
-                  LinDiscrDR_2R,LinDiscrDRC_2R,MedLifeDR_3L,
-                  Slif_3L,Slif_3R)
+qtl_degs <- rbind(step_2L,Ilp5_3L,
+                  LinDiscrDR_2R,LinDiscrDRC_2R,MedLifeDR_3L)
+
+pp <- list(step_2L,Ilp5_3L,
+                  LinDiscrDR_2R,LinDiscrDRC_2R,MedLifeDR_3L)
 str(pp)
 
 qtl_degs <- qtl_degs[order(qtl_degs$QTL), ]
-subset(qtl_degs,qtl_degs$QTL=="Lip4")
+subset(qtl_degs,qtl_degs$QTL=="Ilp5")
 
 ```
 
+# DEGs in iis QTL peaks for the interaction
+
+```{r}
+# trans-eQTL
+# to do: extract BCIs programmatically from iis 
+step_2L.int <- DEunderPeak(merge_int,  arm="X", 
+                   upper = 15470000, lower =15390000)
+Ilp5_3L.int <- DEunderPeak(merge_int,  arm="X", 
+                   upper = 22980000, lower =22600000)
+
+# Lifespan QTL
+LinDiscrDR_2R.int <- DEunderPeak(merge_int,  arm="2R", 
+                   upper = 9630000, lower =6120000)
+LinDiscrDRC_2R.int <- DEunderPeak(merge_int,  arm="2R", 
+                   upper = 9470000, lower =7710000)
+MedLifeDR_3L.int <-   DEunderPeak(merge_int,  arm="3L", 
+                   upper = 3840000, lower =3230000)
+```
+
+# Table of interaction DEGs under peaks
+
+```{r}
+# add identifier colum to each list
+step_2L.int$QTL <- "step"
+Ilp5_3L.int$QTL <- "Ilp5"
+LinDiscrDR_2R.int$QTL <- "LinDiscrA"
+LinDiscrDRC_2R.int$QTL <- "LinDiscrB"
+MedLifeDR_3L.int$QTL <- "MedLife" 
 
 
+qtl_degs_int <- rbind(step_2L.int,
+                    LinDiscrDR_2R.int,LinDiscrDRC_2R.int,
+                    MedLifeDR_3L.int)
+
+ppi <- list(step_2L.int,
+            LinDiscrDR_2R.int,LinDiscrDRC_2R.int,
+            MedLifeDR_3L.int)
+str(ppi)
+
+qtl_degs_int <- qtl_degs_int[order(qtl_degs_int$QTL), ]
+subset(qtl_degs_int,qtl_degs_int$QTL=="step")
+
+```
+
+# Interaction and treatment tables together
+
+```{r}
+colnames(qtl_degs)
+colnames(qtl_degs_int)
+
+qtl_degs$effect <- "treat"
+qtl_degs_int$effect <- "int"
+all_qtl_degs <- rbind(qtl_degs,qtl_degs_int)
+```
 
 
+```{r}
+GO_fly <- read_lines(file = "../../processed/gene_association.fb",
+                                       skip = 5) %>% 
+  str_split(pattern = "\t", simplify = TRUE) %>% 
+  as_tibble()
 
+colnames(GO_fly) <- c("DB","gname","g_symbol",
+                      "Qualifier","GOid","reference",
+                      "Evidence","sourceE","Aspect","full_gname",
+                      "altname","type","taxon","date","sourceA")
+GO_fly[,c(16:17)] <- NULL
+GO_fly <- select(GO_fly, gname, GOid)
+colnames(GO_fly)[1] <- "FBgn"
 
+allDEGs.GO <- inner_join(all_qtl_degs,GO_fly, by="FBgn")
 
+```
+
+# Look for slif in DEG lists
+
+```{r}
+k <- gmtable[which(gmtable$gname=="slif"),]
+kk <- which(DEGs_treat$FBgn %in% k$FBgn)
+ki <- which(DEGs_int$FBgn %in% k$FBgn)
+# slif not among DEGs!
+```
+
+# Gene summary table
+
+```{r}
+# view few lines in the terminal: head -n 3 automated_gene_summaries.tsv | tail -n 3
+
+gsum <- read_lines("http://flybase.org/cgi-bin/get_static_page.pl?file=bulkdata7.html&title=Current%20Release/automated_gene_summaries.tsv.gz",
+                   skip = 1)%>%
+  str_split(pattern = "\t", simplify = TRUE) %>% 
+  as_tibble() 
+
+temp <- grep("lifespan", gsum$V2)
+gsum[temp[1],'V2']
+
+```
