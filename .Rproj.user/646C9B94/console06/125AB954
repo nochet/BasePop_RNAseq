@@ -1017,3 +1017,41 @@ Untracked files:
 
 no changes added to commit (use "git add" and/or "git commit -a")
 ]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
+warning: CRLF will be replaced by LF in base_pop/processed/DESEQ/DEG_QTL/iisprobe_gene_CG_decoder.csv.
+The file will have its original line endings in your working directory.
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "IIS/TOR Stanley et al 2017 check" [A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[K"
+[master d5177f8] IIS/TOR Stanley et al 2017 check
+ 5 files changed, 152 insertions(+), 248 deletions(-)
+ rewrite .Rproj.user/646C9B94/console06/INDEX001 (85%)
+ create mode 100644 base_pop/processed/DESEQ/DEG_QTL/iisprobe_gene_CG_decoder.csv
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
+Counting objects: 16, done.
+Delta compression using up to 8 threads.
+Compressing objects:   6% (1/16)   Compressing objects:  12% (2/16)   Compressing objects:  18% (3/16)   Compressing objects:  25% (4/16)   Compressing objects:  31% (5/16)   Compressing objects:  37% (6/16)   Compressing objects:  43% (7/16)   Compressing objects:  50% (8/16)   Compressing objects:  56% (9/16)   Compressing objects:  62% (10/16)   Compressing objects:  68% (11/16)   Compressing objects:  75% (12/16)   Compressing objects:  81% (13/16)   Compressing objects:  87% (14/16)   Compressing objects:  93% (15/16)   Compressing objects: 100% (16/16)   Compressing objects: 100% (16/16), done.
+Writing objects:   6% (1/16)   Writing objects:  12% (2/16)   Writing objects:  18% (3/16)   Writing objects:  25% (4/16)   Writing objects:  31% (5/16)   Writing objects:  37% (6/16)   Writing objects:  43% (7/16)   Writing objects:  50% (8/16)   Writing objects:  56% (9/16)   Writing objects:  62% (10/16)   Writing objects:  68% (11/16)   Writing objects:  75% (12/16)   Writing objects:  81% (13/16)   Writing objects:  87% (14/16)   Writing objects:  93% (15/16)   Writing objects: 100% (16/16)   Writing objects: 100% (16/16), 2.73 KiB | 0 bytes/s, done.
+Total 16 (delta 12), reused 0 (delta 0)
+remote: Resolving deltas:   0% (0/12)   [Kremote: Resolving deltas:   8% (1/12)   [Kremote: Resolving deltas:  16% (2/12)   [Kremote: Resolving deltas:  25% (3/12)   [Kremote: Resolving deltas:  33% (4/12)   [Kremote: Resolving deltas:  41% (5/12)   [Kremote: Resolving deltas:  50% (6/12)   [Kremote: Resolving deltas:  58% (7/12)   [Kremote: Resolving deltas:  66% (8/12)   [Kremote: Resolving deltas:  75% (9/12)   [Kremote: Resolving deltas:  83% (10/12)   [Kremote: Resolving deltas:  91% (11/12)   [Kremote: Resolving deltas: 100% (12/12)   [Kremote: Resolving deltas: 100% (12/12), completed with 12 local objects.[K
+To https://github.com/nochet/BasePop_RNAseq.git
+   7c17085..d5177f8  master -> master
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
+On branch master
+Your branch is up-to-date with 'origin/master'.
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
+	[31mmodified:   .Rproj.user/646C9B94/console06/INDEX001[m
+	[31mmodified:   FlyBase_Lists/CV_aging.csv[m
+	[31mdeleted:    base_pop/processed/DESEQ/DEG_QTL/iisprobe_gene_CG_decoder.csv[m
+	[31mmodified:   base_pop/scripts/DESeq_scripts/genes_in_QTL.Rmd[m
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	[31mFlyBase_Lists/CV_terms.csv[m
+	[31mbase_pop/processed/DESEQ/CV_terms.csv[m
+	[31mbase_pop/processed/DESEQ/iisprobe_gene_CG_decoder.csv[m
+
+no changes added to commit (use "git add" and/or "git commit -a")
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A

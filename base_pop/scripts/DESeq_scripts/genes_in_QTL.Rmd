@@ -258,28 +258,93 @@ pull(gsum[Cda4[1],'V2'])
 GO terms
 
 ```{r}
+CVTerms <- read.csv("../../processed/DESEQ/CV_terms.csv",stringsAsFactors = FALSE)
+
 #GO:0007568 - aging
-aging <- grep("aging", gsum$V2)
-gsum[aging[1],'V2']
-pull(gsum[aging[1],'V2'])
-GO_aging <- gsum[aging,]
-colnames(GO_aging) <- c("FBgn","gene_sum")
+age <- subset(CVTerms, CVTerms$GO_cat=="aging")
+age.treat <- merge_treat %>%
+      filter(FBgn %in% age$FBgn)
+age.int <- merge_int %>%
+  filter(FBgn %in% age$FBgn)
+age.treat$effect <- "treat"
+age.int$effect <- "int"
+AGE <- rbind(age.treat,age.int)
 
 #GO:0008340 - determination of adult lifespan
+doal <- subset(CVTerms, CVTerms$GO_cat=="det_adul_life")
+doal.treat <- merge_treat %>%
+      filter(FBgn %in% doal$FBgn)
+doal.int <- merge_int %>%
+  filter(FBgn %in% doal$FBgn)
+doal.treat$effect <- "treat"
+doal.int$effect <- "int"
+DOAL <- rbind(doal.treat,doal.int)
+
 #GO:0008286 - insulin receptor signaling pathway
+irsp <- subset(CVTerms, CVTerms$GO_cat=="IR_sig_path")
+irsp <- merge_treat %>%
+      filter(FBgn %in% irsp$FBgn)
+irsp.int <- merge_int %>%
+  filter(FBgn %in% irsp$FBgn)
+irsp$effect <- "treat"
+irsp.int$effect <- "int"
+IRSP <- rbind(irsp,irsp.int)
+
 #GO:0042593 - glucose homeostasis
+gluc <- subset(CVTerms, CVTerms$GO_cat=="gluc_homeo")
+gluc.treat <- merge_treat %>%
+      filter(FBgn %in% gluc$FBgn)
+gluc.int <- merge_int %>%
+  filter(FBgn %in% gluc$FBgn)
+gluc.treat$effect <- "treat"
+gluc.int$effect <- "int"
+GLUC <- rbind(gluc.treat,gluc.int)
+
 #GO:0006629 - lipid metabolic process
-GOs <- grep(c('glucose homeostasis'), gsum$V2)
+lipmetp <- subset(CVTerms, CVTerms$GO_cat=="lip_met_proc")
+lipmetp.treat <- merge_treat %>%
+      filter(FBgn %in% lipmetp$FBgn)
+lipmetp.int <- merge_int %>%
+  filter(FBgn %in% lipmetp$FBgn)
+lipmetp.treat$effect <- "treat"
+lipmetp.int$effect <- "int"
+LIPMETP <- rbind(lipmetp.treat,lipmetp.int)
+
 #GO:0010897 - negative regulation of triglyceride catabolic process
+nrtcp <- subset(CVTerms, CVTerms$GO_cat=="negRegl_trigly_catProc")
+nrtcp.treat <- merge_treat %>%
+      filter(FBgn %in% nrtcp$FBgn)
+nrtcp.int <- merge_int %>%
+  filter(FBgn %in% nrtcp$FBgn)
+# zero
+
 #GO:0042594 - response to starvation
+rstarv <- subset(CVTerms, CVTerms$GO_cat=="resp_to_starv")
+rstarv.treat <- merge_treat %>%
+      filter(FBgn %in% rstarv$FBgn)
+rstarv.int <- merge_int %>%
+  filter(FBgn %in% rstarv$FBgn)
+rstarv.treat$effect <- "treat"
+rstarv.int$effect <- "int"
+RSTARV <- rbind(rstarv.treat,rstarv.int)
+
 #GO:0009267 - cellular response to starvation
+crts <- subset(CVTerms, CVTerms$GO_cat=="cell_resp_starv")
+crts.treat <- merge_treat %>%
+      filter(FBgn %in% crts$FBgn)
+crts.int <- merge_int %>%
+  filter(FBgn %in% crts$FBgn)
+crts.treat$effect <- "treat"
+#crts.int$effect <- "int"
+#CRTS <- rbind(crts.treat,crts.int)
+
 ```
 
 # Nutrient-sensing pathways
 
 ```{r}
 # IIS/TOR
-iis_stan <- read.csv("../../processed/DESEQ/DEG_QTL/iisprobe_gene_CG_decoder.csv",stringsAsFactors = FALSE)
+iis_stan <- read.csv("../../processed/DESEQ/iisprobe_gene_CG_decoder.csv",stringsAsFactors = FALSE)
 
 colnames(iis_stan)[2] <- "gname"
 trt <- inner_join(iis_stan,merge_treat, by="gname")
