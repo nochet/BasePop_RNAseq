@@ -82,22 +82,6 @@ which(iis$trait=="slif")
 iis <- iis[-19, ]
 ```
 
-
-
-```{r}
-load("../../processed/DESEQ/DEG_QTL/all_iisPeak.Rda")
-#R6pos = peak position in v6
-
-transQTL <- subset(allPeak, allPeak$id==c('Ilp5','step'))
-transQTL <- select(transQTL, id, R6pos, R6st)
-colnames(transQTL)[1] <- "QTL"
-tQTL.targets <- rbind(step_2L,step_2L.int,Ilp5_3L)
-
-# Find distance of DEGs to  qtl position
-distt <- inner_join(tQTL.targets,transQTL, by="QTL")
-distt$dista <-  
-```
-
 # Filter merge_treat using iis
 
 ```{r}
@@ -143,7 +127,7 @@ pp <- list(step_2L,Ilp5_3L,
 str(pp)
 
 qtl_degs <- qtl_degs[order(qtl_degs$QTL), ]
-subset(qtl_degs,qtl_degs$QTL=="Ilp5")
+subset(qtl_degs,qtl_degs$QTL=="slif")
 
 ```
 
@@ -187,7 +171,7 @@ ppi <- list(step_2L.int,
 str(ppi)
 
 qtl_degs_int <- qtl_degs_int[order(qtl_degs_int$QTL), ]
-subset(qtl_degs_int,qtl_degs_int$QTL=="step")
+subset(qtl_degs_int,qtl_degs_int$QTL=="slif")
 
 ```
 
@@ -202,6 +186,7 @@ qtl_degs_int$effect <- "int"
 all_qtl_degs <- rbind(qtl_degs,qtl_degs_int)
 ```
 
+# Gene association table with GO IDs
 
 ```{r}
 GO_fly <- read_lines(file = "../../processed/gene_association.fb",
@@ -221,6 +206,23 @@ allDEGs.GO <- inner_join(all_qtl_degs,GO_fly, by="FBgn")
 
 ```
 
+
+```{r}
+load("../../processed/DESEQ/DEG_QTL/all_iisPeak.Rda")
+#R6pos = peak position in v6
+
+transQTL <- subset(allPeak, allPeak$id==c('Ilp5','step'))
+transQTL <- select(transQTL, id, as.numeric(R6pos), as.numeric(R6st))
+colnames(transQTL)[1] <- "QTL"
+transQTL$R6pos <- as.numeric(as.character(transQTL$R6pos)) 
+tQTL.targets <- rbind(step_2L,step_2L.int,Ilp5_3L)
+
+# Find distance of DEGs to  qtl position
+distt <- inner_join(tQTL.targets,transQTL, by="QTL")
+distt$qdist <- (distt$startp-distt$R6pos)
+
+```
+
 # Look for slif in DEG lists
 
 ```{r}
@@ -230,17 +232,66 @@ ki <- which(DEGs_int$FBgn %in% k$FBgn)
 # slif not among DEGs!
 ```
 
-# Gene summary table
+# Gene summaries
 
 ```{r}
 # view few lines in the terminal: head -n 3 automated_gene_summaries.tsv | tail -n 3
 
-gsum <- read_lines("http://flybase.org/cgi-bin/get_static_page.pl?file=bulkdata7.html&title=Current%20Release/automated_gene_summaries.tsv.gz",
+gsum <- read_lines(file = "../../processed/automated_gene_summaries.tsv",
                    skip = 1)%>%
   str_split(pattern = "\t", simplify = TRUE) %>% 
   as_tibble() 
 
-temp <- grep("lifespan", gsum$V2)
-gsum[temp[1],'V2']
+ahcy <- grep("Ahcy", gsum$V2)
+gsum[ahcy[1],'V2']
+pull(gsum[ahcy[1],'V2'])
 
+CG40486 <- grep("CG40486", gsum$V2)
+gsum[CG40486[1],'V2']
+pull(gsum[CG40486[1],'V2'])
+
+Cda4 <- grep("Cda4", gsum$V2)
+gsum[Cda4[1],'V2']
+pull(gsum[Cda4[1],'V2'])
 ```
+
+GO terms
+
+```{r}
+#GO:0007568 - aging
+aging <- grep("aging", gsum$V2)
+gsum[aging[1],'V2']
+pull(gsum[aging[1],'V2'])
+GO_aging <- gsum[aging,]
+colnames(GO_aging) <- c("FBgn","gene_sum")
+
+#GO:0008340 - determination of adult lifespan
+#GO:0008286 - insulin receptor signaling pathway
+#GO:0042593 - glucose homeostasis
+#GO:0006629 - lipid metabolic process
+GOs <- grep(c('glucose homeostasis'), gsum$V2)
+#GO:0010897 - negative regulation of triglyceride catabolic process
+#GO:0042594 - response to starvation
+#GO:0009267 - cellular response to starvation
+```
+
+# Nutrient-sensing pathways
+
+```{r}
+# IIS/TOR
+iis_stan <- read.csv("../../processed/DESEQ/DEG_QTL/iisprobe_gene_CG_decoder.csv",stringsAsFactors = FALSE)
+
+colnames(iis_stan)[2] <- "gname"
+trt <- inner_join(iis_stan,merge_treat, by="gname")
+trt$effect <- "treat"
+
+xk <- merge_treat
+colnames(xk)[10] <- "CG"
+trt1 <- inner_join(iis_stan,xk, by="CG")
+
+int <- inner_join(iis_stan,merge_int, by="gname")
+int$effect <- "intr"
+
+iis_tor <- rbind(trt,int)
+```
+
