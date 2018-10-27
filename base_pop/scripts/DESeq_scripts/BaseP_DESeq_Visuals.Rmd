@@ -7,7 +7,43 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(DESeq2)
+library(tximport)
+
 ```
+
+
+
+```{r}
+vizDE <- read.csv("../../processed/DESEQ/normExpr_countData.csv")
+vizDE <- read.csv("../../processed/S03_short_ballG/gene_count_matrix.csv")
+
+phenDat <- read.csv("../../processed/phenotypes.csv")
+
+```
+
+
+
+```{r}
+
+dds <- DESeqDataSetFromMatrix(countData = vizDE,
+                              colData = phenDat, 
+                              design = ~ tissue*treatment)
+
+
+dds.fpkm <- fpm(dds)
+
+
+#remove all genes with 0s for all samples
+dat.sva <- dat.sva[which(cc.c>0),]
+```
+
+
+
+
+
+
 
 # PCA
 

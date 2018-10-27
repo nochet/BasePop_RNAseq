@@ -46,6 +46,7 @@ all(rownames(phenDat) == colnames(countdata))
 phenDat$group <- as.factor(phenDat$group)
 phenDat$treatment <- as.factor(phenDat$treatment)
 phenDat$tissue <- as.factor(phenDat$tissue)
+write.csv(phenDat, "../../processed/phenotypes.csv", row.names = TRUE)
 ```
 
 # Control for batch effects with sva
