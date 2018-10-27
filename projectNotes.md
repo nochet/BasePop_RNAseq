@@ -128,9 +128,25 @@ http://flybase.org/cgi-bin/get_static_page.pl?file=bulkdata7.html&title=Current%
 
 
 
+2018-10-26 (EN)
+Making PCA for DESeq data
+	Get fpkm values with fpkm(). An error occurs. Solution is to use tximport package to normalize count values for gene size https://support.bioconductor.org/p/83607/
+	Starts from "stringtie -eB -G transcripts.gff <source_file.bam>"
+	cd to /processed/S03_short_ballG/ballgown: 
+		find * -type d > ../sampNames.txt
+		write $ in the search window i.e. matches end of line
+		write _ballgown.gtf in the replace window
 
+2018-10-25 (EN)
+DEGs for treatment effect - 2475 genes
+DEGs for interaction effect - 977 genes
+Identified 3 DEGs under trans-eQTL (step and Ilp5) peaks. In script `genes_in_QTL.Rmd`, see object `distt`
+	- Ahcy (step QTL) is found in both treatment and interaction lists. Gene summary file associates it with: viable, aging, fecundity. Involved in NAD processes
+	- Cda4 (Ilp5 QTL) occurs only in treatment list. Involved in chitin and carbohydrate metabolism via NADH activity
+	- CG40486 in treatment list
+slif was not DE in both treatment and interaction effects.
 
-### 2018-10-21
+### 2018-10-21 (EN)
 Scanned Stanley et al 2017 trans-eQTL and lifespan QTL for DEGs - see R object `qtl_degs`
 Split `prep_DESeq.Rmd` script into:
 	`prep_DESeq.Rmd`: runs batch control of Stringtie output using SVA

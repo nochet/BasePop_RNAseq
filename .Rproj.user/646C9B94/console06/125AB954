@@ -1093,3 +1093,30 @@ Changes not staged for commit:
 
 no changes added to commit (use "git add" and/or "git commit -a")
 ]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "moved CV code from genes_in_QTL.Rmd to CV_Terms.Rmd"
+[master 19fbb67] moved CV code from genes_in_QTL.Rmd to CV_Terms.Rmd
+ 3 files changed, 132 insertions(+), 162 deletions(-)
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
+Counting objects: 12, done.
+Delta compression using up to 8 threads.
+Compressing objects:   8% (1/12)   Compressing objects:  16% (2/12)   Compressing objects:  25% (3/12)   Compressing objects:  33% (4/12)   Compressing objects:  41% (5/12)   Compressing objects:  50% (6/12)   Compressing objects:  58% (7/12)   Compressing objects:  66% (8/12)   Compressing objects:  75% (9/12)   Compressing objects:  83% (10/12)   Compressing objects:  91% (11/12)   Compressing objects: 100% (12/12)   Compressing objects: 100% (12/12), done.
+Writing objects:   8% (1/12)   Writing objects:  16% (2/12)   Writing objects:  25% (3/12)   Writing objects:  33% (4/12)   Writing objects:  41% (5/12)   Writing objects:  50% (6/12)   Writing objects:  58% (7/12)   Writing objects:  66% (8/12)   Writing objects:  75% (9/12)   Writing objects:  83% (10/12)   Writing objects:  91% (11/12)   Writing objects: 100% (12/12)   Writing objects: 100% (12/12), 3.08 KiB | 0 bytes/s, done.
+Total 12 (delta 7), reused 0 (delta 0)
+remote: Resolving deltas:   0% (0/7)   [Kremote: Resolving deltas:  14% (1/7)   [Kremote: Resolving deltas:  28% (2/7)   [Kremote: Resolving deltas:  42% (3/7)   [Kremote: Resolving deltas:  57% (4/7)   [Kremote: Resolving deltas:  71% (5/7)   [Kremote: Resolving deltas:  85% (6/7)   [Kremote: Resolving deltas: 100% (7/7)   [Kremote: Resolving deltas: 100% (7/7), completed with 7 local objects.[K
+To https://github.com/nochet/BasePop_RNAseq.git
+   bf5a6c2..19fbb67  master -> master
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git pull
+Already up-to-date.
+]0;~/MyGithub/BasePop_RNAseq[?1034hBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git pull
+remote: Enumerating objects: 11, done.[K
+remote: Counting objects:   9% (1/11)   [Kremote: Counting objects:  18% (2/11)   [Kremote: Counting objects:  27% (3/11)   [Kremote: Counting objects:  36% (4/11)   [Kremote: Counting objects:  45% (5/11)   [Kremote: Counting objects:  54% (6/11)   [Kremote: Counting objects:  63% (7/11)   [Kremote: Counting objects:  72% (8/11)   [Kremote: Counting objects:  81% (9/11)   [Kremote: Counting objects:  90% (10/11)   [Kremote: Counting objects: 100% (11/11)   [Kremote: Counting objects: 100% (11/11), done.[K
+remote: Compressing objects: 100% (1/1)   [Kremote: Compressing objects: 100% (1/1), done.[K
+remote: Total 6 (delta 5), reused 6 (delta 5), pack-reused 0[K
+Unpacking objects:  16% (1/6)   Unpacking objects:  33% (2/6)   Unpacking objects:  50% (3/6)   Unpacking objects:  66% (4/6)   Unpacking objects:  83% (5/6)   Unpacking objects: 100% (6/6)   Unpacking objects: 100% (6/6), done.
+From https://github.com/nochet/BasePop_RNAseq
+   19fbb67..6d330e7  master     -> origin/master
+Updating 19fbb67..6d330e7
+Fast-forward
+ base_pop/scripts/DESeq_scripts/genes_in_QTL.Rmd | 180 [32m+++++++++++[m[31m---------[m
+ 1 file changed, 102 insertions(+), 78 deletions(-)
+]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ 
