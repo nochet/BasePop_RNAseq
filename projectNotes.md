@@ -136,6 +136,8 @@ Making PCA for DESeq data
 		find * -type d > ../sampNames.txt
 		write $ in the search window i.e. matches end of line
 		write _ballgown.gtf in the replace window
+		write ^ in search windoe i.e. matches start of line
+		write ../../processed/S03_short_ballG/ballgown
 
 2018-10-25 (EN)
 DEGs for treatment effect - 2475 genes
