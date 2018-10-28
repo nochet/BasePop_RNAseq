@@ -1,32 +1,26 @@
 ---
-title: "Collect stringtie output and analyze DE"
+title: "Use stringtie short protocol output to analyze DE"
 author: "Enoch Ng'oma"
-date: "May 5, 2018"
+date: "October 28, 2018"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
 
-# Differential expression analysis protocol
-
-```{r}
-#R
-#load R version R version 3.2.2
-#load R packagees:
 library(ballgown)
 library(genefilter)
 library(tidyverse)
 library(devtools)
 library(cowplot)
 library(reshape)
-
-
-phenDat <- read.csv("../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
 ```
 
+
 ```{r}
+phenDat <- read.csv("../../processed/S03_short_ballG/phenotypes.csv",
+                    stringsAsFactors = FALSE)
+
 bg_ballG <- ballgown(dataDir = "../processed/ballG_all", samplePattern = "", pData = phenDat)
 
 # Save .Rda
