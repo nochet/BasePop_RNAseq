@@ -16,12 +16,40 @@ library(tximport)
 
 
 ```{r}
-vizDE <- read.csv("../../processed/DESEQ/normExpr_countData.csv")
-vizDE <- read.csv("../../processed/S03_short_ballG/gene_count_matrix.csv")
+phenDat <- read.csv("../../processed/S03_short_ballG/phenotypes.csv")
 
-phenDat <- read.csv("../../processed/phenotypes.csv")
+sample_names <- read.table("../../processed/S03_short_ballG/sampNames.txt",
+                           header = FALSE,sep = "\t", 
+                           stringsAsFactors = FALSE)
+cx <- sample_names
+sample_names <- cbind(sample_names,cx)
+colnames(sample_names) <- c("V1","V2")
+#sample_names$sepr <- "/"
+sample_names$quant <- "_ballgown.gtf"
+samps <- unite(sample_names, "id", V2, quant, sep = "")
+samps <- unite(samps, "samp_id", V1, id, sep = "/")
+#samps <- within(samps, samp_id <- paste(V1, id, sep="/")) #alt to unite()
 
+samps$pat <- "../../processed/S03_short_ballG/ballgown/"
+samps <- unite(samps, "quantPath", pat, samp_id, sep = "")
+colnames(samps) <- NULL
+write.csv(samps, file = "../../processed/S03_short_ballG/samples.csv")
 ```
+
+```{r}
+dir <- "../../processed/S03_short_ballG/"
+phenDat <- read.csv(file.path(dir,"phenotypes.csv"), header = TRUE)
+colnames(phenDat)[1]<-"sampl"
+files <- file.path(dir,"stringtie", phenDat$sampl,"samples.csv")
+names(files) <- paste0("samps",1:54)
+
+tx2gene <- tmp[, c("t_name", "gene_name")]
+txi <- tximport(files, type = "stringtie", tx2gene = tx2gene)
+names(txi)
+```
+
+
+
 
 
 
