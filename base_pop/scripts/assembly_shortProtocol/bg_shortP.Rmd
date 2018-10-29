@@ -1,5 +1,5 @@
 ---
-title: "Use stringtie short protocol output to analyze DE"
+title: "Stringtie short protocol output for visualizing expression"
 author: "Enoch Ng'oma"
 date: "October 28, 2018"
 output: html_document
@@ -105,9 +105,15 @@ full_table.bg<-texpr(short_filt, 'all')
 hist(full_table.bg$length, breaks=50, xlab="Transcript length (bp)", main="Distribution of transcript lengths", col="steelblue")
 ```
 
-# PCA
+## PCA for global patterns
 
 ```{r}
+gfpkm_bg <-gexpr(short_filt)
+gfpkm_bg <-log2(gfpkm_bg +1)
+colnames(gfpkm_bg)<-phenDat$id
+#save(gfpkm_bg, file = "../processed/results/ballG_all_results/gfpkm_bg_ballG_filt.Rda")
+
+
 # all samples
 X<- t(scale(t(gfpkm_bg),center=TRUE,scale=FALSE))
 sv<- svd(t(X))
@@ -116,26 +122,193 @@ V<- sv$v
 D<- sv$d
 Z<- t(X)%*%V
 
+# Plot of ratio of variance explained by each PC
+plot(sv$d^2/sum(sv$d^2), xlim = c(0, 5), type = "b", pch = 16, xlab = "principal components", 
+    ylab = "variance explained")
+plot(sv$d^2/sum(sv$d^2), type = "b", pch = 16, xlab = "principal components", 
+    ylab = "variance explained")
+
 # put PC1 and PC2 into a dataframe and add the phenotpe info side by side
-pc.dat<- data.frame(phenDat$id, PC1 = Z[,1], PC2 = Z[,2])
+pc.dat<- data.frame(phenDat$id, PC1 = Z[,1], PC2 = Z[,2], PC3 = Z[,3],PC4 =Z[,4])
+s.id <- strsplit(as.character(pc.dat$phenDat.id), split="-",fixed=TRUE)
+pc.dat$Diet <-unlist(lapply(s.id, function(x) x[1]))
+pc.dat$Tissue <- unlist(lapply(strsplit(as.character(phenDat$id), 
+                                        split="_", fixed=TRUE), function(x) x[2]))
 
-pc.dat$Diet <- unlist(lapply(strsplit(as.character(pc.dat$phenDat.id), split="-",fixed=TRUE),function(x) x[1]))
-
-## make figure with ggplot2
-library(ggthemes)
-#e <- rep(c('B','H','O'),each=18)
-name <- phenDat$tissue
-a <- ggplot(pc.dat, aes(x=PC1, y=PC2, col=Diet, label=name)) + 
-        geom_point() + 
+# PC1 & PC2
+a <- ggplot(pc.dat, aes(x=PC1, y=PC2, col=Diet, pch=Tissue)) + 
+        geom_point(alpha=0.8, size=3) + 
+        scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
         theme_bw() +
+        theme(axis.title = element_text(size = 16)) +
+        theme(text = element_text(size = 12)) +
         theme(panel.border = element_blank(), 
               panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(), 
-              axis.line.x = element_line(color="black", size = 0.6),
-              axis.line.y = element_line(color="black", size = 0.6))
-a + col 
-#a + geom_label(label = rownames(phenDat$tissue))+
-#a+geom_text()
+              axis.line.x = element_line(color="black", size = 0.5),
+              axis.line.y = element_line(color="black", size = 0.5))
+a 
+
+ggsave(filename = "../../plots/PCA_overall.pdf",width = 5,height=5)
+
+# PC1 & 3
+p <- ggplot(pc.dat, aes(x=PC1, y=PC3, col=Diet, pch=Tissue)) + 
+        geom_point(alpha=0.8, size=3) + 
+        scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+        theme_bw() +
+        theme(axis.title = element_text(size = 16)) +
+        theme(text = element_text(size = 12)) +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(), 
+              axis.line.x = element_line(color="black", size = 0.5),
+              axis.line.y = element_line(color="black", size = 0.5))
+p 
+
+# PC2 & PC3
+q <- ggplot(pc.dat, aes(x=PC2, y=PC3, col=Diet, pch=Tissue)) + 
+        geom_point(alpha=0.8, size=3) + 
+        scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+        theme_bw() +
+        theme(axis.title = element_text(size = 16)) +
+        theme(text = element_text(size = 12)) +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(), 
+              axis.line.x = element_line(color="black", size = 0.5),
+              axis.line.y = element_line(color="black", size = 0.5))
+q
+
+# PC3 & PC4
+r <- ggplot(pc.dat, aes(x=PC3, y=PC4, col=Diet, pch=Tissue),loadings=TRUE) + 
+        geom_point(alpha=0.8, size=3) + 
+        scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+        theme_bw() +
+        theme(axis.title = element_text(size = 16)) +
+        theme(text = element_text(size = 12)) +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(), 
+              axis.line.x = element_line(color="black", size = 0.5),
+              axis.line.y = element_line(color="black", size = 0.5))
+r
+which(pc.dat$PC3 < -60)
+pc.dat[22,]
+pc.dat <- pc.dat[-22, ] 
 ```
 
+# PCA by tissue
+
+```{r}
+# Subset phenotype data
+Bphen <- subset(phenDat, phenDat$tissue=="B")
+Hphen <- subset(phenDat, phenDat$tissue=="H")
+Ophen <- subset(phenDat, phenDat$tissue=="O")
+
+# Subset data by tissue
+k <- as.data.frame(gfpkm_bg)
+ll <- k[,c(grep("_B",names(k))), drop=FALSE]
+mm <- k[,c(grep("_H",names(k))), drop=FALSE]
+nn <- k[,c(grep("_O",names(k))), drop=FALSE]
+
+# Body
+B <- t(scale(t(ll),center=TRUE,scale=FALSE))
+sv <- svd(t(B))
+U <- sv$u
+V <- sv$v
+D <- sv$d
+Z <- t(B)%*%V
+
+# put PC1 and PC2 into a dataframe and add the phenotpe info side by side
+pc.dat<- data.frame(Bphen$id, PC1 = Z[,1], PC2 = Z[,2], PC3 = Z[,3],PC4 =Z[,4])
+s.id <- strsplit(as.character(pc.dat$Bphen.id), split="-",fixed=TRUE)
+pc.dat$Diet <-unlist(lapply(s.id, function(x) x[1]))
+pc.dat$Tissue <- unlist(lapply(strsplit(as.character(Bphen$id), 
+                                        split="_", fixed=TRUE), function(x) x[2]))
+
+# PC1 & PC2
+B <- ggplot(pc.dat, aes(x=PC1, y=PC2, col=Diet, pch=Tissue)) + 
+        geom_point(alpha=0.8, size=3) + 
+        scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+        theme_bw() +
+        theme(axis.title = element_text(size = 16)) +
+        theme(text = element_text(size = 12)) +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(), 
+              axis.line.x = element_line(color="black", size = 0.5),
+              axis.line.y = element_line(color="black", size = 0.5))
+B 
+
+ggsave(filename = "../../plots/PCA_overall.pdf",width = 5,height=5)
+
+# PC1 & 3
+p <- ggplot(pc.dat, aes(x=PC1, y=PC3, col=Diet, pch=Tissue)) + 
+        geom_point(alpha=0.8, size=3) + 
+        scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+        theme_bw() +
+        theme(axis.title = element_text(size = 16)) +
+        theme(text = element_text(size = 12)) +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(), 
+              axis.line.x = element_line(color="black", size = 0.5),
+              axis.line.y = element_line(color="black", size = 0.5))
+p 
+
+# PC2 & PC3
+q <- ggplot(pc.dat, aes(x=PC2, y=PC3, col=Diet, pch=Tissue)) + 
+        geom_point(alpha=0.8, size=3) + 
+        scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+        theme_bw() +
+        theme(axis.title = element_text(size = 16)) +
+        theme(text = element_text(size = 12)) +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(), 
+              axis.line.x = element_line(color="black", size = 0.5),
+              axis.line.y = element_line(color="black", size = 0.5))
+q
+
+# PC3 & PC4
+r <- ggplot(pc.dat, aes(x=PC3, y=PC4, col=Diet, pch=Tissue),loadings=TRUE) + 
+        geom_point(alpha=0.8, size=3) + 
+        scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+        theme_bw() +
+        theme(axis.title = element_text(size = 16)) +
+        theme(text = element_text(size = 12)) +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(), 
+              axis.line.x = element_line(color="black", size = 0.5),
+              axis.line.y = element_line(color="black", size = 0.5))
+r
+```
+
+
+```{r}
+cPCA <- prcomp(t(gfpkm_bg))
+summary(cPCA)
+propvar <- (cPCA$sdev^2) / (sum(cPCA$sdev^2))*100
+barplot(propvar, cex.names=1, xlab=paste("Principal component (PC), 1-", length(cPCA$sdev)), ylab="Proportion of variation (%)", main="Scree plot", ylim=c(0,100))
+
+par(cex=1.0, cex.axis=0.8, cex.main=0.8)
+pairs(cPCA$x[,1:5], col="black", main="Principal components analysis bi-plot\nPCs 1-5", pch=16)
+pairs(cPCA$x[,6:10], col="black", main="Principal components analysis bi-plot\nPCs 6-10", pch=16)
+
+
+par(mar=c(4,4,4,4), mfrow=c(1,3), cex=1.0, cex.main=0.8, cex.axis=0.8)
+
+#Plots scatter plot for PC 1 and 2
+plot(cPCA$x, type="n", main="Principal components analysis bi-plot", xlab=paste("PC1, ", round(propvar[1], 2), "%"), ylab=paste("PC2, ", round(propvar[2], 2), "%"))
+points(cPCA$x, col="black", pch=16, cex=1)
+
+#Plots scatter plot for PC 1 and 3
+plot(cPCA$x[,1], cPCA$x[,3], type="n", main="Principal components analysis bi-plot", xlab=paste("PC1, ", round(propvar[1], 2), "%"), ylab=paste("PC3, ", round(propvar[3], 2), "%"))
+points(cPCA$x[,1], cPCA$x[,3], col="black", pch=16, cex=1)
+
+#Plots scatter plot for PC 2 and 3
+plot(cPCA$x[,2], cPCA$x[,3], type="n", main="Principal components analysis bi-plot", xlab=paste("PC2, ", round(propvar[2], 2), "%"), ylab=paste("PC3, ", round(propvar[3], 2), "%"))
+points(cPCA$x[,2], cPCA$x[,3], col="black", pch=16, cex=1)
+```
 
