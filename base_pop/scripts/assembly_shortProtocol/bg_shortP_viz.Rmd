@@ -111,7 +111,7 @@ hist(full_table.bg$length, breaks=50, xlab="Transcript length (bp)", main="Distr
 gfpkm_bg <-gexpr(short_filt)
 gfpkm_bg <-log2(gfpkm_bg +1)
 colnames(gfpkm_bg)<-phenDat$id
-#save(gfpkm_bg, file = "../processed/results/ballG_all_results/gfpkm_bg_ballG_filt.Rda")
+#save(gfpkm_bg, file = "../processed/results/ballG_all_results/gfpkm_bg.Rda")
 
 
 # all samples

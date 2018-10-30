@@ -1,0 +1,204 @@
+---
+title: "Visualizing DE of Base Population RNASeq using DESeq2"
+author: "Enoch Ng'oma"
+date: "10/21/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(DESeq2)
+library(tidyverse)
+library(cowplot)
+```
+
+
+
+```{r}
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+rownames(phenDat.sva) <- phenDat.sva[,1]
+phenDat.sva[,1] <- NULL
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
+
+expr_viz <- read.csv("../../processed/DESEQ/normExpr_countData.csv")
+rownames(expr_viz) <- expr_viz[,1]
+expr_viz[,1] <- NULL
+expr_viz <- as.matrix(expr_viz)
+
+```
+
+```{r}
+dds.01 <- DESeqDataSetFromMatrix(countData = expr_viz, 
+                                   colData = phenDat.sva, 
+                                   design = ~ SV1 + batch + tissue + treatment)
+
+dds_deseq.01 <- estimateSizeFactors(dds.01)
+nc <- counts(dds_deseq.01, normalized=TRUE)
+filter <- rowSums(nc >= 10) >= 2
+dds_deseq.01 <- dds_deseq.01[filter,]
+dds_deseq.01 <- estimateDispersions(dds_deseq.01, fitType = "local")
+dds_deseq.01 <- nbinomWaldTest(dds_deseq.01, maxit = 1000, useOptim = TRUE)
+
+resultsNames(dds_deseq.01)
+
+# Look at the DESeq object
+colData(dds_deseq.01)
+write.csv(dds_deseq.01, "../../processed/DESEQ/dds_deseq.01.csv", row.names = FALSE)
+
+
+dds.02 <- DESeqDataSetFromMatrix(countData = expr_viz, 
+                                   colData = phenDat.sva, 
+                                   design = ~ SV1 + batch + tissue*treatment)
+
+dds_deseq.02 <- estimateSizeFactors(dds.02)
+nc <- counts(dds_deseq.02, normalized=TRUE)
+filter <- rowSums(nc >= 10) >= 2
+dds_deseq.02 <- dds_deseq.02[filter,]
+dds_deseq.02 <- estimateDispersions(dds_deseq.02, fitType = "local")
+dds_deseq.02 <- nbinomWaldTest(dds_deseq.02, maxit = 1000, useOptim = TRUE)
+dds_deseq.02 <- dds_deseq.02[which(mcols(dds_deseq.02)$betaConv),]
+
+resultsNames(dds_deseq.02)
+colData(dds_deseq.02)
+
+# Test if all values are equal
+which(all(dds_deseq.01 != dds_deseq.02))
+
+# Test if objects are identical
+identical(dds_deseq.01,dds_deseq.02)
+```
+
+# PCA using DESeq2
+
+```{r}
+# vsd & rlog transform data on the log2 scale normalized to library size
+# blind set to TRUE prevents re-estimation of size factors
+
+vsd.01 <- varianceStabilizingTransformation(dds_deseq.01, blind = TRUE, fitType = "parametric")
+vsd.02 <- varianceStabilizingTransformation(dds_deseq.02, blind = TRUE, fitType = "parametric")
+
+# time intensive; incorporates a prior on the sample differences
+# rlog fits a shrinkage term for each sample and each gene
+# rlog shrinkage is greater for low counts and a much weaker effect for high counts (see ?rlog)
+rlog.01 <- rlog(dds_deseq.01, blind = TRUE, fitType = "parametric")
+rlog.02 <- rlog(dds_deseq.02, blind = TRUE, fitType = "parametric")
+save(rlog.01, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.01.Rda")
+save(rlog.02, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.02.Rda")
+
+# Plot vsd
+print(plotPCA(vsd.01, intgroup=c("treatment", "tissue")))
+plotPCA(vsd.01, intgroup=c("tissue"), returnData=FALSE)
+plotPCA(vsd.01, intgroup=c("treatment"), returnData=FALSE)
+
+print(plotPCA(vsd.02, intgroup=c("treatment", "tissue")))
+plotPCA(vsd.02, intgroup=c("tissue"), returnData=FALSE)
+plotPCA(vsd.02, intgroup=c("treatment"), returnData=FALSE)
+
+# Plot rlog
+print(plotPCA(rlog.01, intgroup=c("treatment", "tissue")))
+plotPCA(rlog.01, intgroup=c("tissue"), returnData=FALSE)
+plotPCA(rlog.01, intgroup=c("treatment"), returnData=FALSE)
+
+print(plotPCA(rlog.02, intgroup=c("treatment", "tissue")))
+plotPCA(rlog.02, intgroup=c("tissue"), returnData=FALSE)
+plotPCA(rlog.02, intgroup=c("treatment"), returnData=FALSE)
+```
+
+
+
+```{r}
+## Merge with normalized count data
+res.dds_table <- merge(as.data.frame(res.dds), 
+                       as.data.frame(counts(dds_deseq, normalized=TRUE)), 
+                       by="row.names", sort=FALSE)
+names(res.dds_table)[1] <- "Gene"
+
+#save(res.dds, file = "../../processed/DESEQ/res.dds.Rda")
+#save(dds_deseq, file = "../../processed/DESEQ/dds_deseq.Rda")
+#save(res.dds_table, file = "../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+#write.csv(res.dds_table, 
+          #"../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.csv", row.names=TRUE)
+
+load("../../processed/DESEQ/res.dds.Rda")
+load("../../processed/DESEQ/dds_deseq.Rda")
+load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+# Examine plot of p-values
+hist(res.dds$pvalue, breaks=50, col="grey")
+
+# Examine independent filtering
+metadata(res.dds)$filterThreshold
+
+plot(metadata(res.dds)$filterNumRej, type="b", xlab="quantiles of baseMean", ylab="number of rejections")
+```
+
+# MA plot
+
+```{r}
+load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+# Could do with built-in DESeq2 function:
+DESeq2::plotMA(dds_deseq, ylim=c(-5,5))
+
+# Alternatively
+maplot <- function (res.dds_table, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
+  with(res.dds_table, plot(baseMean, log2FoldChange, pch=20, cex=.5, log="x", ...))
+  with(subset(res.dds_table, padj<thresh), points(baseMean, log2FoldChange, col="red", pch=20, cex=1.5))
+  if (labelsig) {
+    require(calibrate)
+    with(subset(res.dds_table, padj<thresh), textxy(baseMean, log2FoldChange, labs="Gene", cex=textcx, col=2))
+  }
+}
+png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
+maplot(res.dds_table, ylim=c(-2,2), main="MA Plot")
+dev.off()
+```
+
+# Volcano plot
+
+```{r}
+load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
+
+par(mar=c(5,5,5,5), cex=1.0, cex.main=1.4, cex.axis=1.4, cex.lab=1.4)
+
+topT <- as.data.frame(res.dds_table)
+
+#Adjusted P values (FDR Q values)
+with(topT, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1.0, xlab=bquote(~Log[2]~fold~change), ylab=bquote(~-log[10]~Q~value)))
+
+with(subset(topT, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
+
+with(subset(topT, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(topT), topT$padj<0.05 & abs(topT$log2FoldChange)>2), cex=0.8, pos=3))
+
+#Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
+abline(v=0, col="black", lty=3, lwd=1.0)
+abline(v=-2, col="black", lty=4, lwd=2.0)
+abline(v=2, col="black", lty=4, lwd=2.0)
+abline(h=-log10(max(topT$pvalue[topT$padj<0.05], na.rm=TRUE)), col="black", lty=4, lwd=2.0)
+```
+
+```{r}
+#dev.off()
+with(res.dds_table, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-5,5), ylim=c(0,25)))
+
+# Add colored points: red if padj<0.05, orange of log2FC>1, green if both)
+with(subset(res.dds_table, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+with(subset(res.dds_table, abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="orange"))
+with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="green"))
+
+# Label points with the textxy function from the calibrate plot
+library(calibrate)
+with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -log10(pvalue), labs=Gene, cex=.8))
+```
+
+# Look at highly DE genes
+
+```{r}
+highDown <- which(topT$log2FoldChange < -5)
+topT[highDown,]
+
+highUp <- which(topT$log2FoldChange > 5)
+topT[highUp,]
+```

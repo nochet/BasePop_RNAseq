@@ -19,13 +19,13 @@ library(RColorBrewer)
 
 ```{r}
 countdata <- read.csv("../../processed/DESEQ/normExpr_countData.csv")
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
 ```
 
 # Nested models
 
 ```{r}
 # Create a DESeqDataSet from count matrix and labels
-
 dds.01 <- DESeqDataSetFromMatrix(countData = countdata, 
                                    colData = phenDat.sva, 
                                    design = ~ SV1 + batch + tissue + treatment)

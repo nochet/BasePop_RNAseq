@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+library(DESeq2)
 library(dplyr)
 library(stringr)
 library(sva)
@@ -16,7 +17,7 @@ library(ggplot2)
 set.seed(38142903)
 ```
 
-# Load gene(/transcript) count matrix and labels
+# Load gene count matrix and labels
 
 ```{r}
 # Read in data frame and fill in empty spaces in column 2 with value in 1
@@ -90,7 +91,8 @@ countdata <- countdata[, rownames(phenDat.sva)]
 all(rownames(phenDat.sva) == colnames(countdata))
 
 # Write a background file for DE and GO analysis
-write.csv(countdata, "../../processed/DESEQ/normExpr_countData.csv", row.names = FALSE)
+write.csv(countdata, "../../processed/DESEQ/normExpr_countData.csv", row.names = TRUE)
+write.csv(phenDat.sva, "../../processed/DESEQ/sampleDat_with_SV.csv")
 ```
 
 
