@@ -13,6 +13,9 @@ library(genefilter)
 library(tidyverse)
 library(cowplot)
 library(reshape)
+
+source("../color_map.R")
+source("../ggplot_theme.R")
 ```
 
 
@@ -20,10 +23,10 @@ library(reshape)
 phenDat <- read.csv("../../processed/describe_samples.csv",
                     stringsAsFactors = FALSE)
 
-bg_ballG <- ballgown(dataDir = "../../processed/S03_short_ballG/ballgown", samplePattern = "", pData = phenDat)
+#bg_ballG <- ballgown(dataDir = "../../processed/S03_short_ballG/ballgown", samplePattern = "", pData = phenDat)
 
 # Save .Rda
-save(bg_ballG, file = "../../processed/S03_short_ballG/bgOut_shortP.Rda")
+#save(bg_ballG, file = "../../processed/S03_short_ballG/bgOut_shortP.Rda")
 
 ```
 
@@ -51,13 +54,13 @@ tbg$prep <- paste(tbg$treatment,tbg$replicate,sep="_")
 tbg$trep <- paste(tbg$tissue,tbg$replicate,sep="_")
 
 b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
-  geom_boxplot(alpha=0.9) +
-          theme(axis.title.y = element_text(size = 24),
+  geom_boxplot(alpha=0.8) +
+          theme(axis.title.y = element_text(size = 12),
                 axis.title.x=element_blank(),
                 axis.text.x  = element_text(angle=90, vjust=0.5),
-                text = element_text(size = 20))+
-                
-  scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+                text = element_text(size = 12))+
+  scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +       
+  #scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
   xlab("Samples")+
   facet_grid(tissue~.)
@@ -66,12 +69,13 @@ b1 + theme(legend.position="none")
 ggsave(filename = "../../plots/Expression_by_sample1.pdf",width = 5,height=5)
 
 b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
-  geom_boxplot(alpha=0.9) +
-          theme(axis.title.y = element_text(size = 24),
+  geom_boxplot(alpha=0.8) +
+          theme(axis.title.y = element_text(size = 12),
                 axis.title.x=element_blank(),
                 axis.text.x  = element_text(angle=90, vjust=0.5),
-                text = element_text(size = 20)) +
-  scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+                text = element_text(size = 12)) +
+  scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+  #scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
   xlab("Tissue") +
   #scale_fill_discrete(name="Samples")+
@@ -433,33 +437,5 @@ Or <- ggplot(pc.dat, aes(x=PC3, y=PC4, col=Diet, pch=Tissue),loadings=TRUE) +
               axis.line.x = element_line(color="black", size = 0.5),
               axis.line.y = element_line(color="black", size = 0.5))
 Or
-```
-
-# PRCOMP
-
-```{r}
-cPCA <- prcomp(t(gfpkm_bg))
-summary(cPCA)
-propvar <- (cPCA$sdev^2) / (sum(cPCA$sdev^2))*100
-barplot(propvar, cex.names=1, xlab=paste("Principal component (PC), 1-", length(cPCA$sdev)), ylab="Proportion of variation (%)", main="Scree plot", ylim=c(0,100))
-
-par(cex=1.0, cex.axis=0.8, cex.main=0.8)
-pairs(cPCA$x[,1:5], col="black", main="Principal components analysis bi-plot\nPCs 1-5", pch=16)
-pairs(cPCA$x[,6:10], col="black", main="Principal components analysis bi-plot\nPCs 6-10", pch=16)
-
-
-par(mar=c(4,4,4,4), mfrow=c(1,3), cex=1.0, cex.main=0.8, cex.axis=0.8)
-
-#Plots scatter plot for PC 1 and 2
-plot(cPCA$x, type="n", main="Principal components analysis bi-plot", xlab=paste("PC1, ", round(propvar[1], 2), "%"), ylab=paste("PC2, ", round(propvar[2], 2), "%"))
-points(cPCA$x, col="black", pch=16, cex=1)
-
-#Plots scatter plot for PC 1 and 3
-plot(cPCA$x[,1], cPCA$x[,3], type="n", main="Principal components analysis bi-plot", xlab=paste("PC1, ", round(propvar[1], 2), "%"), ylab=paste("PC3, ", round(propvar[3], 2), "%"))
-points(cPCA$x[,1], cPCA$x[,3], col="black", pch=16, cex=1)
-
-#Plots scatter plot for PC 2 and 3
-plot(cPCA$x[,2], cPCA$x[,3], type="n", main="Principal components analysis bi-plot", xlab=paste("PC2, ", round(propvar[2], 2), "%"), ylab=paste("PC3, ", round(propvar[3], 2), "%"))
-points(cPCA$x[,2], cPCA$x[,3], col="black", pch=16, cex=1)
 ```
 

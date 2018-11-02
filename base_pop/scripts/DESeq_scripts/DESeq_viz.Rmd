@@ -13,20 +13,24 @@ library(tidyverse)
 library(cowplot)
 ```
 
-
+# Data
 
 ```{r}
+# Sample info with surrogate variable
 phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
 rownames(phenDat.sva) <- phenDat.sva[,1]
 phenDat.sva[,1] <- NULL
 phenDat.sva$batch <- as.factor(phenDat.sva$batch)
 
+# Expression matrix
 expr_viz <- read.csv("../../processed/DESEQ/normExpr_countData.csv")
 rownames(expr_viz) <- expr_viz[,1]
 expr_viz[,1] <- NULL
 expr_viz <- as.matrix(expr_viz)
 
 ```
+
+# Fit DESeq models
 
 ```{r}
 dds.01 <- DESeqDataSetFromMatrix(countData = expr_viz, 
@@ -44,8 +48,8 @@ resultsNames(dds_deseq.01)
 
 # Look at the DESeq object
 colData(dds_deseq.01)
-write.csv(dds_deseq.01, "../../processed/DESEQ/dds_deseq.01.csv", row.names = FALSE)
-
+#save(dds_deseq.01, file="../../processed/DESEQ/dds_deseq01.Rda")
+load("../../processed/DESEQ/dds_deseq01.Rda")
 
 dds.02 <- DESeqDataSetFromMatrix(countData = expr_viz, 
                                    colData = phenDat.sva, 
@@ -63,10 +67,12 @@ resultsNames(dds_deseq.02)
 colData(dds_deseq.02)
 
 # Test if all values are equal
-which(all(dds_deseq.01 != dds_deseq.02))
+#which(all(dds_deseq.01 != dds_deseq.02))
 
 # Test if objects are identical
 identical(dds_deseq.01,dds_deseq.02)
+#save(dds_deseq.02, file="../../processed/DESEQ/dds_deseq.02.Rda")
+load("../../processed/DESEQ/dds_deseq.02.Rda")
 ```
 
 # PCA using DESeq2
@@ -83,8 +89,10 @@ vsd.02 <- varianceStabilizingTransformation(dds_deseq.02, blind = TRUE, fitType 
 # rlog shrinkage is greater for low counts and a much weaker effect for high counts (see ?rlog)
 rlog.01 <- rlog(dds_deseq.01, blind = TRUE, fitType = "parametric")
 rlog.02 <- rlog(dds_deseq.02, blind = TRUE, fitType = "parametric")
-save(rlog.01, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.01.Rda")
-save(rlog.02, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.02.Rda")
+#save(rlog.01, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.01.Rda")
+#save(rlog.02, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.02.Rda")
+load("../../processed/DESEQ/rlogTransform_on_dds_deseq.01.Rda")
+load("../../processed/DESEQ/rlogTransform_on_dds_deseq.02.Rda")
 
 # Plot vsd
 print(plotPCA(vsd.01, intgroup=c("treatment", "tissue")))
@@ -103,6 +111,39 @@ plotPCA(rlog.01, intgroup=c("treatment"), returnData=FALSE)
 print(plotPCA(rlog.02, intgroup=c("treatment", "tissue")))
 plotPCA(rlog.02, intgroup=c("tissue"), returnData=FALSE)
 plotPCA(rlog.02, intgroup=c("treatment"), returnData=FALSE)
+
+# get data and plot manually
+fl <- plotPCA(rlog.02, intgroup=c("tissue"), returnData=TRUE)
+ggplot(fl, aes(x=PC1, y=PC2,col=tissue))+
+  geom_point()
+```
+
+# PRCOMP
+
+```{r}
+cPCA <- prcomp(t(gfpkm_bg))
+summary(cPCA)
+propvar <- (cPCA$sdev^2) / (sum(cPCA$sdev^2))*100
+barplot(propvar, cex.names=1, xlab=paste("Principal component (PC), 1-", length(cPCA$sdev)), ylab="Proportion of variation (%)", main="Scree plot", ylim=c(0,100))
+
+par(cex=1.0, cex.axis=0.8, cex.main=0.8)
+pairs(cPCA$x[,1:5], col="black", main="Principal components analysis bi-plot\nPCs 1-5", pch=16)
+pairs(cPCA$x[,6:10], col="black", main="Principal components analysis bi-plot\nPCs 6-10", pch=16)
+
+
+par(mar=c(4,4,4,4), mfrow=c(1,3), cex=1.0, cex.main=0.8, cex.axis=0.8)
+
+#Plots scatter plot for PC 1 and 2
+plot(cPCA$x, type="n", main="Principal components analysis bi-plot", xlab=paste("PC1, ", round(propvar[1], 2), "%"), ylab=paste("PC2, ", round(propvar[2], 2), "%"))
+points(cPCA$x, col="black", pch=16, cex=1)
+
+#Plots scatter plot for PC 1 and 3
+plot(cPCA$x[,1], cPCA$x[,3], type="n", main="Principal components analysis bi-plot", xlab=paste("PC1, ", round(propvar[1], 2), "%"), ylab=paste("PC3, ", round(propvar[3], 2), "%"))
+points(cPCA$x[,1], cPCA$x[,3], col="black", pch=16, cex=1)
+
+#Plots scatter plot for PC 2 and 3
+plot(cPCA$x[,2], cPCA$x[,3], type="n", main="Principal components analysis bi-plot", xlab=paste("PC2, ", round(propvar[2], 2), "%"), ylab=paste("PC3, ", round(propvar[3], 2), "%"))
+points(cPCA$x[,2], cPCA$x[,3], col="black", pch=16, cex=1)
 ```
 
 
