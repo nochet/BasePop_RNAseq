@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(DESeq2)
 library(tidyverse)
 library(cowplot)
+
+source("modified_plotPCA_function.R")
 ```
 
 # Data
@@ -36,7 +38,6 @@ expr_viz <- as.matrix(expr_viz)
 dds.01 <- DESeqDataSetFromMatrix(countData = expr_viz, 
                                    colData = phenDat.sva, 
                                    design = ~ SV1 + batch + tissue + treatment)
-
 dds_deseq.01 <- estimateSizeFactors(dds.01)
 nc <- counts(dds_deseq.01, normalized=TRUE)
 filter <- rowSums(nc >= 10) >= 2
@@ -87,8 +88,8 @@ vsd.02 <- varianceStabilizingTransformation(dds_deseq.02, blind = TRUE, fitType 
 # time intensive; incorporates a prior on the sample differences
 # rlog fits a shrinkage term for each sample and each gene
 # rlog shrinkage is greater for low counts and a much weaker effect for high counts (see ?rlog)
-rlog.01 <- rlog(dds_deseq.01, blind = TRUE, fitType = "parametric")
-rlog.02 <- rlog(dds_deseq.02, blind = TRUE, fitType = "parametric")
+#rlog.01 <- rlog(dds_deseq.01, blind = TRUE, fitType = "parametric")
+#rlog.02 <- rlog(dds_deseq.02, blind = TRUE, fitType = "parametric")
 #save(rlog.01, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.01.Rda")
 #save(rlog.02, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.02.Rda")
 load("../../processed/DESEQ/rlogTransform_on_dds_deseq.01.Rda")
@@ -96,32 +97,67 @@ load("../../processed/DESEQ/rlogTransform_on_dds_deseq.02.Rda")
 
 # Plot vsd
 print(plotPCA(vsd.01, intgroup=c("treatment", "tissue")))
-plotPCA(vsd.01, intgroup=c("tissue"), returnData=FALSE)
-plotPCA(vsd.01, intgroup=c("treatment"), returnData=FALSE)
+plotPCA(vsd.01, intgroup=c("treatment", "tissue"), returnData=FALSE)
+plotPCA(vsd.02, intgroup=c("treatment", "tissue"), returnData=FALSE)
+# not different
 
-print(plotPCA(vsd.02, intgroup=c("treatment", "tissue")))
-plotPCA(vsd.02, intgroup=c("tissue"), returnData=FALSE)
-plotPCA(vsd.02, intgroup=c("treatment"), returnData=FALSE)
+# PC1/PC2: Choose one variance stabilization (vst) plot 
+pcaVsd <- plotPCA(vsd.02, intgroup=c("treatment", "tissue"), returnData=TRUE)
+percentVar <- round(100 * attr(pcaVsd, "percentVar"))
+ggplot(pcaVsd, aes(PC1, PC2, color=treatment, shape=tissue)) +
+  geom_point(size=3) +
+  theme(axis.title.y = element_text(size = 12),
+                text = element_text(size = 12))+
+  scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed()
+ggsave(last_plot(),file = "../../plots/PCAplot_vst_02.pdf",width = 5,height=5)
+
 
 # Plot rlog
-print(plotPCA(rlog.01, intgroup=c("treatment", "tissue")))
-plotPCA(rlog.01, intgroup=c("tissue"), returnData=FALSE)
-plotPCA(rlog.01, intgroup=c("treatment"), returnData=FALSE)
+plotPCA(rlog.01, intgroup=c("treatment", "tissue"), returnData=FALSE)
+plotPCA(rlog.02, intgroup=c("treatment", "tissue"), returnData=FALSE)
+# not different
 
-print(plotPCA(rlog.02, intgroup=c("treatment", "tissue")))
-plotPCA(rlog.02, intgroup=c("tissue"), returnData=FALSE)
-plotPCA(rlog.02, intgroup=c("treatment"), returnData=FALSE)
+# PC1/PC2: Choose one regularized log transformation (rlog) plot
+pcaData <- plotPCA(rlog.02, intgroup=c("treatment", "tissue"), returnData=TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, color=treatment, shape=tissue)) +
+  geom_point(size=3) +
+  theme(axis.title.y = element_text(size = 12),
+                text = element_text(size = 12))+
+  scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed()
+(pcaData <- pcaData[order(pcaData$tissue), ])
+ggsave(last_plot(),file = "../../plots/PCAplot_rlog_02.pdf",width = 5,height=5)
 
-# get data and plot manually
-fl <- plotPCA(rlog.02, intgroup=c("tissue"), returnData=TRUE)
-ggplot(fl, aes(x=PC1, y=PC2,col=tissue))+
-  geom_point()
+# PC1/PC3
+pc34 <- pcaPlot(rlog.02, intgroup=c("treatment", "tissue"), returnData=TRUE)
+percentVar <- round(100 * attr(pc34, "percentVar"))
+
+#print(pcaPlot(rlog.02, intgroup=c("treatment", "tissue")))
+
+ggplot(pc34, aes(PC3, PC4, color=treatment, shape=tissue)) + 
+  geom_point(size = 3) + 
+  geom_point(size=3) +
+  theme(axis.title.y = element_text(size = 12),
+                text = element_text(size = 12))+
+  scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+  xlab(paste0("PC3: ", percentVar[1],"% variance")) + 
+  ylab(paste0("PC4: ", percentVar[2],"% variance")) + 
+  coord_fixed()
+
+ggsave(last_plot(),file = "../../plots/PCAplot_rlog_02_PC3PC4.pdf",width = 5,height=5)
+
 ```
 
 # PRCOMP
-
+# do not use
 ```{r}
-cPCA <- prcomp(t(gfpkm_bg))
+cPCA <- prcomp(t(expr_viz))
 summary(cPCA)
 propvar <- (cPCA$sdev^2) / (sum(cPCA$sdev^2))*100
 barplot(propvar, cex.names=1, xlab=paste("Principal component (PC), 1-", length(cPCA$sdev)), ylab="Proportion of variation (%)", main="Scree plot", ylim=c(0,100))
@@ -146,100 +182,3 @@ plot(cPCA$x[,2], cPCA$x[,3], type="n", main="Principal components analysis bi-pl
 points(cPCA$x[,2], cPCA$x[,3], col="black", pch=16, cex=1)
 ```
 
-
-
-```{r}
-## Merge with normalized count data
-res.dds_table <- merge(as.data.frame(res.dds), 
-                       as.data.frame(counts(dds_deseq, normalized=TRUE)), 
-                       by="row.names", sort=FALSE)
-names(res.dds_table)[1] <- "Gene"
-
-#save(res.dds, file = "../../processed/DESEQ/res.dds.Rda")
-#save(dds_deseq, file = "../../processed/DESEQ/dds_deseq.Rda")
-#save(res.dds_table, file = "../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
-
-#write.csv(res.dds_table, 
-          #"../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.csv", row.names=TRUE)
-
-load("../../processed/DESEQ/res.dds.Rda")
-load("../../processed/DESEQ/dds_deseq.Rda")
-load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
-
-# Examine plot of p-values
-hist(res.dds$pvalue, breaks=50, col="grey")
-
-# Examine independent filtering
-metadata(res.dds)$filterThreshold
-
-plot(metadata(res.dds)$filterNumRej, type="b", xlab="quantiles of baseMean", ylab="number of rejections")
-```
-
-# MA plot
-
-```{r}
-load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
-
-# Could do with built-in DESeq2 function:
-DESeq2::plotMA(dds_deseq, ylim=c(-5,5))
-
-# Alternatively
-maplot <- function (res.dds_table, thresh=0.05, labelsig=TRUE, textcx=1, ...) {
-  with(res.dds_table, plot(baseMean, log2FoldChange, pch=20, cex=.5, log="x", ...))
-  with(subset(res.dds_table, padj<thresh), points(baseMean, log2FoldChange, col="red", pch=20, cex=1.5))
-  if (labelsig) {
-    require(calibrate)
-    with(subset(res.dds_table, padj<thresh), textxy(baseMean, log2FoldChange, labs="Gene", cex=textcx, col=2))
-  }
-}
-png("diffexpr-maplot.png", 1500, 1000, pointsize=20)
-maplot(res.dds_table, ylim=c(-2,2), main="MA Plot")
-dev.off()
-```
-
-# Volcano plot
-
-```{r}
-load("../../processed/DESEQ/DEseqSVA_Noint_resOrdered_padj.Rda")
-
-par(mar=c(5,5,5,5), cex=1.0, cex.main=1.4, cex.axis=1.4, cex.lab=1.4)
-
-topT <- as.data.frame(res.dds_table)
-
-#Adjusted P values (FDR Q values)
-with(topT, plot(log2FoldChange, -log10(padj), pch=20, main="Volcano plot", cex=1.0, xlab=bquote(~Log[2]~fold~change), ylab=bquote(~-log[10]~Q~value)))
-
-with(subset(topT, padj<0.05 & abs(log2FoldChange)>2), points(log2FoldChange, -log10(padj), pch=20, col="red", cex=0.5))
-
-with(subset(topT, padj<0.05 & abs(log2FoldChange)>2), text(log2FoldChange, -log10(padj), labels=subset(rownames(topT), topT$padj<0.05 & abs(topT$log2FoldChange)>2), cex=0.8, pos=3))
-
-#Add lines for absolute FC>2 and P-value cut-off at FDR Q<0.05
-abline(v=0, col="black", lty=3, lwd=1.0)
-abline(v=-2, col="black", lty=4, lwd=2.0)
-abline(v=2, col="black", lty=4, lwd=2.0)
-abline(h=-log10(max(topT$pvalue[topT$padj<0.05], na.rm=TRUE)), col="black", lty=4, lwd=2.0)
-```
-
-```{r}
-#dev.off()
-with(res.dds_table, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-5,5), ylim=c(0,25)))
-
-# Add colored points: red if padj<0.05, orange of log2FC>1, green if both)
-with(subset(res.dds_table, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
-with(subset(res.dds_table, abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="orange"))
-with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="green"))
-
-# Label points with the textxy function from the calibrate plot
-library(calibrate)
-with(subset(res.dds_table, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -log10(pvalue), labs=Gene, cex=.8))
-```
-
-# Look at highly DE genes
-
-```{r}
-highDown <- which(topT$log2FoldChange < -5)
-topT[highDown,]
-
-highUp <- which(topT$log2FoldChange > 5)
-topT[highUp,]
-```
