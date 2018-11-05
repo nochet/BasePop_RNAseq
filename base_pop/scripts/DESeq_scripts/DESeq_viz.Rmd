@@ -134,7 +134,8 @@ ggplot(pcaData, aes(PC1, PC2, color=treatment, shape=tissue)) +
 (pcaData <- pcaData[order(pcaData$tissue), ])
 ggsave(last_plot(),file = "../../plots/PCAplot_rlog_02.pdf",width = 5,height=5)
 
-# PC1/PC3
+# PC3/PC4: source code modified
+# ref: http://seqanswers.com/forums/showthread.php?t=66769
 pc34 <- pcaPlot(rlog.02, intgroup=c("treatment", "tissue"), returnData=TRUE)
 percentVar <- round(100 * attr(pc34, "percentVar"))
 
