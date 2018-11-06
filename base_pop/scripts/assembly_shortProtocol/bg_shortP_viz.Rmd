@@ -82,7 +82,7 @@ b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
   facet_grid(treatment~.)
 b2 + theme(legend.position="none")
 
-ggsave(filename = "../../plots/Expression_by_sample2.pdf",width = 5,height=5)
+#ggsave(filename = "../../plots/Expression_by_sample2.pdf",width = 5,height=5)
 ```
 
 # Number of transcripts per gene
@@ -214,8 +214,11 @@ k <- as.data.frame(gfpkm_bg)
 ll <- k[,c(grep("_B",names(k))), drop=FALSE]
 mm <- k[,c(grep("_H",names(k))), drop=FALSE]
 nn <- k[,c(grep("_O",names(k))), drop=FALSE]
+```
 
 # Body
+
+```{r}
 B <- t(scale(t(ll),center=TRUE,scale=FALSE))
 sv <- svd(t(B))
 U <- sv$u

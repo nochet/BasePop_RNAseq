@@ -13,6 +13,7 @@ library(tidyverse)
 library(cowplot)
 
 source("modified_plotPCA_function.R")
+set.seed(354902)
 ```
 
 # Data
