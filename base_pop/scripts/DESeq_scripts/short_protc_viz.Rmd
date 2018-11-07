@@ -1,0 +1,221 @@
+---
+title: "Visualize RNASeq on BasePop using DESeq2"
+author: "Enoch Ng'oma"
+date: "October 28, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ballgown)
+library(DESeq2)
+library(genefilter)
+library(tidyverse)
+library(cowplot)
+library(reshape)
+library(ggthemes)
+
+source("modified_plotPCA_function.R")
+source("../color_map.R")
+source("../ggplot_theme.R")
+
+set.seed(354902)
+```
+
+# Global trends with ballgown
+
+```{r}
+phenDat <- read.csv("../../processed/describe_samples.csv",
+                    stringsAsFactors = FALSE)
+
+#bg_ballG <- ballgown(dataDir = "../../processed/S03_short_ballG/ballgown", samplePattern = "", pData = phenDat)
+
+# Save .Rda
+#save(bg_ballG, file = "../../processed/S03_short_ballG/bgOut_shortP.Rda")
+
+```
+
+# Gene abundances across libraries, colored by treatment
+
+```{r}
+load("../../processed/S03_short_ballG/bgOut_shortP.Rda")
+bg_ballG
+
+# Filter out low-abundance transcripts 
+short_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TRUE)
+short_filt
+
+# Get fpkm values
+tfpkm_short<-texpr(short_filt, meas="FPKM")
+tfpkm_short <-log2(tfpkm_short+1)
+colnames(tfpkm_short)<-phenDat$id
+save(tfpkm_short, file = "../../processed/S03_short_ballG/tfpkm_short.Rda")
+
+tbg<- as.data.frame(tfpkm_short) %>% gather(id, fpkm)
+tbg$treatment <- rep(c("C","DR","HS"), each=18*nrow(tfpkm_short))
+tbg$tissue <- rep(c("B","H","O"),each=nrow(tfpkm_short),6)
+tbg$replicate <- rep(c(1,2,3,4,5,6),each=nrow(tfpkm_short)*3)
+tbg$prep <- paste(tbg$treatment,tbg$replicate,sep="_")
+tbg$trep <- paste(tbg$tissue,tbg$replicate,sep="_")
+
+b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
+  geom_boxplot(alpha=0.8) +
+          theme(axis.title.y = element_text(size = 12),
+                axis.title.x=element_blank(),
+                axis.text.x  = element_text(angle=90, vjust=0.5),
+                text = element_text(size = 12))+
+  #scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +       
+  #scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+  ylab(expression("log"[2]*"(FPKM + 1)")) +
+  xlab("Samples")+
+  facet_grid(tissue~.) +
+  scale_colour_brewer(palette = "Dark2")
+  #tx_color_map() 
+b1 + theme(legend.position="none")
+  
+ggsave(filename = "../../plots/Expression_by_sample1.pdf",width = 5,height=5)
+
+
+
+b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
+  geom_boxplot(alpha=0.8) +
+          theme(axis.title.y = element_text(size = 12),
+                axis.title.x=element_blank(),
+                axis.text.x  = element_text(angle=90, vjust=0.5),
+                text = element_text(size = 12)) +
+  scale_color_manual(values=c("indianred4", "olivedrab", "turquoise4")) +
+  #scale_colour_brewer(palette = "Dark2") +
+  ylab(expression("log"[2]*"(FPKM + 1)")) +
+  xlab("Tissue") +
+  #scale_fill_discrete(name="Samples")+
+  #scale_colour_tableau() +
+  facet_grid(treatment~.)
+b2 + theme(legend.position="none")
+
+ggsave(filename = "../../plots/Expression_by_sample2.pdf",width = 5,height=5)
+```
+
+# Number of transcripts per gene
+
+```{r}
+# Load transcript gene indexes from ballgown objects
+t.genes_table_short <- indexes(short_filt)$t2g
+
+# Plot # of transcripts per gene
+counts.bg <- table(t.genes_table_short[,"g_id"])
+bg_one <- length(which(counts.bg==1))
+bg_more <- length(which(counts.bg>1))
+bg_max <- max(counts.bg)
+hist(counts.bg, breaks=50, col="bisque4", xlab="Transcripts per gene",
+main="Distribution of transcript count per gene")
+legend_text=c(paste("Genes with one transcript =", bg_one), paste("Genes with more than one transcript =", bg_more), paste("Max transcripts for single gene = ", bg_max))
+legend("topright", legend_text, lty = NULL)
+```
+
+# Distribution of transcript sizes
+
+```{r}
+full_table.bg<-texpr(short_filt, 'all')
+hist(full_table.bg$length, breaks=50, xlab="Transcript length (bp)", main="Distribution of transcript lengths", col="steelblue")
+```
+
+# Global trends with DESeq2
+
+```{r}
+# Sample info with surrogate variable
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+rownames(phenDat.sva) <- phenDat.sva[,1]
+phenDat.sva[,1] <- NULL
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
+
+# Expression matrix
+expr_viz <- read.csv("../../processed/DESEQ/normExpr_countData.csv")
+rownames(expr_viz) <- expr_viz[,1]
+expr_viz[,1] <- NULL
+expr_viz <- as.matrix(expr_viz)
+
+
+# PCA using DESeq2
+
+load("../../processed/DESEQ/dds_deseq01.Rda")
+load("../../processed/DESEQ/dds_deseq.02.Rda")
+
+# vsd & rlog transform data on the log2 scale normalized to library size
+# blind set to TRUE prevents re-estimation of size factors
+
+vsd.01 <- varianceStabilizingTransformation(dds_deseq.01, blind = TRUE, fitType = "parametric")
+vsd.02 <- varianceStabilizingTransformation(dds_deseq.02, blind = TRUE, fitType = "parametric")
+
+# time intensive; incorporates a prior on the sample differences
+# rlog fits a shrinkage term for each sample and each gene
+# rlog shrinkage is greater for low counts and a much weaker effect for high counts (see ?rlog)
+
+#rlog.01 <- rlog(dds_deseq.01, blind = TRUE, fitType = "parametric")
+#rlog.02 <- rlog(dds_deseq.02, blind = TRUE, fitType = "parametric")
+#save(rlog.01, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.01.Rda")
+#save(rlog.02, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.02.Rda")
+
+load("../../processed/DESEQ/rlogTransform_on_dds_deseq.01.Rda")
+load("../../processed/DESEQ/rlogTransform_on_dds_deseq.02.Rda")
+
+# Plot vsd
+print(plotPCA(vsd.01, intgroup=c("treatment", "tissue")))
+plotPCA(vsd.01, intgroup=c("treatment", "tissue"), returnData=FALSE)
+plotPCA(vsd.02, intgroup=c("treatment", "tissue"), returnData=FALSE)
+# not different
+
+# PC1/PC2: Choose one variance stabilization (vst) plot 
+pcaVsd <- plotPCA(vsd.02, intgroup=c("treatment", "tissue"), returnData=TRUE)
+percentVar <- round(100 * attr(pcaVsd, "percentVar"))
+ggplot(pcaVsd, aes(PC1, PC2, color=treatment, shape=tissue)) +
+  geom_point(size=3) +
+  theme(axis.title.y = element_text(size = 12),
+                text = element_text(size = 12))+
+  scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed()
+ggsave(last_plot(),file = "../../plots/PCAplot_vst_02.pdf",width = 5,height=5)
+
+
+# Plot rlog
+plotPCA(rlog.01, intgroup=c("treatment", "tissue"), returnData=FALSE)
+plotPCA(rlog.02, intgroup=c("treatment", "tissue"), returnData=FALSE)
+# not different
+
+# PC1/PC2: Choose one regularized log transformation (rlog) plot
+pcaData <- plotPCA(rlog.02, intgroup=c("treatment", "tissue"), returnData=TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, color=treatment, shape=tissue)) +
+  geom_point(size=3) +
+  theme(axis.title.y = element_text(size = 12),
+                text = element_text(size = 12))+
+  scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed()
+(pcaData <- pcaData[order(pcaData$tissue), ])
+ggsave(last_plot(),file = "../../plots/PCAplot_rlog_02.pdf",width = 5,height=5)
+
+# PC3/PC4: source code modified
+# ref: http://seqanswers.com/forums/showthread.php?t=66769
+pc34 <- pcaPlot(rlog.02, intgroup=c("treatment", "tissue"), returnData=TRUE)
+percentVar <- round(100 * attr(pc34, "percentVar"))
+
+#print(pcaPlot(rlog.02, intgroup=c("treatment", "tissue")))
+
+ggplot(pc34, aes(PC3, PC4, color=treatment, shape=tissue)) + 
+  geom_point(size = 3) + 
+  geom_point(size=3) +
+  theme(axis.title.y = element_text(size = 12),
+                text = element_text(size = 12))+
+  scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+  xlab(paste0("PC3: ", percentVar[3],"% variance")) + 
+  ylab(paste0("PC4: ", percentVar[4],"% variance")) + 
+  coord_fixed()
+
+ggsave(last_plot(),file = "../../plots/PCAplot_rlog_02_PC3PC4.pdf",width = 5,height=5)
+
+```
+

@@ -25,22 +25,26 @@ phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
 # Nested models
 
 ```{r}
-# Create a DESeqDataSet from count matrix and labels
-dds.01 <- DESeqDataSetFromMatrix(countData = countdata, 
+# Fit DESeq models
+dds.01 <- DESeqDataSetFromMatrix(countData = expr_viz, 
                                    colData = phenDat.sva, 
                                    design = ~ SV1 + batch + tissue + treatment)
-
-dds.02 <- DESeqDataSetFromMatrix(countData = countdata, 
-                                   colData = phenDat.sva, 
-                                   design = ~ SV1 + batch + tissue*treatment)
-
-# either run DESeq or do these three steps
 dds_deseq.01 <- estimateSizeFactors(dds.01)
 nc <- counts(dds_deseq.01, normalized=TRUE)
 filter <- rowSums(nc >= 10) >= 2
 dds_deseq.01 <- dds_deseq.01[filter,]
 dds_deseq.01 <- estimateDispersions(dds_deseq.01, fitType = "local")
 dds_deseq.01 <- nbinomWaldTest(dds_deseq.01, maxit = 1000, useOptim = TRUE)
+
+resultsNames(dds_deseq.01)
+
+# Look at the DESeq object
+colData(dds_deseq.01)
+save(dds_deseq.01, file="../../processed/DESEQ/dds_deseq01.Rda")
+
+dds.02 <- DESeqDataSetFromMatrix(countData = expr_viz, 
+                                   colData = phenDat.sva, 
+                                   design = ~ SV1 + batch + tissue*treatment)
 
 dds_deseq.02 <- estimateSizeFactors(dds.02)
 nc <- counts(dds_deseq.02, normalized=TRUE)
@@ -51,10 +55,14 @@ dds_deseq.02 <- nbinomWaldTest(dds_deseq.02, maxit = 1000, useOptim = TRUE)
 dds_deseq.02 <- dds_deseq.02[which(mcols(dds_deseq.02)$betaConv),]
 
 resultsNames(dds_deseq.02)
-
-# Look at the DESeq object
-colData(dds_deseq.01)
 colData(dds_deseq.02)
+
+# Test if all values are equal
+#which(all(dds_deseq.01 != dds_deseq.02))
+
+# Test if objects are identical
+identical(dds_deseq.01,dds_deseq.02)
+save(dds_deseq.02, file="../../processed/DESEQ/dds_deseq.02.Rda")
 
 # DEGs significant for effect of tissue 
 lrt.tissue <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + treatment)
@@ -177,29 +185,4 @@ names(res.int_table)[1] <- "Gene"
 
 write.csv(resOrd_int, 
           "../../processed/DESEQ/DEseqSVA_int_resOrdered_padj.csv", row.names=TRUE)
-```
-
-# Notes
-# Note: https://www.biostars.org/p/320132/
-
-```{r}
-# Filter step not necessary; default in results() - see ?results, but enhances speed https://support.bioconductor.org/p/65256/
-#filter <- rowSums(nc >= 10) >= 5 # at least 10 reads in at least 5 samples
-
-# Increase the maximum iterations (maxit) instead of running DESeq()
-#dds <- estimateSizeFactors(ddsDE_filt)
-#dds <- estimateDispersions(dds)
-#dds <- nbinomWaldTest(dds, maxit=20000)
-
-# To remove the non-converging rows
-#ddsClean <- dds[which(mcols(dds)$betaConv),]
-
-
-## Merge with normalized count data
-#res.dds_body <- merge(as.data.frame(res.dds), 
-                       #as.data.frame(counts(dds_deseq, normalized=TRUE)), 
-                       #by="row.names", sort=FALSE)
-#names(res.dds_table)[1] <- "Gene"
-#res.dds_body[,1] <- NULL
-
 ```
