@@ -118,24 +118,17 @@ legend("topright", legend_text, lty = NULL)
 ```{r}
 full_table.bg<-texpr(short_filt, 'all')
 hist(full_table.bg$length, breaks=50, xlab="Transcript length (bp)", main="Distribution of transcript lengths", col="steelblue")
+
+ggplot(full_table.bg, aes(x=length, col=length)) +
+  geom_histogram(binwidth = 100) +
+  labs(x = "Transcript length (bp)", y = "Count") +
+  theme(axis.title.y = element_text(size = 12),
+        text = element_text(size = 12))
 ```
 
 # Global trends with DESeq2
 
 ```{r}
-# Sample info with surrogate variable
-phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
-rownames(phenDat.sva) <- phenDat.sva[,1]
-phenDat.sva[,1] <- NULL
-phenDat.sva$batch <- as.factor(phenDat.sva$batch)
-
-# Expression matrix
-expr_viz <- read.csv("../../processed/DESEQ/normExpr_countData.csv")
-rownames(expr_viz) <- expr_viz[,1]
-expr_viz[,1] <- NULL
-expr_viz <- as.matrix(expr_viz)
-
-
 # PCA using DESeq2
 
 load("../../processed/DESEQ/dds_deseq01.Rda")
@@ -144,8 +137,10 @@ load("../../processed/DESEQ/dds_deseq.02.Rda")
 # vsd & rlog transform data on the log2 scale normalized to library size
 # blind set to TRUE prevents re-estimation of size factors
 
-vsd.01 <- varianceStabilizingTransformation(dds_deseq.01, blind = TRUE, fitType = "parametric")
-vsd.02 <- varianceStabilizingTransformation(dds_deseq.02, blind = TRUE, fitType = "parametric")
+vsd.01 <- varianceStabilizingTransformation(dds_deseq.01,
+                                            blind = TRUE, fitType = "parametric")
+vsd.02 <- varianceStabilizingTransformation(dds_deseq.02, 
+                                            blind = TRUE, fitType = "parametric")
 
 # time intensive; incorporates a prior on the sample differences
 # rlog fits a shrinkage term for each sample and each gene
@@ -153,23 +148,19 @@ vsd.02 <- varianceStabilizingTransformation(dds_deseq.02, blind = TRUE, fitType 
 
 #rlog.01 <- rlog(dds_deseq.01, blind = TRUE, fitType = "parametric")
 #rlog.02 <- rlog(dds_deseq.02, blind = TRUE, fitType = "parametric")
+
 #save(rlog.01, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.01.Rda")
 #save(rlog.02, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.02.Rda")
 
 load("../../processed/DESEQ/rlogTransform_on_dds_deseq.01.Rda")
 load("../../processed/DESEQ/rlogTransform_on_dds_deseq.02.Rda")
 
-# Plot vsd
-print(plotPCA(vsd.01, intgroup=c("treatment", "tissue")))
-plotPCA(vsd.01, intgroup=c("treatment", "tissue"), returnData=FALSE)
-plotPCA(vsd.02, intgroup=c("treatment", "tissue"), returnData=FALSE)
-# not different
 
 # PC1/PC2: Choose one variance stabilization (vst) plot 
 pcaVsd <- plotPCA(vsd.02, intgroup=c("treatment", "tissue"), returnData=TRUE)
 percentVar <- round(100 * attr(pcaVsd, "percentVar"))
 ggplot(pcaVsd, aes(PC1, PC2, color=treatment, shape=tissue)) +
-  geom_point(size=3) +
+  geom_point(size=5, alpha = 0.6) +
   theme(axis.title.y = element_text(size = 12),
                 text = element_text(size = 12))+
   scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
@@ -179,35 +170,28 @@ ggplot(pcaVsd, aes(PC1, PC2, color=treatment, shape=tissue)) +
 ggsave(last_plot(),file = "../../plots/PCAplot_vst_02.pdf",width = 5,height=5)
 
 
-# Plot rlog
-plotPCA(rlog.01, intgroup=c("treatment", "tissue"), returnData=FALSE)
-plotPCA(rlog.02, intgroup=c("treatment", "tissue"), returnData=FALSE)
-# not different
-
 # PC1/PC2: Choose one regularized log transformation (rlog) plot
 pcaData <- plotPCA(rlog.02, intgroup=c("treatment", "tissue"), returnData=TRUE)
 percentVar <- round(100 * attr(pcaData, "percentVar"))
 ggplot(pcaData, aes(PC1, PC2, color=treatment, shape=tissue)) +
-  geom_point(size=3) +
+  geom_point(size=5, alpha = 0.6) +
   theme(axis.title.y = element_text(size = 12),
                 text = element_text(size = 12))+
   scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
   xlab(paste0("PC1: ",percentVar[1],"% variance")) +
   ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
   coord_fixed()
-(pcaData <- pcaData[order(pcaData$tissue), ])
+#(pcaData <- pcaData[order(pcaData$tissue), ])
 ggsave(last_plot(),file = "../../plots/PCAplot_rlog_02.pdf",width = 5,height=5)
+
 
 # PC3/PC4: source code modified
 # ref: http://seqanswers.com/forums/showthread.php?t=66769
 pc34 <- pcaPlot(rlog.02, intgroup=c("treatment", "tissue"), returnData=TRUE)
 percentVar <- round(100 * attr(pc34, "percentVar"))
 
-#print(pcaPlot(rlog.02, intgroup=c("treatment", "tissue")))
-
 ggplot(pc34, aes(PC3, PC4, color=treatment, shape=tissue)) + 
-  geom_point(size = 3) + 
-  geom_point(size=3) +
+  geom_point(size=5, alpha = 0.6) + 
   theme(axis.title.y = element_text(size = 12),
                 text = element_text(size = 12))+
   scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +

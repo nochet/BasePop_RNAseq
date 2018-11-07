@@ -21,7 +21,7 @@ pcaPlot <- function (object, intgroup = "condition", ntop = 500, returnData = FA
   d <- data.frame(PC1 = pca$x[, 1], PC2 = pca$x[, 2], PC3 = pca$x[, 3], PC4 = pca$x[, 4], group = group, 
                   intgroup.df, name = colnames(object))
   if (returnData) {
-    attr(d, "percentVar") <- percentVar[1:2]
+    attr(d, "percentVar") <- percentVar[1:4]
     return(d)
   }
 }

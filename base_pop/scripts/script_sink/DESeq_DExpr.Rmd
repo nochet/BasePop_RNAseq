@@ -18,23 +18,15 @@ library(RColorBrewer)
 # Expression count data
 
 ```{r}
-# Expression matrix
 countdata <- read.csv("../../processed/DESEQ/normExpr_countData.csv")
-rownames(countdata) <- countdata[,1]
-countdata[,1] <- NULL
-countdata <- as.matrix(countdata)
-
 phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
-rownames(phenDat.sva) <- phenDat.sva[,1]
-phenDat.sva[,1] <- NULL
-phenDat.sva$batch <- as.factor(phenDat.sva$batch)
 ```
 
 # Nested models
 
 ```{r}
 # Fit DESeq models
-dds.01 <- DESeqDataSetFromMatrix(countData = countdata, 
+dds.01 <- DESeqDataSetFromMatrix(countData = expr_viz, 
                                    colData = phenDat.sva, 
                                    design = ~ SV1 + batch + tissue + treatment)
 dds_deseq.01 <- estimateSizeFactors(dds.01)
@@ -43,15 +35,14 @@ filter <- rowSums(nc >= 10) >= 2
 dds_deseq.01 <- dds_deseq.01[filter,]
 dds_deseq.01 <- estimateDispersions(dds_deseq.01, fitType = "local")
 dds_deseq.01 <- nbinomWaldTest(dds_deseq.01, maxit = 1000, useOptim = TRUE)
+
 resultsNames(dds_deseq.01)
 
 # Look at the DESeq object
 colData(dds_deseq.01)
 save(dds_deseq.01, file="../../processed/DESEQ/dds_deseq01.Rda")
-load("../../processed/DESEQ/dds_deseq01.Rda")
 
-
-dds.02 <- DESeqDataSetFromMatrix(countData = countdata, 
+dds.02 <- DESeqDataSetFromMatrix(countData = expr_viz, 
                                    colData = phenDat.sva, 
                                    design = ~ SV1 + batch + tissue*treatment)
 
@@ -62,25 +53,36 @@ dds_deseq.02 <- dds_deseq.02[filter,]
 dds_deseq.02 <- estimateDispersions(dds_deseq.02, fitType = "local")
 dds_deseq.02 <- nbinomWaldTest(dds_deseq.02, maxit = 1000, useOptim = TRUE)
 dds_deseq.02 <- dds_deseq.02[which(mcols(dds_deseq.02)$betaConv),]
+
 resultsNames(dds_deseq.02)
 colData(dds_deseq.02)
-save(dds_deseq.02, file="../../processed/DESEQ/dds_deseq.02.Rda")
-load("../../processed/DESEQ/dds_deseq.02.Rda")
 
-# DEGs significant for effect of treatment 
-lrt.treatment <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + tissue)
-lrt.treatment <- lrt.treatment[which(mcols(lrt.treatment)$fullBetaConv),]
-lrt.treatment <- results(lrt.treatment, alpha = 0.05)
+# Test if all values are equal
+#which(all(dds_deseq.01 != dds_deseq.02))
+
+# Test if objects are identical
+identical(dds_deseq.01,dds_deseq.02)
+save(dds_deseq.02, file="../../processed/DESEQ/dds_deseq.02.Rda")
 
 # DEGs significant for effect of tissue 
 lrt.tissue <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + treatment)
 lrt.tissue <- lrt.tissue[which(mcols(lrt.tissue)$fullBetaConv),]
 lrt.tissue <- results(lrt.tissue, alpha = 0.05)
 
+# DEGs significant for effect of treatment 
+lrt.treatment <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + tissue)
+lrt.treatment <- lrt.treatment[which(mcols(lrt.treatment)$fullBetaConv),]
+lrt.treatment <- results(lrt.treatment, alpha = 0.05)
+
 # DEGs significant for effect of the interaction 
 lrt.int <- DESeq(dds.02, test="LRT", reduced=~ SV1 + batch + tissue + treatment)
 lrt.int <- lrt.int[which(mcols(lrt.int)$fullBetaConv),]
 lrt.int <- results(lrt.int, alpha = 0.05)
+
+# pairwise comparisions (treatment effect assuming interaction)
+rr1 <- results(dds_deseq.02, contrast=c('tissue', "H","B"), alpha = 0.05)
+rr2 <- results(dds_deseq.02, contrast=c('tissue', "O","B"), alpha = 0.05)
+rr3 <- results(dds_deseq.02, contrast=c('tissue', "O","H"), alpha = 0.05)
 
 # Get lists of DEGs
 resSig_lrt.int <- subset(lrt.int, padj < 0.05)
@@ -104,6 +106,7 @@ resSig_lrt.treatment$Gene <- rownames(resSig_lrt.treatment)
 resSig_lrt.treatment <- resSig_lrt.treatment[, c(7,1:6)]
 resSig_lrt.treatment <- resSig_lrt.treatment[order(resSig_lrt.treatment$padj), ]
 
+write.csv(dds_deseq.02, "../../processed/DESEQ/dds_deseq.02.csv", row.names = FALSE)
 write.csv(resSig_lrt.int, "../../processed/DESEQ/DEGs_lrt.int_0.05.csv", row.names = FALSE)
 write.csv(resSig_lrt.tissue, "../../processed/DESEQ/DEGs_lrt.tissue_0.05.csv", row.names = FALSE)
 write.csv(resSig_lrt.treatment, "../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv", row.names = FALSE)
@@ -111,6 +114,14 @@ write.csv(resSig_lrt.treatment, "../../processed/DESEQ/DEGs_lrt.treatment_0.05.c
 # Background list - all gene_ids for GO term enrichment
 bList <- as.data.frame(rownames(pl3c))
 write.csv(bList, "../../processed/DESEQ/gene_background_list.csv")
+```
+
+# pairwise comparisions (tissue effect, interaction model)
+
+```{r}
+ff1 <- results(dds_deseq.02, contrast=c('treatment', "C","DR"), alpha = 0.05)
+ff2 <- results(dds_deseq.02, contrast=c('treatment', "C","HS"), alpha = 0.05)
+ff3 <- results(dds_deseq.02, contrast=c('treatment', "DR","HS"), alpha = 0.05)
 ```
 
 # Model with interaction
@@ -127,19 +138,31 @@ dds.deInt <- dds.deInt[filter,]
 dds.deInt <- estimateDispersions(dds.deInt, fitType = "local")
 dds.deInt <- nbinomWaldTest(dds.deInt, maxit = 10000, useOptim = TRUE)
 
+# dealing with autocorrelation: https://support.bioconductor.org/p/65091/
+#dds_int <- DESeq(dds.int)
+
 # Remove unconverged rows
 dds.deInt <- dds.deInt[which(mcols(dds.deInt)$betaConv),]
 
+# Look at the DESeq object
 colData(dds.deInt)
 
 # results for all terms
+
+rr1 <- results(dds.deInt, contrast=c('tissue', "H","B"))
+rr2 <- results(dds.deInt, contrast=c('tissue', "O","B"))
+rr3 <- results(dds.deInt, contrast=c('tissue', "O","H"))
+
 lrt.int <- DESeq(dds.int, test="LRT", reduced=~ SV1 + batch + tissue + treatment)
 lrt.int <- results(lrt.int)
+
 
 # Access results
 res_int <- results(dds.deInt)
 (resOrd_int <- res_int[order(res_int$padj), ])
 
+save(dds.deInt, file = "../../processed/DESEQ/DEseq_sva_int.Rda")
+load("../../processed/DESEQ/DEseq_sva_int.Rda")
 # Basic tallies
 summary(res_int)
 
@@ -150,10 +173,16 @@ sum(res_int$padj < 0.1, na.rm = TRUE)
 res05 <- results(dds.deInt, alpha=0.05) 
 summary(res05)
 
+# Boxplot of samples
+par(mar=c(8,5,2,2))
+boxplot(log10(assays(dds.deInt)[["cooks"]]), range=0, las=2)
+
 # Merge with normalized count data
 res.int_table <- merge(as.data.frame(res_int), 
                        as.data.frame(counts(dds.deInt, normalized=TRUE)), 
                        by="row.names", sort=FALSE)
 names(res.int_table)[1] <- "Gene"
-```
 
+write.csv(resOrd_int, 
+          "../../processed/DESEQ/DEseqSVA_int_resOrdered_padj.csv", row.names=TRUE)
+```
