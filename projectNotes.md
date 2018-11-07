@@ -128,6 +128,26 @@ http://flybase.org/cgi-bin/get_static_page.pl?file=bulkdata7.html&title=Current%
 
 
 
+
+
+2018-11-07 (EN)
+Reduced number of scripts to 3, renamed as follows:
+	`prep_DESeq.Rmd` renamed `batch_DESeq.Rmd` - runs SVA
+	`bg_shortP_viz.Rmd` renamed `short_protc_viz.Rmd` - makes visualizations in ballgown and DESeq2
+	`DESeq_DE.Rmd` renamed `DESeq_DExpr.Rmd` - fits models for differential expression in DESeq2 based expression values from the short protocol of stringtie
+	
+
+2018-11-02 (EN)
+PCA plots in DESeq2: `DESeq_viz.Rmd`
+Input1 `/processed/DESEQ/sampleDat_with_SV.csv` (`made in prep_DESe2.Rmd`)
+Input2: `/processed/DESEQ/normExpr_countData.csv` (sva batch-controlled short protocol expression `made in prep_DESe2.Rmd`)
+Run `deseq()` on model without- and model with interaction
+Transform DESeq results using 	1) Variance Stabilization Transformation (vst),
+								2) Regularized Log Transformation (rlog)
+Plot 2 PCA graphs for PC1/PC2, one for for each transformation; both for the interaction because PCA plots for both DESeq models not different 
+
+
+
 2018-10-26 (EN)
 Making PCA for DESeq data
 	Get fpkm values with fpkm(). An error occurs. Solution is to use tximport package to normalize count values for gene size https://support.bioconductor.org/p/83607/
@@ -136,7 +156,7 @@ Making PCA for DESeq data
 		find * -type d > ../sampNames.txt
 		write $ in the search window i.e. matches end of line
 		write _ballgown.gtf in the replace window
-		write ^ in search windoe i.e. matches start of line
+		write ^ in search window i.e. matches start of line
 		write ../../processed/S03_short_ballG/ballgown
 
 2018-10-25 (EN)
@@ -252,7 +272,7 @@ https://gist.github.com/gpertea/b83f1b32435e166afa92a2d388527f4b
 - Command: `perl mstrg_prep.pl stringtie_merged.gtf > stringtie_merged_pl.gtf`
 - Then, re-run step 6 (Pertea et al, 2016) to compute transcript abundances:  sbatch `stringtie_abundances.sh` 
 - Results stored in `ballG_pl`
-- Problem: duplicated MSTRG and Fbgn ids. Perl script appears to assign transcript is not sure of to the same MSTRG id creating duplicates.
+- Problem: duplicated MSTRG and Fbgn ids. Perl script appears to assign transcript if not sure, to the same MSTRG id creating duplicates.
 
 ### 2018-07-30 (EN)
 
