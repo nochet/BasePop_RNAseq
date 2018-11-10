@@ -19,7 +19,7 @@ library(RColorBrewer)
 
 ```{r}
 # Expression matrix
-countdata <- read.csv("../../processed/DESEQ/normExpr_countData.csv")
+countdata <- read.csv("../../processed/DESEQ/Expr_countData.csv")
 rownames(countdata) <- countdata[,1]
 countdata[,1] <- NULL
 countdata <- as.matrix(countdata)
@@ -47,6 +47,21 @@ resultsNames(dds_deseq.01)
 
 # Look at the DESeq object
 colData(dds_deseq.01)
+
+# Check size factors
+sizeFactors(dds_deseq.01)
+colSums(counts(dds_deseq.01, normalized =T))
+
+# Total number of raw and normalized counts per sample
+colSums(counts(dds_deseq.01))
+
+# Plot dispersion estimates
+plotDispEsts(dds_deseq.01)
+
+# View results
+cc <- results(dds_deseq.01)
+cc%>%data.frame()%>% View()
+
 save(dds_deseq.01, file="../../processed/DESEQ/dds_deseq01.Rda")
 load("../../processed/DESEQ/dds_deseq01.Rda")
 
@@ -64,6 +79,7 @@ dds_deseq.02 <- nbinomWaldTest(dds_deseq.02, maxit = 1000, useOptim = TRUE)
 dds_deseq.02 <- dds_deseq.02[which(mcols(dds_deseq.02)$betaConv),]
 resultsNames(dds_deseq.02)
 colData(dds_deseq.02)
+plotDispEsts(dds_deseq.02)
 save(dds_deseq.02, file="../../processed/DESEQ/dds_deseq.02.Rda")
 load("../../processed/DESEQ/dds_deseq.02.Rda")
 
@@ -71,6 +87,8 @@ load("../../processed/DESEQ/dds_deseq.02.Rda")
 lrt.treatment <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + tissue)
 lrt.treatment <- lrt.treatment[which(mcols(lrt.treatment)$fullBetaConv),]
 lrt.treatment <- results(lrt.treatment, alpha = 0.05)
+save(lrt.treatment, file="../../processed/DESEQ/lrt.treatment.Rda")
+load(file="../../processed/DESEQ/lrt.treatment.Rda")
 
 # DEGs significant for effect of tissue 
 lrt.tissue <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + treatment)
@@ -81,6 +99,8 @@ lrt.tissue <- results(lrt.tissue, alpha = 0.05)
 lrt.int <- DESeq(dds.02, test="LRT", reduced=~ SV1 + batch + tissue + treatment)
 lrt.int <- lrt.int[which(mcols(lrt.int)$fullBetaConv),]
 lrt.int <- results(lrt.int, alpha = 0.05)
+save(lrt.int, file="../../processed/DESEQ/lrt.int.Rda")
+load(file="../../processed/DESEQ/lrt.int.Rda")
 
 # Get lists of DEGs
 resSig_lrt.int <- subset(lrt.int, padj < 0.05)
@@ -113,47 +133,4 @@ bList <- as.data.frame(rownames(pl3c))
 write.csv(bList, "../../processed/DESEQ/gene_background_list.csv")
 ```
 
-# Model with interaction
-
-```{r}
-dds.int <- DESeqDataSetFromMatrix(countData = countdata, 
-                                  colData = phenDat.sva, 
-                                  design = ~ SV1 + batch + tissue + treatment + tissue:treatment)
-
-dds.deInt <- estimateSizeFactors(dds.int)
-nc <- counts(dds.deInt, normalized=TRUE)
-filter <- rowSums(nc >= 10) >= 2
-dds.deInt <- dds.deInt[filter,]
-dds.deInt <- estimateDispersions(dds.deInt, fitType = "local")
-dds.deInt <- nbinomWaldTest(dds.deInt, maxit = 10000, useOptim = TRUE)
-
-# Remove unconverged rows
-dds.deInt <- dds.deInt[which(mcols(dds.deInt)$betaConv),]
-
-colData(dds.deInt)
-
-# results for all terms
-lrt.int <- DESeq(dds.int, test="LRT", reduced=~ SV1 + batch + tissue + treatment)
-lrt.int <- results(lrt.int)
-
-# Access results
-res_int <- results(dds.deInt)
-(resOrd_int <- res_int[order(res_int$padj), ])
-
-# Basic tallies
-summary(res_int)
-
-# How many pvalues are less than 0.1
-sum(res_int$padj < 0.1, na.rm = TRUE)
-
-# Try alpha 0.05 (default is 0.1)
-res05 <- results(dds.deInt, alpha=0.05) 
-summary(res05)
-
-# Merge with normalized count data
-res.int_table <- merge(as.data.frame(res_int), 
-                       as.data.frame(counts(dds.deInt, normalized=TRUE)), 
-                       by="row.names", sort=FALSE)
-names(res.int_table)[1] <- "Gene"
-```
 

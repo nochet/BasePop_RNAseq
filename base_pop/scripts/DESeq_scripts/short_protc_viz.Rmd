@@ -15,6 +15,10 @@ library(tidyverse)
 library(cowplot)
 library(reshape)
 library(ggthemes)
+library(ggrepel)
+library(data.table)
+library(pheatmap)
+library(limma)
 
 source("modified_plotPCA_function.R")
 source("../color_map.R")
@@ -201,5 +205,174 @@ ggplot(pc34, aes(PC3, PC4, color=treatment, shape=tissue)) +
 
 ggsave(last_plot(),file = "../../plots/PCAplot_rlog_02_PC3PC4.pdf",width = 5,height=5)
 
+```
+
+# Significant DE genes
+# data prep
+
+```{r}
+# DEGs
+trtDEGs <- read.csv("../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv")
+intDEGs <- read.csv("../../processed/DESEQ/DEGs_lrt.int_0.05.csv")
+
+# Normalized count data (accounted for sizeFactors)
+load("../../processed/DESEQ/dds_deseq01.Rda")
+trtNormCounts <- dds_deseq.01
+trtNormCounts <- as.data.frame(counts(trtNormCounts, normalized=TRUE))
+setDT(trtNormCounts, keep.rownames = TRUE)[]
+names(trtNormCounts)[1] <- "Gene"
+
+load("../../processed/DESEQ/dds_deseq.02.Rda")
+intNormCounts <- dds_deseq.02
+intNormCounts <- as.data.frame(counts(intNormCounts, normalized=TRUE))
+setDT(intNormCounts, keep.rownames = TRUE)[]
+names(intNormCounts)[1] <- "Gene"
+
+# Metadata
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv",
+                        stringsAsFactors = FALSE)
+names(phenDat.sva)[1] <- "id"
+```
+
+# Plotting subsets of genes
+#   Top 20 significant DEGs
+
+```{r}
+# Treatment
+
+top20_sigTrt_genes <- trtDEGs %>%
+  arrange(padj) %>%
+  pull(Gene) %>%
+  .[1:20]
+
+# Extract normalized counts for these genes
+top20_sigTrt_norm <- trtNormCounts %>%
+  filter(Gene %in% top20_sigTrt_genes)
+
+# Gather counts for all samples into one column for ggplot
+gathered_top20_sigTrt <- top20_sigTrt_norm %>%
+  gather(colnames(top20_sigTrt_norm)[2:55], 
+         key="id", value = "normalized_counts")
+View(gathered_top20_sigTrt)
+
+# color counts by treatment
+gathered_top20_sigTrt <- inner_join(phenDat.sva, gathered_top20_sigTrt)
+
+# Plot top 20 trt DEGs
+ggplot(gathered_top20_sigTrt) +
+        geom_point(aes(x = Gene, y = normalized_counts, color = tissue,treatment)) +
+        scale_y_log10() +
+        xlab("Genes") +
+        ylab("log10 Normalized Counts") +
+        ggtitle("Top 20 Treatment DE Genes") +
+        theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    theme(plot.title = element_text(hjust = 0.5))
+
+# Interaction
+
+top20_sigInt_genes <- intDEGs %>%
+  arrange(padj) %>%
+  pull(Gene) %>%
+  .[1:20]
+
+# Extract normalized counts for these genes
+top20_sigInt_norm <- intNormCounts %>%
+  filter(Gene %in% top20_sigInt_genes)
+
+# Gather counts for all samples into one column for ggplot
+gathered_top20_sigInt <- top20_sigInt_norm %>%
+  gather(colnames(top20_sigInt_norm)[2:55], 
+         key="id", value = "normalized_counts")
+#View(gathered_top20_sigInt)
+
+# color counts by treatment
+gathered_top20_sigInt <- inner_join(phenDat.sva, gathered_top20_sigInt)
+
+# Plot top 20 trt DEGs
+ggplot(gathered_top20_sigInt) +
+        geom_point(aes(x = Gene, y = normalized_counts, color = tissue)) +
+        scale_y_log10() +
+        xlab("Genes") +
+        ylab("log10 Normalized Counts") +
+        ggtitle("Top 20 Interaction DE Genes") +
+        theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    theme(plot.title = element_text(hjust = 0.5))
+```
+
+# Single gene plots
+
+```{r}
+# Save plotcounts to a data frame object
+d <- plotCounts(dds_deseq.02, gene="FBgn0037801", 
+                intgroup=c("treatment", "tissue"), returnData=TRUE)
+
+# Plotting the MOV10 normalized counts, using the samplenames (rownames of d as labels)
+ggplot(d, aes(x = treatment, y = count, color = treatment)) + 
+  geom_point(position=position_jitter(w = 0.1,h = 0)) +
+  geom_text_repel(aes(label = rownames(d))) + 
+  theme_bw() +
+  ggtitle("FBgn0037801") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+# Heatmaps
+
+```{r}
+# Treatment
+# Get normalized expression for DEGs 
+# set the gene column to row names
+norm_sigTrt <- trtNormCounts %>% 
+              filter(Gene %in% as.character(trtDEGs$Gene)) %>% 
+          data.frame() %>%
+          column_to_rownames(var = "Gene") 
+
+# Annotate heatmap (optional)
+annotation <- phenDat.sva %>% 
+    select(id, treatment) %>% 
+    data.frame(row.names = "id")
+
+# Set a color palette
+heat_colors <- brewer.pal(6, "YlOrRd")
+
+# Run pheatmap
+pheatmap(norm_sigTrt, 
+         color = heat_colors, 
+         cluster_rows = T, 
+         show_rownames = F,
+         annotation = annotation, 
+         border_color = NA, 
+         fontsize = 10, 
+         scale = "row", 
+         fontsize_row = 10, 
+         height = 20)
+
+
+# Interaction
+norm_sigInt <- intNormCounts %>% 
+              filter(Gene %in% as.character(intDEGs$Gene)) %>% 
+          data.frame() %>%
+          column_to_rownames(var = "Gene") 
+
+# Annotate heatmap (optional)
+annotation <- phenDat.sva %>% 
+    select(id, treatment) %>% 
+    data.frame(row.names = "id")
+
+# Set a color palette
+heat_colors <- brewer.pal(6, "YlOrRd")
+
+# Run pheatmap
+pheatmap(norm_sigInt, 
+         color = heat_colors, 
+         cluster_rows = T, 
+         show_rownames = F,
+         annotation = annotation, 
+         border_color = NA, 
+         fontsize = 10, 
+         scale = "row", 
+         fontsize_row = 10, 
+         height = 20)
 ```
 

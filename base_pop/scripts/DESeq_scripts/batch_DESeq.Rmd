@@ -91,7 +91,7 @@ countdata <- countdata[, rownames(phenDat.sva)]
 all(rownames(phenDat.sva) == colnames(countdata))
 
 # Write a background file for DE and GO analysis
-write.csv(countdata, "../../processed/DESEQ/normExpr_countData.csv", row.names = TRUE)
+write.csv(countdata, "../../processed/DESEQ/Expr_countData.csv", row.names = TRUE)
 write.csv(phenDat.sva, "../../processed/DESEQ/sampleDat_with_SV.csv")
 ```
 
