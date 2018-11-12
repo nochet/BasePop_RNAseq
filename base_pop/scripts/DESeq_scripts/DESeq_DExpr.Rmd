@@ -86,6 +86,9 @@ load("../../processed/DESEQ/dds_deseq.02.Rda")
 # DEGs significant for effect of treatment 
 lrt.treatment <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + tissue)
 lrt.treatment <- lrt.treatment[which(mcols(lrt.treatment)$fullBetaConv),]
+lrt.treatAll <- results(lrt.treatment)
+save(lrt.treatAll, file="../../processed/DESEQ/lrtTreat_allPadj.Rda")
+
 lrt.treatment <- results(lrt.treatment, alpha = 0.05)
 save(lrt.treatment, file="../../processed/DESEQ/lrt.treatment.Rda")
 load(file="../../processed/DESEQ/lrt.treatment.Rda")
@@ -98,6 +101,9 @@ lrt.tissue <- results(lrt.tissue, alpha = 0.05)
 # DEGs significant for effect of the interaction 
 lrt.int <- DESeq(dds.02, test="LRT", reduced=~ SV1 + batch + tissue + treatment)
 lrt.int <- lrt.int[which(mcols(lrt.int)$fullBetaConv),]
+lrt.intAll <- results(lrt.int)
+save(lrt.intAll, file="../../processed/DESEQ/lrtInt_allPadj.Rda")
+
 lrt.int <- results(lrt.int, alpha = 0.05)
 save(lrt.int, file="../../processed/DESEQ/lrt.int.Rda")
 load(file="../../processed/DESEQ/lrt.int.Rda")
@@ -132,5 +138,4 @@ write.csv(resSig_lrt.treatment, "../../processed/DESEQ/DEGs_lrt.treatment_0.05.c
 bList <- as.data.frame(rownames(pl3c))
 write.csv(bList, "../../processed/DESEQ/gene_background_list.csv")
 ```
-
 

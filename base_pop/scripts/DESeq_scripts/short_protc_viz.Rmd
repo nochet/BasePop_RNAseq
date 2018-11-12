@@ -308,7 +308,7 @@ ggplot(gathered_top20_sigInt) +
 d <- plotCounts(dds_deseq.02, gene="FBgn0037801", 
                 intgroup=c("treatment", "tissue"), returnData=TRUE)
 
-# Plotting the MOV10 normalized counts, using the samplenames (rownames of d as labels)
+# Plotting normalized counts
 ggplot(d, aes(x = treatment, y = count, color = treatment)) + 
   geom_point(position=position_jitter(w = 0.1,h = 0)) +
   geom_text_repel(aes(label = rownames(d))) + 
@@ -374,5 +374,77 @@ pheatmap(norm_sigInt,
          scale = "row", 
          fontsize_row = 10, 
          height = 20)
+#order samples
 ```
+
+# Volcano plots
+
+```{r}
+# Load LRT data saved in DESeq_DExpr.Rmd
+load("../../processed/DESEQ/lrtTreat_allPadj.Rda")
+load("../../processed/DESEQ/lrtInt_allPadj.Rda")
+
+# Treatment effect
+lrt.treatAll <- subset(lrt.treatAll)
+summary(lrt.treatAll)
+sum(lrt.treatAll$padj < 0.1, na.rm = TRUE)
+lrt.treatAll$Gene <- rownames(lrt.treatAll)
+lrt.treatAll <- lrt.treatAll[, c(7,1:6)]
+lrt.treatAll <- lrt.treatAll[order(lrt.treatAll$padj), ]
+
+# Logical vector where TRUE means padj < 0.05
+lrt.trtAll <- as_tibble(lrt.treatAll) %>% 
+  mutate(thresh = padj < 0.05)
+lrt.trtAll <- subset(lrt.trtAll, lrt.trtAll$padj != 'NA')
+
+# Make column for genes to label
+lrt.trtAll <- lrt.trtAll %>% 
+  arrange(padj) %>% 
+  mutate(genelabels = "")
+lrt.trtAll$genelabels[1:10] <- lrt.trtAll$Gene[1:10]
+#View(lrt.trtAll)
+
+ggplot(lrt.trtAll, aes(x = log2FoldChange, y = -log10(padj))) +
+        geom_point(aes(colour = thresh)) +
+        geom_text_repel(aes(label = genelabels)) +
+        #ggtitle("Treatment effect") +
+        xlab("log2 fold change") + 
+        ylab("-log10 adj p-value") +
+        #scale_y_continuous(limits = c(0,25)) +
+        scale_x_continuous(limits = c(-5,5)) +
+        theme(legend.position = "none",
+              plot.title = element_text(size = rel(1.5), hjust = 0.5),
+              axis.title = element_text(size = rel(1.25))) 
+
+# Interacation effect
+
+```
+
+# Custom visuals
+
+```{r}
+
+# DEGs at padj < 0.05 cutoff
+load(file="../../processed/DESEQ/lrt.treatment.Rda")
+load(file="../../processed/DESEQ/lrt.int.Rda")
+
+# Treatment effect
+
+# Merge with normalized count data
+res_trt <- subset(lrt.treatment, lrt.treatment$padj < 0.05)
+res_trt_tab <- merge(as.data.frame(res_trt), 
+                       as.data.frame(counts(dds_deseq.01, normalized=TRUE)), 
+                       by="row.names", sort=FALSE)
+#setDT(res_trt_tab, keep.rownames = TRUE)[] #in data.table
+names(res_trt_tab)[1] <- "Gene"
+
+
+load("../../processed/DESEQ/dds_deseq.02.Rda")
+intNormCounts <- dds_deseq.02
+intNormCounts <- as.data.frame(counts(intNormCounts, normalized=TRUE))
+setDT(intNormCounts, keep.rownames = TRUE)[]
+names(intNormCounts)[1] <- "Gene"
+# Interaction effect
+```
+
 
