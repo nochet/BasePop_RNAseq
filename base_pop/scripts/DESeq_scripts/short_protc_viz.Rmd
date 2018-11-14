@@ -424,9 +424,22 @@ ggplot(lrt.trtAll, aes(x = log2FoldChange, y = -log10(padj))) +
 
 ```{r}
 
+# Define the genes of interest
+load("../../processed/DESEQ/lrtTreat_allPadj.Rda")
+goi <- read.csv("../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv") %>%
+  as.tbl()
+
+lrt.treatment <- subset(lrt.treatAll, lrt.treatAll$padj < 0.05)
+
+tcounts <- t(log2((counts(lrt.treatment[goi, ], normalized=TRUE, replaced=FALSE)+.5))) %>%
+  merge(colData(phenDat.sva), ., by="row.names") %>%
+  gather(gene, expression, (ncol(.)-length(goi)+1):ncol(.))
+```
+
+```{r}
+
 # DEGs at padj < 0.05 cutoff
 load(file="../../processed/DESEQ/lrt.treatment.Rda")
-load(file="../../processed/DESEQ/lrt.int.Rda")
 
 # Treatment effect
 
@@ -438,13 +451,36 @@ res_trt_tab <- merge(as.data.frame(res_trt),
 #setDT(res_trt_tab, keep.rownames = TRUE)[] #in data.table
 names(res_trt_tab)[1] <- "Gene"
 
+# Bodies 
+ff <- as.data.frame(res_trt_tab[1:7])
+kk <- grep("_B",colnames(res_trt_tab))
+grep.res_body <- res_trt_tab[,kk]
+colnames(grep.res_body) <- gsub("[[:digit:]]","",colnames(grep.res_body))
+#colnames(grep.res_body) <- grep.res_body[1,]
+#colnames(grep.res_body) <- str_split_fixed(colnames(grep.res_body),pattern = "_", 1)
+res_body <- cbind(ff, grep.res_body)
+#names(res.dds_body)[1] <- "Gene"
 
-load("../../processed/DESEQ/dds_deseq.02.Rda")
-intNormCounts <- dds_deseq.02
-intNormCounts <- as.data.frame(counts(intNormCounts, normalized=TRUE))
-setDT(intNormCounts, keep.rownames = TRUE)[]
-names(intNormCounts)[1] <- "Gene"
+ggplot(res_body, aes(x=log2FoldChange, y))
+
+
+# Heads
+hh <- grep("_H",colnames(res.dds_table))
+grep.dds_head <- res.dds_table[,hh]
+res.dds_head <- cbind(ff, grep.dds_head)
+
+# Ovaries
+oo <- grep("_O",colnames(res.dds_table))
+grep.dds_ovary <- res.dds_table[,oo]
+res.dds_ovary <- cbind(ff, grep.dds_ovary)
+
+# Examine plot of p-values
+hist(res.dds_body$padj, breaks=50, col="grey")
+
+
 # Interaction effect
+load(file="../../processed/DESEQ/lrt.int.Rda")
+
 ```
 
 
