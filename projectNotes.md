@@ -189,7 +189,7 @@ Steps:
 ### 2018-10-10 (EN)
 Download a precomputed gene annotation file for use in GO analysis
 Fbgn annotation file "Genes:fbgn_annotation_ID_fb_2018_04.tsv"
-http://flybase.org/cgi-bin/get_static_page.pl?file=bulkdata7.html&title=Current%20Release
+Index of ftp://ftp.flybase.net/releases/FB2018_05/precomputed_files/genes/
 
 ### 2018-10-09
 Convert FBgn symbols to name and annotation symbols for use with GO analysis packages
@@ -278,7 +278,7 @@ https://gist.github.com/gpertea/b83f1b32435e166afa92a2d388527f4b
 
 - Implemented DESeq2 on svaseq-prepped read count data
 - 22 rows did not converged when running `ddsDE.ttSS <- DESeq(dds.ttSS)`
-- Looked at https://support.bioconductor.org/p/65091/ and tried:
+- Dealing with autocorrelation: see https://support.bioconductor.org/p/65091/ and tried:
 - 1) Filter out normalized count of at least 10 reads in two or more samples. 
 	- `filter <- rowSums(nc >= 10) >= 2`
 	- 8 rows did not converge

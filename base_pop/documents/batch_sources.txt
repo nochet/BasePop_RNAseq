@@ -1,16 +1,16 @@
 
-Identify sources of potential batch effects
+Identify potential sources of batch effects
 
 A. PROCCESSING TIME AND PROCESSING GROUP
 
 1. Husbandry time: Flies were reared, dissected in 6 staggered groups
 	- treatments equally spread across groups
-	Group 1: released 6.6.16; dissected 6.16.16; RNA + Qiagen 8.4.1; 
-	Group 2: released 0.7.16; dissected 6.17.16; RNA 8.7.16; Qiagen 8.8.16
-	Group 3: released 6.13.16 dissected 6.23.16; RNA +Qiagen 8.8.16
-	Group 4: released 6.14.16 dissected 6.24.16; RNA 8.10.16; Qiagen ??
-	Group 5: released 6.20.16 dissected 6.30.16; RNA 8.11.16; Qiagen ??
-	Group 6: released 6.21.16 dissected 7.1.16; RNA 8.12.16; Qiagen ??
+	Group 1: collect_eggs_G9 5.25.16 released 6.6.16; dissected 6.16.16; RNA + Qiagen 8.4.1; 
+	Group 2: collect_eggs_G9 5.26.16 released 0.7.16; dissected 6.17.16; RNA 8.7.16; Qiagen 8.8.16
+	Group 3: collect_eggs_G9 6.01.16 released 6.13.16 dissected 6.23.16; RNA +Qiagen 8.8.16
+	Group 4: collect_eggs_G9 6.02.16 released 6.14.16 dissected 6.24.16; RNA 8.10.16; Qiagen ??
+	Group 5: collect_eggs_G10 6.08.16 released 6.20.16 dissected 6.30.16; RNA 8.11.16; Qiagen ??
+	Group 6: collect_eggs_G10 6.09.16 released 6.21.16 dissected 7.1.16; RNA 8.12.16; Qiagen ??
 	
 2. RNA & Sequencing: Clean-up dates; 3 runs (which groups in which run?)
 
