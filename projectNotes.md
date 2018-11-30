@@ -127,7 +127,9 @@ Precomputed FlyBase files:
 http://flybase.org/cgi-bin/get_static_page.pl?file=bulkdata7.html&title=Current%20Release
 
 
+2018-11-30 (EGK)
 
+Computed fold changes with shrinkage (method= normal). Made plots of fold changes in DR and HS relative to control for body, ovary & head. P-values are the adjusted p-values for the OVERALL effect of treatment, so could be driven by one diet or tissue. Script is foldchange_DEseq.Rmd, fold change data is in all_fc_dat.rda and plot is FC_all.pdf
 
 
 2018-11-07 (EN)
