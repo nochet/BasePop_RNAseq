@@ -19,6 +19,7 @@ library(ggrepel)
 library(data.table)
 library(pheatmap)
 library(limma)
+library(RColorBrewer)
 
 source("modified_plotPCA_function.R")
 source("../color_map.R")
@@ -54,7 +55,7 @@ short_filt
 tfpkm_short<-texpr(short_filt, meas="FPKM")
 tfpkm_short <-log2(tfpkm_short+1)
 colnames(tfpkm_short)<-phenDat$id
-save(tfpkm_short, file = "../../processed/S03_short_ballG/tfpkm_short.Rda")
+#save(tfpkm_short, file = "../../processed/S03_short_ballG/tfpkm_short.Rda")
 
 tbg<- as.data.frame(tfpkm_short) %>% gather(id, fpkm)
 tbg$treatment <- rep(c("C","DR","HS"), each=18*nrow(tfpkm_short))
@@ -77,9 +78,7 @@ b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
   scale_colour_brewer(palette = "Dark2")
   #tx_color_map() 
 b1 + theme(legend.position="none")
-  
-ggsave(filename = "../../plots/Expression_by_sample1.pdf",width = 5,height=5)
-
+#ggsave(filename = "../../plots/Expression_by_sample1.pdf",width = 5,height=5)
 
 
 b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
@@ -97,7 +96,7 @@ b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
   facet_grid(treatment~.)
 b2 + theme(legend.position="none")
 
-ggsave(filename = "../../plots/Expression_by_sample2.pdf",width = 5,height=5)
+#ggsave(filename = "../../plots/Expression_by_sample2.pdf",width = 5,height=5)
 ```
 
 # Number of transcripts per gene
@@ -203,7 +202,7 @@ ggplot(pc34, aes(PC3, PC4, color=treatment, shape=tissue)) +
   ylab(paste0("PC4: ", percentVar[4],"% variance")) + 
   coord_fixed()
 
-ggsave(last_plot(),file = "../../plots/PCAplot_rlog_02_PC3PC4.pdf",width = 5,height=5)
+#ggsave(last_plot(),file = "../../plots/PCAplot_rlog_02_PC3PC4.pdf",width = 5,height=5)
 
 ```
 
@@ -253,7 +252,7 @@ top20_sigTrt_norm <- trtNormCounts %>%
 gathered_top20_sigTrt <- top20_sigTrt_norm %>%
   gather(colnames(top20_sigTrt_norm)[2:55], 
          key="id", value = "normalized_counts")
-View(gathered_top20_sigTrt)
+#View(gathered_top20_sigTrt)
 
 # color counts by treatment
 gathered_top20_sigTrt <- inner_join(phenDat.sva, gathered_top20_sigTrt)
@@ -311,7 +310,7 @@ d <- plotCounts(dds_deseq.02, gene="FBgn0037801",
 # Plotting normalized counts
 ggplot(d, aes(x = treatment, y = count, color = treatment)) + 
   geom_point(position=position_jitter(w = 0.1,h = 0)) +
-  geom_text_repel(aes(label = rownames(d))) + 
+  #geom_text_repel(aes(label = rownames(d))) + 
   theme_bw() +
   ggtitle("FBgn0037801") +
   theme(plot.title = element_text(hjust = 0.5))
@@ -406,7 +405,7 @@ lrt.trtAll$genelabels[1:10] <- lrt.trtAll$Gene[1:10]
 
 ggplot(lrt.trtAll, aes(x = log2FoldChange, y = -log10(padj))) +
         geom_point(aes(colour = thresh)) +
-        geom_text_repel(aes(label = genelabels)) +
+        #geom_text_repel(aes(label = genelabels)) +
         #ggtitle("Treatment effect") +
         xlab("log2 fold change") + 
         ylab("-log10 adj p-value") +

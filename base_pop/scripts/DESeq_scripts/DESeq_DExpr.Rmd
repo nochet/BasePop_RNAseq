@@ -139,3 +139,27 @@ bList <- as.data.frame(rownames(pl3c))
 write.csv(bList, "../../processed/DESEQ/gene_background_list.csv")
 ```
 
+# Obtain log2FC for comparisons
+
+```{r}
+# Comparisons across treatment levels
+resultsNames(dds_deseq.01)
+
+cdr.trt <- results(dds_deseq.01, contrast=c("treatment","C","DR")) %>%
+  data.frame() %>%
+  tibble::rownames_to_column(var = "Gene") %>%
+  select(1,3) %>%
+  mutate(comparison = "C_DR")
+chs.trt <- results(dds_deseq.01, contrast = c("treatment","C","HS"))%>%
+  data.frame() %>%
+  tibble::rownames_to_column(var = "Gene") %>%
+  select(1,3)%>%
+  mutate(comparison = "C_HS")
+drhs.trt <- results(dds_deseq.01, contrast = c("treatment","DR","HS"))%>%
+  data.frame() %>%
+  tibble::rownames_to_column(var = "Gene") %>%
+  select(1,3)%>%
+  mutate(comparison = "HS_DR")
+
+#lfc.trt <- rbind(cdr.trt,chs.trt,drhs.trt)
+```
