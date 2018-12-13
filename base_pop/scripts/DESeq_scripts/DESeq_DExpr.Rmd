@@ -1,5 +1,5 @@
 ---
-title: "Base Population analysis with DESeq2"
+title: "Differential expression with DESeq2"
 author: "Enoch Ng'oma"
 date: "10/21/2018"
 output: html_document

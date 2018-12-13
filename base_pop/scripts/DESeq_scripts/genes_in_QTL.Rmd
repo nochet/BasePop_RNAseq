@@ -75,7 +75,7 @@ DEGs_treat[c(214,1257,1668),]
 # trans-eQTL
 # to do: extract BCIs programmatically from iis 
 
-load("../../processed/DESEQ/DEG_QTL/all_iisPeak.Rda")
+load("../../processed/DESEQ/DEG_QTL/all_iisPeak.rda")
 
 
 
@@ -115,7 +115,6 @@ MedLifeDR_3L$QTL <- "MedLife"
 qtl_degs <- rbind(step_2L,Ilp5_3L,
                   LinDiscrDR_2R,LinDiscrDRC_2R,MedLifeDR_3L)
 
-
 ```
 
 # DEGs in iis QTL peaks for the interaction
@@ -142,7 +141,7 @@ MedLifeDR_3L.int <-   DEunderPeak(merge_int,  arm="3L",
 ```{r}
 # add identifier colum to each list
 step_2L.int$QTL <- "step"
-Ilp5_3L.int$QTL <- "Ilp5"
+#Ilp5_3L.int$QTL <- "Ilp5" # no genes
 LinDiscrDR_2R.int$QTL <- "LinDiscrA"
 LinDiscrDRC_2R.int$QTL <- "LinDiscrB"
 MedLifeDR_3L.int$QTL <- "MedLife" 
@@ -165,6 +164,7 @@ colnames(qtl_degs_int)
 qtl_degs$effect <- "treat"
 qtl_degs_int$effect <- "int"
 all_qtl_degs <- rbind(qtl_degs,qtl_degs_int)
+all.qtl.degs <- select(all_qtl_degs,-c(lfcSE,v3,cyt,stat,pvalue,spp))
 ```
 
 
@@ -226,10 +226,6 @@ pull(gsum[CG40486[1],'summary'])
 Cda4 <- grep("Cda4", gsum$summary)
 gsum[Cda4[1],'summary']
 pull(gsum[Cda4[1],'summary'])
-
-
-
-
 
 ```
 

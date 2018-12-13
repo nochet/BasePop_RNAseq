@@ -156,7 +156,7 @@ ggsave(last_plot(),file = "../../plots/PCAplot_rlog_02_PC3PC4.pdf",width = 5,hei
 
 ```
 
-# PRCOMP
+# PrComp
 # do not use
 #use scale = TRUE
 ```{r}
