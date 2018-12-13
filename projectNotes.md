@@ -179,8 +179,8 @@ Split `prep_DESeq.Rmd` script into:
 
 ### 2018-10-20
 `genes_in_QTL.Rmd` 
-Code to scan past QTL peaks (Stanley et al 2017) for DEGs (tis study)
-Reads and pulses `"../../processed/gene_map_table_fb_2018_04.tsv"`. 
+Code to scan past QTL peaks (Stanley et al 2017) for DEGs (this study)
+Reads and pulses `"../../processed/gene_map_table_fb_2018_05.tsv"` downloaded from ftp://ftp.flybase.net/releases/FB2018_05/precomputed_files/genes/. 
 A function, `DEunderPeak()` scans under QTL peaks.
 A prepared data frame is saved to `"../../processed/DESEQ/DEG_QTL/gene_map_table.csv")`.
 Steps:
@@ -190,7 +190,7 @@ Steps:
 
 ### 2018-10-10 (EN)
 Download a precomputed gene annotation file for use in GO analysis
-Fbgn annotation file "Genes:fbgn_annotation_ID_fb_2018_04.tsv"
+Fbgn annotation file "Genes:fbgn_annotation_ID_fb_2018_05.tsv"
 Index of ftp://ftp.flybase.net/releases/FB2018_05/precomputed_files/genes/
 
 ### 2018-10-09

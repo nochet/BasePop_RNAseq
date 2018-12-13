@@ -1,124 +1,4 @@
 
-   82  git push
-   83  git pull
-   84  ssh engoma@nivalis.biology.missouri.edu
-   85  ssh ngomae@lewis.rnet.missouri.edu
-   86  ssh ngomae@lewis.rnet.missouri.edu
-   87  cd MyGithub/BasePop_RNAseq/base_pop/processed/
-   88  ls
-   89  git pull
-   90  git pull
-   91  ssh engoma@nivalis.biology.missouri.edu
-   92  ssh pawtk4@lewis.rnet.missouri.edu
-   93  git pull
-   94  git pull
-   95  git pull
-   96  git status
-   97  git add -A
-   98  git commit -m "added to ProjNotes"
-   99  git push
-  100  cd ~
-  101  ssh engoma@nivalis.biology.missouri.edu
-  102  ssh engoma@nivalis.biology.missouri.edu
-  103  ssh engoma@nivalis.biology.missouri.edu
-  104  ssh ngomae@lewis.rnet.missouri.edu
-  105  ssh engoma@nivalis.biology.missouri.edu
-  106  exit
-  107  cd MyGithub/
-  108  git clone https://osf.io/jwd3t/
-  109  git clone  https://github.com/IndrajeetPatil/ggstatsplot.git
-  110  cd MyGithub/
-  111  git clone https://github.com/EGKingLab/fecundity_estimation.git
-  112  cd h2lifespan
-  113  git pull
-  114  cd ..
-  115  BasePop_RNAseq/base_pop/
-  116  ls
-  117  cd BasePop_RNAseq/base_pop/
-  118  ls
-  119  git pull
-  120  git pull
-  121  git pull
-  122  git status
-  123  git status
-  124  git add -A
-  125  git commit -m "project notes updated"
-  126  git push
-  127  git pull
-  128  cd MyGithub/
-  129  git pull
-  130  cd fecundity_estimation/
-  131  git pull
-  132  cd ..
-  133  cd h2lifespan
-  134  git pull
-  135  cd MyGithub/h2lifespan
-  136  git pull
-  137  git pull
-  138  cd MyGithub/
-  139  git clone https://github.com/mani2012/BatchQC.git
-  140  cd Desktop/
-  141  ls
-  142  cd rna-seq_data_assemble/
-  143  ls
-  144  cd ls
-  145  ls
-  146  cd ThermTolBallgown/
-  147  ls
-  148  grep -li assemb *.gtf > ./therm_gtf_list.txt
-  149  ls
-  150  cat therm_gtf_list.txt 
-  151  cd ..
-  152  ls
-  153  cd LearnMemBallgown/
-  154  grep -li assemb *.gtf > ./learnMem_gtf_list.txt
-  155  ls
-  156  cd ..
-  157  ls
-  158  cd ActBallgown/
-  159  ls
-  160  grep -li assemb *.gtf > ./act_gtf_list.txt
-  161  ls
-  162  ssh engoma@nivalis.biology.missouri.edu
-  163  ssh engoma@nivalis.biology.missouri.edu
-  164  cd MyGithub/BasePop_RNAseq
-  165  git pull
-  166  cd MyGithub/BasePop_RNAseq
-  167  git status
-  168  git add -A
-  169  git commit -m "miscel. documentation"
-  170  git push
-  171  cd ~
-  172  cd MyGithub/BasePop_RNAseq
-  173  git pull
-  174  cd ~/MyGithub/BasePop_RNAseq
-  175  git pull
-  176  cd ..
-  177  ls
-  178  cd h2lifespan
-  179  git pull
-  180  cd ..
-  181  cd fecundity_estimation/
-  182  ls
-  183  git pull
-  184  cd ..
-  185  cd ~/MyGithub/BasePop_RNAseq
-  186  git pull
-  187  ls
-  188  cs scripts/
-  189  ls
-  190  cd scripts/
-  191  ls
-  192  cat latlon_1.py 
-  193  chmod +u latlon_1.py 
-  194  ls -la -h
-  195  cd ~
-  196  cd MyGithub/
-  197  ls
-  198  cd ..
-  199  ls
-  200  cd MyGithub/
-  201  ls
   202  cd PCfB/
   203  ls
   204  cd examples/
@@ -1119,4 +999,28 @@ Updating 19fbb67..6d330e7
 Fast-forward
  base_pop/scripts/DESeq_scripts/genes_in_QTL.Rmd | 180 [32m+++++++++++[m[31m---------[m
  1 file changed, 102 insertions(+), 78 deletions(-)
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ 
+[KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ cd base_pop/processed/
+]0;~/MyGithub/BasePop_RNAseq/base_pop/processedBio-KingLab-MBP1:processed ngomae$ ls
+DESEQ				describe_samples.csv		gene_count_matrix_pl3c.csv
+GO_interaction.xlsx		describe_samplesDE.csv		gene_map_table_fb_2018_04.tsv
+Old-gene_count_matrix.csv	describe_samplesDEpl.csv	gtf_list.txt
+Old-transcript_count_matrix.csv	describe_samples_batch.csv	perl_postPrep_S04
+S03_short_ballG			describe_samples_pl.csv		phenotypes.csv
+automated_gene_summaries.tsv	gene_association.fb		results
+ballG				gene_count_matrix_pl.csv	transcript_count_matrix_pl.csv
+]0;~/MyGithub/BasePop_RNAseq/base_pop/processedBio-KingLab-MBP1:processed ngomae$ rsync -ahvrP automated_gene_summaries.tsv engoma@nivalis.biology.misso uri.edu:/MyGithum[Kb/BasePop_RNAseq/base_pop/processed
+engoma@nivalis.biology.missouri.edu's password: 
+building file list ... 
+ 0 files...1 file to consider
+rsync: connection unexpectedly closed (8 bytes received so far) [sender]
+rsync error: error in rsync protocol data stream (code 12) at /BuildRoot/Library/Caches/com.apple.xbs/Sources/rsync/rsync-52.200.1/rsync/io.c(453) [sender=2.6.9]
+]0;~/MyGithub/BasePop_RNAseq/base_pop/processedBio-KingLab-MBP1:processed ngomae$ rsync -ahvrP automated_gene_summaries.tsv engoma@nivalis.biology.missouuri.edu:/MyGithub/BasePop_RNAseq/base_pop/processed~/MyGithub/BasePop_RNAseq/base_pop/processed[C[C[C[C[C[C[C[C[C
+engoma@nivalis.biology.missouri.edu's password: 
+building file list ... 
+ 0 files...1 file to consider
+automated_gene_summaries.tsv
+      32.77K   0%    0.00kB/s    0:00:00      21.14M  16%   20.12MB/s    0:00:05      39.68M  30%   18.92MB/s    0:00:04      59.21M  45%   18.72MB/s    0:00:03      78.09M  59%   18.54MB/s    0:00:02      98.27M  74%   18.29MB/s    0:00:01     112.03M  85%   17.16MB/s    0:00:01     126.65M  96%   16.06MB/s    0:00:00     131.25M 100%   17.15MB/s    0:00:07 (xfer#1, to-check=0/1)
+
+sent 131.27M bytes  received 42 bytes  8.47M bytes/sec
+total size is 131.25M  speedup is 1.00
+]0;~/MyGithub/BasePop_RNAseq/base_pop/processedBio-KingLab-MBP1:processed ngomae$ 
