@@ -185,12 +185,10 @@ addQTL <- data.frame('QTL'=c("LinDiscrA","LinDiscrB","MedLife"),
 
 addQTL <- rbind(transQTL, addQTL)
 
-# Find distance of DEGs to  qtl position
+# Find distance of DEGs to qtl position
 distt <- inner_join(all_qtl_degs,addQTL, by="QTL")
 
 distt$qdist <- abs(distt$startp-distt$R6pos)
-
-
 
 ```
 
@@ -227,6 +225,14 @@ Cda4 <- grep("Cda4", gsum$summary)
 gsum[Cda4[1],'summary']
 pull(gsum[Cda4[1],'summary'])
 
+# Get DEGs <100 KB to QTL peak
+near_genes <- subset(fullset, fullset$qdist <= 1e5)
+
+# Some descriptives
+max(fullset[,"log2FC"])
+min(fullset[,"log2FC"])
+fullset$gname
+unique(fullset$gname)
 ```
 
 
@@ -238,8 +244,6 @@ kk <- which(DEGs_treat$FBgn %in% k$FBgn)
 ki <- which(DEGs_int$FBgn %in% k$FBgn)
 # slif not among DEGs!
 ```
-
-
 
 # Gene association table with GO IDs
 
