@@ -8,11 +8,79 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-library(RDAVIDWebService)
+library(tidyverse)
 
-david <- DAVIDWebService$new("ngomae@missouri.edu")
+```
 
-david$setEmail("ngomae@missouri.edu")
+# Convert FBgn ids of DEGs to FlyBase annotation ids 
 
+```{r}
+# Fbgn annotation file "Genes:fbgn_annotation_ID_fb_2018_04.tsv"
+
+FbAnnotIds <- read.csv("../../processed/DESEQ/fbgn_annotation_ID_fb_2018_04.csv",
+                 stringsAsFactors = FALSE)
+anotFbgn <- subset(FbAnnotIds, FbAnnotIds$organism_abbreviation=="Dmel")
+anotFbgn <- select(anotFbgn, gene_symbol, primary_FBgn, annotation_ID)
+names(anotFbgn)[2]<-"FBgn_ID"
+#anotFbgn$FBgn_ID <- toupper(anotFbgn$FBgn_ID)
+
+# Lists of DEGs
+backList <- read.csv(file = "../../processed/DESEQ/gene_background_list.csv") %>%
+  select(-sn)
+fg_trt <- read.csv(file = "../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv") %>%
+  select(Gene,padj)
+fg_int <- read.csv(file = "../../processed/DESEQ/DEGs_lrt.int_0.05.csv") %>%
+  select(Gene,padj)
+
+# Search and merge sigDEGs_int with filtered anotation file
+names(backList)[1] <- "FBgn_ID"
+names(fg_trt)[1] <- "FBgn_ID"
+names(fg_int)[1] <- "FBgn_ID"
+
+backList <- right_join(anotFbgn, backList, by="FBgn_ID", copy=FALSE)
+bl <- select(backList,gene_symbol)
+
+fg_trt <- right_join(backList, fg_trt, copy=FALSE) %>%
+  select(gene_symbol)
+fg_int <- right_join(backList, fg_int, copy=FALSE) %>%
+  select(gene_symbol)
+
+# export files for GO in DAVID
+write.csv(fg_trt, "../../processed/DESEQ/GO/trtList.csv", row.names = FALSE)
+write.csv(fg_int, "../../processed/DESEQ/GO/intList.csv", row.names = FALSE)
+write.csv(bl, "../../processed/DESEQ/GO/backList.csv", row.names = FALSE)
+```
+
+# Connect to DAVIDWebservice
+# rJava and configuration issues are explained here: https://support.bioconductor.org/p/72188/
+
+```{r}
+# register with webservice at:
+#https://david.ncifcrf.gov/webservice/register.htm
+
+#Then, paste url with registered email in browser - it should return "true"
+# https://david.ncifcrf.gov/webservice/services/DAVIDWebService/authenticate?args0=ngomae@missouri.edu
+
+# Start the web connection
+library("RDAVIDWebService")
+
+#david <- DAVIDWebService$new("ngomae@missouri.edu")
+#david$setEmail("ngomae@missouri.edu")
+
+david<-DAVIDWebService(email="ngomae@missouri.edu", url="https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap12Endpoint/")
+
+david
+```
+
+# Define Foreground and Background gene lists
+
+```{r}
+# Foreground list is subset of background list (i.e. DEGs)
+fgt <- addList(david, fg_trt, idType="REFSEQ_MRNA", listName="isClass", listType="Gene")
+
+fgi <- addList(david, fg_int, idType="REFSEQ_MRNA", listName="isClass", listType="Gene")
+
+# All genes in the experiment (i.e. all genes from StringTie)
+BG <- addList(david, bl, idType="REFSEQ_MRNA", listName="all", listType="Background")
 ```
 

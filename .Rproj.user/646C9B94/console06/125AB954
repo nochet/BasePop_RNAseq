@@ -1,1026 +1,0 @@
-
-  202  cd PCfB/
-  203  ls
-  204  cd examples/
-  205  ls
-  206  cat Marrus_claudanielis.txt 
-  207  latlon_1.py 
-  208  ../../scripts/latlon_1.py 
-  209  ../scripts/latlon_1.py 
-  210  ../scripts/latlon_1.py 
-  211  ../scripts/latlon_1.py 
-  212  cd MyGithub/BasePop_RNAseq
-  213  git pull
-  214  git status
-  215  cd MyGithub/BasePop_RNAseq
-  216  git status
-  217  git pull
-  218  git status
-  219  git add -A
-  220  git commit -m "perl script"
-  221  git push
-  222  git pull
-  223  ssh ngomae@lewis.rnet.missouri.edu
-  224  ssh ngomae@lewis.rnet.missouri.edu
-  225  cd MyGithub/BasePop_RNAseq
-  226  git pull
-  227  ssh ngomae@lewis.rnet.missouri.edu
-  228  s
-  229  ls
-  230  ssh ngomae@lewis.rnet.missouri.edu
-  231  ssh ngomae@lewis.rnet.missouri.edu
-  232  ssh ngomae@lewis.rnet.missouri.edu
-  233  ssh ngomae@lewis.rnet.missouri.edu
-  234  ssh ngomae@lewis.rnet.missouri.edu
-  235  cd MyGithub/
-  236  scp -r engoma@nivalis.biology.missouri.edu:~/MyGithub/BasePop_RNAseq/base_pop/scripts/assembly/Set_up_arrays_new.Rmd .
-  237  ssh engoma@nivalis.biology.missouri.edu
-  238  ssh engoma@nivalis.biology.missouri.edu
-  239  ssh engoma@nivalis.biology.missouri.edu
-  240  s
-  241  ssh engoma@nivalis.biology.missouri.edu
-  242  ssh ngomae@lewis.rnet.missouri.edu
-  243  ssh ngomae@lewis.rnet.missouri.edu
-  244  xit
-  245  ssh engoma@nivalis.biology.missouri.edu
-  246  ssh engoma@nivalis.biology.missouri.edu
-  247  ssh engoma@nivalis.biology.missouri.edu
-  248  ssh engoma@nivalis.biology.missouri.edu
-  249  ssh ngomae@lewis.rnet.missouri.edu
-  250  ano S02a_samtoolsSort.txt
-  251  ssh ngomae@lewis.rnet.missouri.edu
-  252  ssh ngomae@lewis.rnet.missouri.edu
-  253  ssh ngomae@lewis.rnet.missouri.edu
-  254  ssh ngomae@lewis.rnet.missouri.edu
-  255  ssh ngomae@lewis.rnet.missouri.edu
-  256  cd MyGithub/BasePop_RNAseq
-  257  git pull
-  258  git pull
-  259  git status
-  260  git add -A
-  261  git commit -m "arrays code"
-  262  git push
-  263  git pull
-  264  git pull
-  265  cd base_pop/processed/
-  266  ls
-  267  python
-  268  git status
-  269  git add -A
-  270  cd ../..
-  271  git add -A
-  272  git commit -m "a .csv with split column"
-  273  git push
-  274  git status
-  275  git add -A
-  276  git commit -m "a dot csv with renamed headers"
-  277  git push
-  278  git pull
-  279  git pull
-  280  git pull
-  281  git pull
-  282  git pull
-  283  git pull
-  284  git pull
-  285  git pull
-  286  git status
-  287  git add -A
-  288  git commit -m "path list to assembled gtfs"
-  289  git push
-  290  git pull
-  291  git add -A
-  292  git commit -m "minor formating to gene count table csv"
-  293  git push
-  294  git pull
-  295  git add -A
-  296  git commit -m "Patricka things"
-  297  git push
-  298  cd ~
-  299  cd MyGithub/BasePop_RNAseq
-  300  git pull
-  301  cd ~/MyGithub/BasePop_RNAseq
-  302  git pull
-  303  git pull
-  304  cd ..
-  305  cd PCfB/
-  306  ls
-  307  ls scripts/
-  308  cd --
-  309  pwd
-  310  cd MyGithub/PCfB/
-  311  cd --
-  312  cd MyGithub/PCfB/
-  313  ls
-  314  latlon_1.py 
-  315  cd ..
-  316  cd PCfB/examples/
-  317  latlon_1.py 
-  318  latlon_1.py 
-  319  cd ..
-  320  ls
-  321  ls sandbox/
-  322  ls examples/
-  323  latlon_1.py 
-  324  pwd
-  325  latlon_1.py 
-  326  latlon_1.py 
-  327  latlon_1.py 
-  328  latlon_1.py 
-  329  latlon_1.py 
-  330  latlon_1.py 
-  331  latlon_1.py 
-  332  latlon_1.py 
-  333  latlon_1.py 
-  334  cd examples/
-  335  ls
-  336  latlon_1.py 
-  337  latlon_1.py 
-  338  latlon_1.py 
-  339  latlon_1.py 
-  340  latlon_1.py 
-  341  latlon_1.py 
-  342  latlon_1.py 
-  343  latlon_1.py 
-  344  latlon_1.py 
-  345  latlon_1.py 
-  346  cd ~/MyGithub/BasePop_RNAseq
-  347  git pull
-  348  git pull
-  349  git pull
-  350  git pull
-  351  git pull
-  352  git pull
-  353  sudo -rf /Library/Application\ Support/Malwarebytes/
-  354  sudo -rf /Library/Application\ Support/Malwarebytes/MBAM/Engine.bundle/Contents/PlugIns/FrontendAgent.app/Contents/MacOS/FrontendAgent 
-  355  sudo -rf /
-  356  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/PlugIns/FrontendAgent.app/Contents/MacOS/FrontendAgent
-  357  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/Alamofire.framework/Versions/A/Alamofire
-  358  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/Log4swift.framework/Versions/A/Log4swift
-  359  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/RxCocoa.framework/Versions/A/RxCocoa
-  360  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/RxSwift.framework/Versions/A/RxSwift
-  361  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/Swinject.framework/Versions/A/Swinject
-  362  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/CommonKit.framework/Versions/A/CommonKit
-  363  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/SettingsKit.framework/Versions/A/SettingsKit
-  364  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/ReportsKit.framework/Versions/A/ReportsKit
-  365  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/RTProtectionKit.framework/Versions/A/RTProtectionKit
-  366  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftAppKit.dylib
-  367  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftCore.dylib
-  368  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftCoreData.dylib
-  369  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftCoreFoundation.dylib
-  370  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftCoreGraphics.dylib
-  371  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftCoreImage.dylib
-  372  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftDarwin.dylib
-  373  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftDispatch.dylib
-  374  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftFoundation.dylib
-  375  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftIOKit.dylib
-  376  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftMetal.dylib
-  377  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftObjectiveC.dylib
-  378  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftQuartzCore.dylib
-  379  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftXPC.dylib
-  380  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/Frameworks/libswiftos.dylib
-  381  /private/var/db/mds/messages/se_SecurityMessages
-  382  /private/var/db/mds/system/mdsDirectory.db
-  383  /usr/share/icu/icudt55l.dat
-  384  /Library/Keychains/System.keychain
-  385  /System/Library/Caches/com.apple.IntlDataCache.le.kbdx
-  386  /System/Library/Fonts/Keyboard.ttf
-  387  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/SystemAppearance.car
-  388  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/GraphiteAppearance.car
-  389  /System/Library/Fonts/SFNSText-Regular.otf
-  390  /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Resources/Extras2.rsrc
-  391  /System/Library/Fonts/SFNSDisplay-Regular.otf
-  392  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/VibrantLightAppearance.car
-  393  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/Assets.car
-  394  /System/Library/Keyboard Layouts/AppleKeyboardLayouts.bundle/Contents/Resources/AppleKeyboardLayouts-L.dat
-  395  /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vImage.framework/Versions/A/Libraries/libCGInterfaces.dylib
-  396  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/PlugIns/FrontendAgent.app/Contents/Resources/Assets.car
-  397  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/DarkAppearance.car
-  398  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/GraphiteDarkAppearance.car
-  399  /System/Library/Fonts/Helvetica.dfont
-  400  /System/Library/Fonts/HelveticaNeueDeskInterface.ttc
-  401  /private/var/folders/33/g2k_ll7s40l6vhn3xxfz8j58cdw_9_/0/com.apple.LaunchServices-134417212714.csstore
-  402  /usr/lib/dyld
-  403  /private/var/db/dyld/dyld_shared_cache_x86_64h
-  404  /dev/null
-  405  /dev/null
-  406  /dev/null
-  407  count=2, state=0x12
-  408  FNetwork.defaultStorageSession
-  409  /dev/random
-  410  /Users/ngomae/Library/Caches/com.crashlytics.data/com.malwarebytes.mbam.frontend.agent/v3/active/864457ebcbff4cfc885330b431ff0046/sdk.log
-  411  /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Resources/Extras2.rsrc
-  412  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/VibrantLightAppearance.car
-  413  ->0x46c4a6f041d83979
-  414  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/SystemAppearance.car
-  415  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/GraphiteAppearance.car
-  416  ->0x46c4a6f041d866c9
-  417  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/Assets.car
-  418  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/DarkAppearance.car
-  419  /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/GraphiteDarkAppearance.car
-  420  /Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/PlugIns/FrontendAgent.app/Contents/Resources/Assets.car
-  421  sudo -rf /
-  422  /Library/Application Support/Malwarebytes
-  423  rm /
-  424  rm //
-  425  rm /
-  426  /Library/Application Support/Malwarebytes
-  427  cd MyGithub/BasePop_RNAseq
-  428  git pull
-  429  git pull
-  430  git pull
-  431  git pull
-  432  git pull
-  433  ssh engoma@nivalis.biology.missouri.edu
-  434  git pull
-  435  cd MyGithub/
-  436  git clone Quick Time files (.mov)
-  437  git clone https://github.com/EGKingLab/h2lifespan.git
-  438  git pull
-  439  cd ..
-  440  cd MyGithub/BasePop_RNAseq
-  441  git status
-  442  git add -A
-  443  git commit -m "list of IIS/TOR qtl genes"
-  444  git push
-  445  git add -A
-  446  git commit -m "iis gene list increased"
-  447  git push
-  448  git add -A
-  449  git commit -m "iis list again"
-  450  git status
-  451  git add -A
-  452  git commit -m "iis list again"
-  453  git push
-  454  git pull
-  455  git pull
-  456  git pull
-  457  git pull
-  458  git pull
-  459  git status
-  460  git add -A
-  461  git commit -m "deleted up-, down- lists"
-  462  git push
-  463  git pull
-  464  git pull
-  465  git pull
-  466  git status
-  467  git add -A
-  468  git commit -m "FlyBase report of qtl genes csv"
-  469  git push
-  470  git add -A
-  471  git commit -m "FlyBase file trimmed"
-  472  git push
-  473  cd MyGithub/
-  474  ls
-  475  cd BasePop_RNAseq
-  476  git status
-  477  git pull
-  478  git add -A
-  479  git commit -m "modified xlsx tables"
-  480  git push
-  481  git pull
-  482  git pull
-  483  java -version
-  484  echo -n | openssl s_client -connect david.ncifcrf.gov:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ncifcrf.cert
-  485  echo -n | openssl s_client -connect david.ncifcrf.gov:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ncifcrf.cert
-  486  openssl x509 -in ncifcrf.cert -text
-  487  david<-DAVIDWebService(email="user@email", url="https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap12Endpoint/")
-  488  daviddavid<-DAVIDWebService$new()
-  489  RDAVIDWebService
-  490  R
-  491  R
-  492  R CMD javareconf
-  493  options(prompt="R> ", continue="+  ", width=70, useFancyQuotes=FALSE, digits=4)
-  494  R
-  495  R CMD javareconf
-  496  sudo R CMD javareconf
-  497  java -version
-  498  echo -n | openssl s_client -connect david.ncifcrf.gov:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > ncifcrf.cert
-  499  openssl x509 -in ncifcrf.cert -text
-  500  git status
-  501  git pull
-  502  git add -A
-  503  git commit -m "GO tables"
-  504  git push
-  505  git status
-  506  git add -A
-  507  git commit -m "data for GO analysis"
-  508  git push
-  509  git pull
-  510  history
-]0;~/MyGithub/BasePop_RNAseq[?1034hBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git ststus
-git: 'ststus' is not a git command. See 'git --help'.
-
-Did you mean this?
-	status
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954.env[m
-	[31mmodified:   .Rproj.user/646C9B94/console06/INDEX001[m
-	[31mmodified:   .Rproj.user/646C9B94/pcs/files-pane.pper[m
-	[31mmodified:   .Rproj.user/646C9B94/pcs/source-pane.pper[m
-	[31mmodified:   .Rproj.user/646C9B94/pcs/windowlayoutstate.pper[m
-	[31mmodified:   .Rproj.user/646C9B94/sources/prop/INDEX[m
-	[31mmodified:   base_pop/scripts/DESeq_scripts/prep_DESeq.Rmd[m
-	[31mmodified:   projectNotes.md[m
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-
-	[31mbase_pop/processed/DESEQ/Func_Anot_Clust-Int.txt[m
-	[31mbase_pop/processed/DESEQ/Func_Anot_Clust-Int_high.txt[m
-	[31mbase_pop/processed/DESEQ/Func_Anot_Clust-Int_highest.txt[m
-	[31mbase_pop/processed/DESEQ/Funct_Anot_Chart_Int.txt[m
-	[31mbase_pop/processed/DESEQ/Funct_Anot_Table_int.txt[m
-	[31mbase_pop/processed/DESEQ/KEGG_int.png[m
-	[31mbase_pop/processed/DESEQ/up_keywords_oxidoreductase_int.txt[m
-	[31mbase_pop/scripts/DESeq_scripts/GO_deseq.Rmd[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -m[KA
-warning: CRLF will be replaced by LF in base_pop/processed/DESEQ/Func_Anot_Clust-Int.txt.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in base_pop/processed/DESEQ/Funct_Anot_Chart_Int.txt.
-The file will have its original line endings in your working directory.
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "Functional Annotation and Visual ization with GOplot"
-[master b42df81] Functional Annotation and Visualization with GOplot
- 17 files changed, 3317 insertions(+), 13 deletions(-)
- create mode 100644 base_pop/processed/DESEQ/Func_Anot_Clust-Int.txt
- create mode 100644 base_pop/processed/DESEQ/Func_Anot_Clust-Int_high.txt
- create mode 100644 base_pop/processed/DESEQ/Func_Anot_Clust-Int_highest.txt
- create mode 100644 base_pop/processed/DESEQ/Funct_Anot_Chart_Int.txt
- create mode 100644 base_pop/processed/DESEQ/Funct_Anot_Table_int.txt
- create mode 100644 base_pop/processed/DESEQ/KEGG_int.png
- create mode 100644 base_pop/processed/DESEQ/up_keywords_oxidoreductase_int.txt
- create mode 100644 base_pop/scripts/DESeq_scripts/GO_deseq.Rmd
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 30, done.
-Delta compression using up to 8 threads.
-Compressing objects:   3% (1/28)   Compressing objects:   7% (2/28)   Compressing objects:  10% (3/28)   Compressing objects:  14% (4/28)   Compressing objects:  17% (5/28)   Compressing objects:  21% (6/28)   Compressing objects:  25% (7/28)   Compressing objects:  28% (8/28)   Compressing objects:  32% (9/28)   Compressing objects:  35% (10/28)   Compressing objects:  39% (11/28)   Compressing objects:  42% (12/28)   Compressing objects:  46% (13/28)   Compressing objects:  50% (14/28)   Compressing objects:  53% (15/28)   Compressing objects:  57% (16/28)   Compressing objects:  60% (17/28)   Compressing objects:  64% (18/28)   Compressing objects:  67% (19/28)   Compressing objects:  71% (20/28)   Compressing objects:  75% (21/28)   Compressing objects:  78% (22/28)   Compressing objects:  82% (23/28)   Compressing objects:  85% (24/28)   Compressing objects:  89% (25/28)   Compressing objects:  92% (26/28)   Compressing objects:  96% (27/28)   Compressing objects: 100% (28/28)   Compressing objects: 100% (28/28), done.
-Writing objects:   3% (1/30)   Writing objects:   6% (2/30)   Writing objects:  10% (3/30)   Writing objects:  13% (4/30)   Writing objects:  16% (5/30)   Writing objects:  20% (6/30)   Writing objects:  23% (7/30)   Writing objects:  26% (8/30)   Writing objects:  30% (9/30)   Writing objects:  33% (10/30)   Writing objects:  36% (11/30)   Writing objects:  40% (12/30)   Writing objects:  43% (13/30)   Writing objects:  46% (14/30)   Writing objects:  50% (15/30)   Writing objects:  53% (16/30)   Writing objects:  56% (17/30)   Writing objects:  60% (18/30)   Writing objects:  66% (20/30)   Writing objects:  70% (21/30)   Writing objects:  73% (22/30)   Writing objects:  76% (23/30)   Writing objects:  76% (23/30), 1.07 MiB | 205.00 KiB/s   Writing objects:  76% (23/30), 1.19 MiB | 201.00 KiB/s   Writing objects:  80% (24/30), 1.19 MiB | 201.00 KiB/s   Writing objects:  83% (25/30), 1.19 MiB | 201.00 KiB/s   Writing objects:  86% (26/30), 1.19 MiB | 201.00 KiB/s   Writing objects:  90% (27/30), 1.19 MiB | 201.00 KiB/s   Writing objects:  93% (28/30), 1.19 MiB | 201.00 KiB/s   Writing objects:  96% (29/30), 1.19 MiB | 201.00 KiB/s   Writing objects: 100% (30/30), 1.19 MiB | 201.00 KiB/s   Writing objects: 100% (30/30), 1.30 MiB | 201.00 KiB/s, done.
-Total 30 (delta 17), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/17)   [Kremote: Resolving deltas:  11% (2/17)   [Kremote: Resolving deltas:  17% (3/17)   [Kremote: Resolving deltas:  23% (4/17)   [Kremote: Resolving deltas:  29% (5/17)   [Kremote: Resolving deltas:  35% (6/17)   [Kremote: Resolving deltas:  41% (7/17)   [Kremote: Resolving deltas:  47% (8/17)   [Kremote: Resolving deltas:  52% (9/17)   [Kremote: Resolving deltas:  58% (10/17)   [Kremote: Resolving deltas:  64% (11/17)   [Kremote: Resolving deltas:  70% (12/17)   [Kremote: Resolving deltas:  76% (13/17)   [Kremote: Resolving deltas:  82% (14/17)   [Kremote: Resolving deltas:  88% (15/17)   [Kremote: Resolving deltas:  94% (16/17)   [Kremote: Resolving deltas: 100% (17/17)   [Kremote: Resolving deltas: 100% (17/17), completed with 15 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   b1a52ce..b42df81  master -> master
-]0;~/MyGithub/BasePop_RNAseq[?1034hBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Changes not staged for commit:
-  (use "git add/rm <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[31mmodified:   .Rproj.user/646C9B94/console06/INDEX001[m
-	[31mmodified:   .Rproj.user/646C9B94/pcs/windowlayoutstate.pper[m
-	[31mmodified:   .Rproj.user/646C9B94/pcs/workbench-pane.pper[m
-	[31mdeleted:    base_pop/processed/DESEQ/DEGs_lrt_int_DAVIDConversion.txt[m
-	[31mmodified:   base_pop/scripts/DESeq_scripts/GO_deseq.Rmd[m
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-
-	[31mTutorials/goseq.pdf[m
-	[31mTutorials/topGO.pdf[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "GOplot files"
-[master ef1e41a] GOplot files
- 9 files changed, 99 insertions(+), 1003 deletions(-)
- rewrite .Rproj.user/646C9B94/console06/INDEX001 (85%)
- create mode 100644 Tutorials/goseq.pdf
- create mode 100644 Tutorials/topGO.pdf
- delete mode 100644 base_pop/processed/DESEQ/DEGs_lrt_int_DAVIDConversion.txt
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ h[Kgit push
-Counting objects: 20, done.
-Delta compression using up to 8 threads.
-Compressing objects:   5% (1/20)   Compressing objects:  10% (2/20)   Compressing objects:  15% (3/20)   Compressing objects:  20% (4/20)   Compressing objects:  25% (5/20)   Compressing objects:  30% (6/20)   Compressing objects:  35% (7/20)   Compressing objects:  40% (8/20)   Compressing objects:  45% (9/20)   Compressing objects:  50% (10/20)   Compressing objects:  55% (11/20)   Compressing objects:  60% (12/20)   Compressing objects:  65% (13/20)   Compressing objects:  70% (14/20)   Compressing objects:  75% (15/20)   Compressing objects:  80% (16/20)   Compressing objects:  85% (17/20)   Compressing objects:  90% (18/20)   Compressing objects:  95% (19/20)   Compressing objects: 100% (20/20)   Compressing objects: 100% (20/20), done.
-Writing objects:   5% (1/20)   Writing objects:  10% (2/20)   Writing objects:  15% (3/20)   Writing objects:  20% (4/20)   Writing objects:  25% (5/20)   Writing objects:  30% (6/20)   Writing objects:  35% (7/20)   Writing objects:  40% (8/20)   Writing objects:  45% (9/20)   Writing objects:  50% (10/20)   Writing objects:  55% (11/20)   Writing objects:  60% (12/20)   Writing objects:  65% (13/20)   Writing objects:  70% (14/20), 1.08 MiB | 1.39 MiB/s   Writing objects:  75% (15/20), 1.08 MiB | 1.39 MiB/s   Writing objects:  80% (16/20), 1.08 MiB | 1.39 MiB/s   Writing objects:  85% (17/20), 1.08 MiB | 1.39 MiB/s   Writing objects:  90% (18/20), 1.08 MiB | 1.39 MiB/s   Writing objects:  95% (19/20), 1.08 MiB | 1.39 MiB/s   Writing objects: 100% (20/20), 1.08 MiB | 1.39 MiB/s   Writing objects: 100% (20/20), 1.72 MiB | 1.39 MiB/s, done.
-Total 20 (delta 14), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/14)   [Kremote: Resolving deltas:   7% (1/14)   [Kremote: Resolving deltas:  14% (2/14)   [Kremote: Resolving deltas:  21% (3/14)   [Kremote: Resolving deltas:  28% (4/14)   [Kremote: Resolving deltas:  35% (5/14)   [Kremote: Resolving deltas:  42% (6/14)   [Kremote: Resolving deltas:  50% (7/14)   [Kremote: Resolving deltas:  57% (8/14)   [Kremote: Resolving deltas:  64% (9/14)   [Kremote: Resolving deltas:  71% (10/14)   [Kremote: Resolving deltas:  78% (11/14)   [Kremote: Resolving deltas:  85% (12/14)   [Kremote: Resolving deltas:  92% (13/14)   [Kremote: Resolving deltas: 100% (14/14)   [Kremote: Resolving deltas: 100% (14/14), completed with 14 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   b42df81..ef1e41a  master -> master
-[KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Changes not staged for commit:
-  (use "git add/rm <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[31mmodified:   .Rproj.user/646C9B94/console06/INDEX001[m
-	[31mmodified:   .Rproj.user/646C9B94/pcs/windowlayoutstate.pper[m
-	[31mdeleted:    base_pop/processed/DESEQ/DEGs_lrt_int_DAVIDConversion.csv[m
-	[31mdeleted:    base_pop/processed/DESEQ/REVIGO_CHS.csv[m
-	[31mmodified:   base_pop/processed/DESEQ/gene_background_list.csv[m
-	[31mdeleted:    base_pop/processed/DESEQ/up_keywords_oxidoreductase_int.txt[m
-	[31mmodified:   base_pop/scripts/DESeq_scripts/GO_deseq.Rmd[m
-	[31mmodified:   projectNotes.md[m
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-
-	[31mbase_pop/processed/DESEQ/fbgn_annotation_ID_fb_2018_04.csv[m
-	[31mbase_pop/processed/DESEQ/fbgn_annotation_ID_fb_2018_04tsv.csv[m
-	[31mbase_pop/processed/DESEQ/fbgn_annotation_ID_fb_2018_04tsv.txt[m
-	[31mbase_pop/processed/DESEQ/int_forDAVID.csv[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-warning: CRLF will be replaced by LF in base_pop/processed/DESEQ/gene_background_list.csv.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in base_pop/processed/DESEQ/fbgn_annotation_ID_fb_2018_04.csv.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in base_pop/processed/DESEQ/fbgn_annotation_ID_fb_2018_04tsv.csv.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in base_pop/processed/DESEQ/fbgn_annotation_ID_fb_2018_04tsv.txt.
-The file will have its original line endings in your working directory.
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "GOplot files"[1@F[1@b[1@g[1@n[1@ [1@a[1@n[1@n[1@o[1@t[1@a[1@t[1@i[1@o[1@n[1@ [1@f[1@i[1@l[1@e,GOplot files" [A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C GOplot files""[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C
-
-[master eaf7a59] Fbgn annotation file, GOplot files
- 14 files changed, 246238 insertions(+), 18876 deletions(-)
- rewrite .Rproj.user/646C9B94/console06/INDEX001 (85%)
- delete mode 100644 base_pop/processed/DESEQ/DEGs_lrt_int_DAVIDConversion.csv
- delete mode 100644 base_pop/processed/DESEQ/REVIGO_CHS.csv
- create mode 100644 base_pop/processed/DESEQ/fbgn_annotation_ID_fb_2018_04.csv
- create mode 100644 base_pop/processed/DESEQ/fbgn_annotation_ID_fb_2018_04tsv.csv
- create mode 100644 base_pop/processed/DESEQ/fbgn_annotation_ID_fb_2018_04tsv.txt
- rewrite base_pop/processed/DESEQ/gene_background_list.csv (88%)
- create mode 100644 base_pop/processed/DESEQ/int_forDAVID.csv
- delete mode 100644 base_pop/processed/DESEQ/up_keywords_oxidoreductase_int.txt
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 22, done.
-Delta compression using up to 8 threads.
-Compressing objects:   4% (1/22)   Compressing objects:   9% (2/22)   Compressing objects:  13% (3/22)   Compressing objects:  18% (4/22)   Compressing objects:  22% (5/22)   Compressing objects:  27% (6/22)   Compressing objects:  31% (7/22)   Compressing objects:  36% (8/22)   Compressing objects:  40% (9/22)   Compressing objects:  45% (10/22)   Compressing objects:  50% (11/22)   Compressing objects:  54% (12/22)   Compressing objects:  59% (13/22)   Compressing objects:  63% (14/22)   Compressing objects:  68% (15/22)   Compressing objects:  72% (16/22)   Compressing objects:  77% (17/22)   Compressing objects:  81% (18/22)   Compressing objects:  86% (19/22)   Compressing objects:  90% (20/22)   Compressing objects:  95% (21/22)   Compressing objects: 100% (22/22)   Compressing objects: 100% (22/22), done.
-Writing objects:   4% (1/22)   Writing objects:   9% (2/22)   Writing objects:  13% (3/22)   Writing objects:  18% (4/22)   Writing objects:  22% (5/22)   Writing objects:  27% (6/22)   Writing objects:  31% (7/22)   Writing objects:  36% (8/22)   Writing objects:  40% (9/22)   Writing objects:  45% (10/22)   Writing objects:  50% (11/22)   Writing objects:  54% (12/22)   Writing objects:  59% (13/22)   Writing objects:  59% (13/22), 1.07 MiB | 205.00 KiB/s   Writing objects:  59% (13/22), 1.19 MiB | 199.00 KiB/s   Writing objects:  59% (13/22), 1.31 MiB | 199.00 KiB/s   Writing objects:  59% (13/22), 1.50 MiB | 191.00 KiB/s   Writing objects:  63% (14/22), 1.63 MiB | 191.00 KiB/s   Writing objects:  63% (14/22), 1.75 MiB | 187.00 KiB/s   Writing objects:  63% (14/22), 1.88 MiB | 187.00 KiB/s   Writing objects:  68% (15/22), 1.88 MiB | 187.00 KiB/s   Writing objects:  68% (15/22), 2.00 MiB | 190.00 KiB/s   Writing objects:  72% (16/22), 2.13 MiB | 172.00 KiB/s   Writing objects:  77% (17/22), 2.13 MiB | 172.00 KiB/s   Writing objects:  81% (18/22), 2.13 MiB | 172.00 KiB/s   Writing objects:  86% (19/22), 2.13 MiB | 172.00 KiB/s   Writing objects:  90% (20/22), 2.13 MiB | 172.00 KiB/s   Writing objects:  95% (21/22), 2.13 MiB | 172.00 KiB/s   Writing objects: 100% (22/22), 2.13 MiB | 172.00 KiB/s   Writing objects: 100% (22/22), 2.23 MiB | 174.00 KiB/s, done.
-Total 22 (delta 14), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/14)   [Kremote: Resolving deltas:   7% (1/14)   [Kremote: Resolving deltas:  14% (2/14)   [Kremote: Resolving deltas:  21% (3/14)   [Kremote: Resolving deltas:  28% (4/14)   [Kremote: Resolving deltas:  35% (5/14)   [Kremote: Resolving deltas:  42% (6/14)   [Kremote: Resolving deltas:  50% (7/14)   [Kremote: Resolving deltas:  57% (8/14)   [Kremote: Resolving deltas:  64% (9/14)   [Kremote: Resolving deltas:  71% (10/14)   [Kremote: Resolving deltas:  78% (11/14)   [Kremote: Resolving deltas:  85% (12/14)   [Kremote: Resolving deltas:  92% (13/14)   [Kremote: Resolving deltas: 100% (14/14)   [Kremote: Resolving deltas: 100% (14/14), completed with 14 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   ef1e41a..eaf7a59  master -> master
-git pull
-Already up-to-date.
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954.env[m
-	[31mmodified:   .Rproj.user/646C9B94/console06/INDEX001[m
-	[31mmodified:   .Rproj.user/646C9B94/pcs/windowlayoutstate.pper[m
-	[31mmodified:   .Rproj.user/646C9B94/pcs/workbench-pane.pper[m
-	[31mmodified:   base_pop/processed/DESEQ/int_forDAVID.csv[m
-	[31mmodified:   base_pop/scripts/DESeq_scripts/GO_deseq.Rmd[m
-	[31mmodified:   projectNotes.md[m
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-
-	[31mbase_pop/processed/DESEQ/CHS_forDAVID.csv[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "ProjectNotes updated"
-[master f60bf51] ProjectNotes updated
- 9 files changed, 1707 insertions(+), 999 deletions(-)
- rewrite .Rproj.user/646C9B94/console06/INDEX001 (85%)
- create mode 100644 base_pop/processed/DESEQ/CHS_forDAVID.csv
- rewrite base_pop/processed/DESEQ/int_forDAVID.csv (98%)
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 20, done.
-Delta compression using up to 8 threads.
-Compressing objects:   5% (1/20)   Compressing objects:  10% (2/20)   Compressing objects:  15% (3/20)   Compressing objects:  20% (4/20)   Compressing objects:  25% (5/20)   Compressing objects:  30% (6/20)   Compressing objects:  35% (7/20)   Compressing objects:  40% (8/20)   Compressing objects:  45% (9/20)   Compressing objects:  50% (10/20)   Compressing objects:  55% (11/20)   Compressing objects:  60% (12/20)   Compressing objects:  65% (13/20)   Compressing objects:  70% (14/20)   Compressing objects:  75% (15/20)   Compressing objects:  80% (16/20)   Compressing objects:  85% (17/20)   Compressing objects:  90% (18/20)   Compressing objects:  95% (19/20)   Compressing objects: 100% (20/20)   Compressing objects: 100% (20/20), done.
-Writing objects:   5% (1/20)   Writing objects:  10% (2/20)   Writing objects:  15% (3/20)   Writing objects:  20% (4/20)   Writing objects:  25% (5/20)   Writing objects:  30% (6/20)   Writing objects:  35% (7/20)   Writing objects:  40% (8/20)   Writing objects:  45% (9/20)   Writing objects:  50% (10/20)   Writing objects:  55% (11/20)   Writing objects:  60% (12/20)   Writing objects:  65% (13/20)   Writing objects:  70% (14/20)   Writing objects:  75% (15/20)   Writing objects:  80% (16/20)   Writing objects:  85% (17/20)   Writing objects:  90% (18/20)   Writing objects:  95% (19/20)   Writing objects: 100% (20/20)   Writing objects: 100% (20/20), 7.60 KiB | 0 bytes/s, done.
-Total 20 (delta 14), reused 1 (delta 0)
-remote: Resolving deltas:   0% (0/14)   [Kremote: Resolving deltas:   7% (1/14)   [Kremote: Resolving deltas:  14% (2/14)   [Kremote: Resolving deltas:  21% (3/14)   [Kremote: Resolving deltas:  28% (4/14)   [Kremote: Resolving deltas:  35% (5/14)   [Kremote: Resolving deltas:  42% (6/14)   [Kremote: Resolving deltas:  50% (7/14)   [Kremote: Resolving deltas:  57% (8/14)   [Kremote: Resolving deltas:  64% (9/14)   [Kremote: Resolving deltas:  71% (10/14)   [Kremote: Resolving deltas:  78% (11/14)   [Kremote: Resolving deltas:  85% (12/14)   [Kremote: Resolving deltas:  92% (13/14)   [Kremote: Resolving deltas: 100% (14/14)   [Kremote: Resolving deltas: 100% (14/14), completed with 14 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   eaf7a59..f60bf51  master -> master
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git pull
-Already up-to-date.
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Changes not staged for commit:
-  (use "git add/rm <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[31mmodified:   .Rproj.user/646C9B94/console06/INDEX001[m
-	[31mmodified:   .Rproj.user/646C9B94/sources/prop/INDEX[m
-	[31mdeleted:    base_pop/scripts/DESeq_scripts/GO_deseq.Rmd[m
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-
-	[31mFlyBase_Lists/[m
-	[31mbase_pop/processed/DESEQ/CV_GO_0008340_determ_adult_lifespan.csv[m
-	[31mbase_pop/processed/DESEQ/gene_association.csv[m
-	[31mbase_pop/processed/DESEQ/gene_association.txt[m
-	[31mbase_pop/scripts/GOscripts/[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-warning: CRLF will be replaced by LF in FlyBase_Lists/CV_GO_0008340_determ_adult_lifespan.csv.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in FlyBase_Lists/CV_aging.csv.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in FlyBase_Lists/CV_cell_response_starvation.csv.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in FlyBase_Lists/CV_glucose_homeostasis.csv.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in FlyBase_Lists/CV_insulin_signaling.csv.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in FlyBase_Lists/CV_lipid_metabol_process.csv.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in FlyBase_Lists/CV_response_starvation.csv.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in FlyBase_Lists/negRegl_trigly_catabol_proc.csv.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in base_pop/processed/DESEQ/CV_GO_0008340_determ_adult_lifespan.csv.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in base_pop/processed/DESEQ/gene_association.csv.
-The file will have its original line endings in your working directory.
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m " CV terms"
-[master 8c11003]  CV terms
- 18 files changed, 417076 insertions(+), 14 deletions(-)
- rewrite .Rproj.user/646C9B94/console06/INDEX001 (71%)
- create mode 100644 FlyBase_Lists/CV_GO_0008340_determ_adult_lifespan.csv
- create mode 100644 FlyBase_Lists/CV_aging.csv
- create mode 100644 FlyBase_Lists/CV_cell_response_starvation.csv
- create mode 100644 FlyBase_Lists/CV_glucose_homeostasis.csv
- create mode 100644 FlyBase_Lists/CV_insulin_signaling.csv
- create mode 100644 FlyBase_Lists/CV_lipid_metabol_process.csv
- create mode 100644 FlyBase_Lists/CV_response_starvation.csv
- create mode 100644 FlyBase_Lists/gene_association.fb
- create mode 100644 FlyBase_Lists/gene_association.txt
- create mode 100644 FlyBase_Lists/negRegl_trigly_catabol_proc.csv
- create mode 100644 base_pop/processed/DESEQ/CV_GO_0008340_determ_adult_lifespan.csv
- create mode 100644 base_pop/processed/DESEQ/gene_association.csv
- create mode 100644 base_pop/processed/DESEQ/gene_association.txt
- rename base_pop/scripts/{DESeq_scripts => GOscripts}/GO_deseq.Rmd (70%)
- create mode 100644 base_pop/scripts/GOscripts/identify_peaks.R
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 29, done.
-Delta compression using up to 8 threads.
-Compressing objects:   3% (1/28)   Compressing objects:   7% (2/28)   Compressing objects:  10% (3/28)   Compressing objects:  14% (4/28)   Compressing objects:  17% (5/28)   Compressing objects:  21% (6/28)   Compressing objects:  25% (7/28)   Compressing objects:  28% (8/28)   Compressing objects:  32% (9/28)   Compressing objects:  35% (10/28)   Compressing objects:  39% (11/28)   Compressing objects:  42% (12/28)   Compressing objects:  46% (13/28)   Compressing objects:  50% (14/28)   Compressing objects:  53% (15/28)   Compressing objects:  57% (16/28)   Compressing objects:  60% (17/28)   Compressing objects:  64% (18/28)   Compressing objects:  67% (19/28)   Compressing objects:  71% (20/28)   Compressing objects:  75% (21/28)   Compressing objects:  78% (22/28)   Compressing objects:  82% (23/28)   Compressing objects:  85% (24/28)   Compressing objects:  89% (25/28)   Compressing objects:  92% (26/28)   Compressing objects:  96% (27/28)   Compressing objects: 100% (28/28)   Compressing objects: 100% (28/28), done.
-Writing objects:   3% (1/29)   Writing objects:   6% (2/29)   Writing objects:  10% (3/29)   Writing objects:  13% (4/29)   Writing objects:  17% (5/29)   Writing objects:  20% (6/29)   Writing objects:  24% (7/29)   Writing objects:  27% (8/29)   Writing objects:  31% (9/29)   Writing objects:  34% (10/29)   Writing objects:  37% (11/29)   Writing objects:  41% (12/29)   Writing objects:  44% (13/29)   Writing objects:  51% (15/29)   Writing objects:  55% (16/29)   Writing objects:  58% (17/29)   Writing objects:  62% (18/29)   Writing objects:  62% (18/29), 1.07 MiB | 1.03 MiB/s   Writing objects:  65% (19/29), 1.07 MiB | 1.03 MiB/s   Writing objects:  68% (20/29), 1.07 MiB | 1.03 MiB/s   Writing objects:  72% (21/29), 1.07 MiB | 1.03 MiB/s   Writing objects:  75% (22/29), 1.07 MiB | 1.03 MiB/s   Writing objects:  79% (23/29), 1.07 MiB | 1.03 MiB/s   Writing objects:  82% (24/29), 1.07 MiB | 1.03 MiB/s   Writing objects:  86% (25/29), 1.07 MiB | 1.03 MiB/s   Writing objects:  89% (26/29), 1.07 MiB | 1.03 MiB/s   Writing objects:  93% (27/29), 1.07 MiB | 1.03 MiB/s   Writing objects:  96% (28/29), 1.07 MiB | 1.03 MiB/s   Writing objects: 100% (29/29), 1.07 MiB | 1.03 MiB/s   Writing objects: 100% (29/29), 2.17 MiB | 1.03 MiB/s, done.
-Total 29 (delta 12), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/12)   [Kremote: Resolving deltas:   8% (1/12)   [Kremote: Resolving deltas:  16% (2/12)   [Kremote: Resolving deltas:  25% (3/12)   [Kremote: Resolving deltas:  33% (4/12)   [Kremote: Resolving deltas:  41% (5/12)   [Kremote: Resolving deltas:  50% (6/12)   [Kremote: Resolving deltas:  58% (7/12)   [Kremote: Resolving deltas:  66% (8/12)   [Kremote: Resolving deltas:  75% (9/12)   [Kremote: Resolving deltas:  83% (10/12)   [Kremote: Resolving deltas:  91% (11/12)   [Kremote: Resolving deltas: 100% (12/12)   [Kremote: Resolving deltas: 100% (12/12), completed with 11 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   f60bf51..8c11003  master -> master
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[31mmodified:   .Rproj.user/646C9B94/console06/INDEX001[m
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-
-	[31mbase_pop/processed/DESEQ/Funct_Anot_Chart_lrtTrt.txt[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "[K[K[K[K[K[K[K[K[K[K[K[K[K[K[Kgit add -A
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "adult lifespan DEGs"
-[master 6d24db6] adult lifespan DEGs
- 4 files changed, 475 insertions(+), 26 deletions(-)
- create mode 100644 base_pop/processed/DESEQ/Funct_Anot_Chart_lrtTrt.txt
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 14, done.
-Delta compression using up to 8 threads.
-Compressing objects:   7% (1/14)   Compressing objects:  14% (2/14)   Compressing objects:  21% (3/14)   Compressing objects:  28% (4/14)   Compressing objects:  35% (5/14)   Compressing objects:  42% (6/14)   Compressing objects:  50% (7/14)   Compressing objects:  57% (8/14)   Compressing objects:  64% (9/14)   Compressing objects:  71% (10/14)   Compressing objects:  78% (11/14)   Compressing objects:  85% (12/14)   Compressing objects:  92% (13/14)   Compressing objects: 100% (14/14)   Compressing objects: 100% (14/14), done.
-Writing objects:   7% (1/14)   Writing objects:  14% (2/14)   Writing objects:  21% (3/14)   Writing objects:  28% (4/14)   Writing objects:  35% (5/14)   Writing objects:  42% (6/14)   Writing objects:  50% (7/14)   Writing objects:  57% (8/14)   Writing objects:  64% (9/14)   Writing objects:  71% (10/14)   Writing objects:  78% (11/14)   Writing objects:  85% (12/14)   Writing objects:  92% (13/14)   Writing objects: 100% (14/14)   Writing objects: 100% (14/14), 54.75 KiB | 0 bytes/s, done.
-Total 14 (delta 9), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/9)   [Kremote: Resolving deltas:  11% (1/9)   [Kremote: Resolving deltas:  22% (2/9)   [Kremote: Resolving deltas:  33% (3/9)   [Kremote: Resolving deltas:  44% (4/9)   [Kremote: Resolving deltas:  55% (5/9)   [Kremote: Resolving deltas:  66% (6/9)   [Kremote: Resolving deltas:  77% (7/9)   [Kremote: Resolving deltas:  88% (8/9)   [Kremote: Resolving deltas: 100% (9/9)   [Kremote: Resolving deltas: 100% (9/9), completed with 9 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   8c11003..6d24db6  master -> master
-[KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Changes not staged for commit:
-  (use "git add/rm <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[31mmodified:   .Rproj.user/646C9B94/console06/INDEX001[m
-	[31mmodified:   .Rproj.user/646C9B94/pcs/files-pane.pper[m
-	[31mmodified:   .Rproj.user/646C9B94/pcs/source-pane.pper[m
-	[31mmodified:   .Rproj.user/646C9B94/pcs/windowlayoutstate.pper[m
-	[31mmodified:   .Rproj.user/646C9B94/sources/prop/INDEX[m
-	[31mmodified:   base_pop/scripts/DESeq_scripts/Genes_under_peaks.R[m
-	[31mmodified:   base_pop/scripts/GOscripts/GO_deseq.Rmd[m
-	[31mdeleted:    base_pop/scripts/GOscripts/identify_peaks.R[m
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-
-	[31mbase_pop/processed/DESEQ/.csv[m
-	[31mbase_pop/processed/DESEQ/gene_map_table.csv[m
-	[31mbase_pop/scripts/DESeq_scripts/identify_peaks.R[m
-	[31mbase_pop/scripts/GOscripts/CV_Terms.Rmd[m
-	[31mbase_pop/scripts/GOscripts/genes_in_QTL.Rmd[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "genes under QTL"
-[master 2807834] genes under QTL
- 14 files changed, 63352 insertions(+), 45 deletions(-)
- rewrite .Rproj.user/646C9B94/console06/INDEX001 (85%)
- create mode 100644 base_pop/processed/DESEQ/.csv
- create mode 100644 base_pop/processed/DESEQ/gene_map_table.csv
- rename base_pop/scripts/{GOscripts => DESeq_scripts}/identify_peaks.R (100%)
- create mode 100644 base_pop/scripts/GOscripts/CV_Terms.Rmd
- create mode 100644 base_pop/scripts/GOscripts/genes_in_QTL.Rmd
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 26, done.
-Delta compression using up to 8 threads.
-Compressing objects:   4% (1/24)   Compressing objects:   8% (2/24)   Compressing objects:  12% (3/24)   Compressing objects:  16% (4/24)   Compressing objects:  20% (5/24)   Compressing objects:  25% (6/24)   Compressing objects:  29% (7/24)   Compressing objects:  33% (8/24)   Compressing objects:  37% (9/24)   Compressing objects:  41% (10/24)   Compressing objects:  45% (11/24)   Compressing objects:  50% (12/24)   Compressing objects:  54% (13/24)   Compressing objects:  58% (14/24)   Compressing objects:  62% (15/24)   Compressing objects:  66% (16/24)   Compressing objects:  70% (17/24)   Compressing objects:  75% (18/24)   Compressing objects:  79% (19/24)   Compressing objects:  83% (20/24)   Compressing objects:  87% (21/24)   Compressing objects:  91% (22/24)   Compressing objects:  95% (23/24)   Compressing objects: 100% (24/24)   Compressing objects: 100% (24/24), done.
-Writing objects:   3% (1/26)   Writing objects:   7% (2/26)   Writing objects:  11% (3/26)   Writing objects:  15% (4/26)   Writing objects:  19% (5/26)   Writing objects:  23% (6/26)   Writing objects:  26% (7/26)   Writing objects:  30% (8/26)   Writing objects:  34% (9/26)   Writing objects:  38% (10/26)   Writing objects:  42% (11/26)   Writing objects:  46% (12/26)   Writing objects:  50% (13/26)   Writing objects:  53% (14/26)   Writing objects:  57% (15/26)   Writing objects:  61% (16/26)   Writing objects:  65% (17/26)   Writing objects:  69% (18/26)   Writing objects:  73% (19/26)   Writing objects:  76% (20/26)   Writing objects:  80% (21/26)   Writing objects:  84% (22/26)   Writing objects:  88% (23/26)   Writing objects:  92% (24/26)   Writing objects:  96% (25/26)   Writing objects: 100% (26/26)   Writing objects: 100% (26/26), 756.83 KiB | 0 bytes/s, done.
-Total 26 (delta 16), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/16)   [Kremote: Resolving deltas:   6% (1/16)   [Kremote: Resolving deltas:  12% (2/16)   [Kremote: Resolving deltas:  18% (3/16)   [Kremote: Resolving deltas:  25% (4/16)   [Kremote: Resolving deltas:  31% (5/16)   [Kremote: Resolving deltas:  37% (6/16)   [Kremote: Resolving deltas:  43% (7/16)   [Kremote: Resolving deltas:  50% (8/16)   [Kremote: Resolving deltas:  56% (9/16)   [Kremote: Resolving deltas:  62% (10/16)   [Kremote: Resolving deltas:  68% (11/16)   [Kremote: Resolving deltas:  75% (12/16)   [Kremote: Resolving deltas:  81% (13/16)   [Kremote: Resolving deltas:  87% (14/16)   [Kremote: Resolving deltas:  93% (15/16)   [Kremote: Resolving deltas: 100% (16/16)   [Kremote: Resolving deltas: 100% (16/16), completed with 16 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   772cf62..2807834  master -> master
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[31mmodified:   .Rproj.user/646C9B94/console06/INDEX001[m
-	[31mmodified:   .Rproj.user/646C9B94/sources/prop/INDEX[m
-	[31mmodified:   base_pop/scripts/DESeq_scripts/Genes_under_peaks.R[m
-	[31mmodified:   base_pop/scripts/GOscripts/genes_in_QTL.Rmd[m
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-
-	[31mbase_pop/processed/DESEQ/DEG_QTL/iis_table1.txt[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-warning: CRLF will be replaced by LF in base_pop/processed/DESEQ/DEG_QTL/iis_table1.txt.
-The file will have its original line endings in your working directory.
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "code scanning genes un[K[K[K[K[K[K[K[KDEGs under QTL"
-[master e0fa9f9] code scanning DEGs under QTL
- 6 files changed, 89 insertions(+), 2 deletions(-)
- create mode 100644 base_pop/processed/DESEQ/DEG_QTL/iis_table1.txt
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 20, done.
-Delta compression using up to 8 threads.
-Compressing objects:   5% (1/19)   Compressing objects:  10% (2/19)   Compressing objects:  15% (3/19)   Compressing objects:  21% (4/19)   Compressing objects:  26% (5/19)   Compressing objects:  31% (6/19)   Compressing objects:  36% (7/19)   Compressing objects:  42% (8/19)   Compressing objects:  47% (9/19)   Compressing objects:  52% (10/19)   Compressing objects:  57% (11/19)   Compressing objects:  63% (12/19)   Compressing objects:  68% (13/19)   Compressing objects:  73% (14/19)   Compressing objects:  78% (15/19)   Compressing objects:  84% (16/19)   Compressing objects:  89% (17/19)   Compressing objects:  94% (18/19)   Compressing objects: 100% (19/19)   Compressing objects: 100% (19/19), done.
-Writing objects:   5% (1/20)   Writing objects:  10% (2/20)   Writing objects:  15% (3/20)   Writing objects:  20% (4/20)   Writing objects:  25% (5/20)   Writing objects:  30% (6/20)   Writing objects:  35% (7/20)   Writing objects:  40% (8/20)   Writing objects:  45% (9/20)   Writing objects:  50% (10/20)   Writing objects:  55% (11/20)   Writing objects:  60% (12/20)   Writing objects:  65% (13/20)   Writing objects:  70% (14/20)   Writing objects:  75% (15/20)   Writing objects:  80% (16/20)   Writing objects:  85% (17/20)   Writing objects:  90% (18/20)   Writing objects:  95% (19/20)   Writing objects: 100% (20/20)   Writing objects: 100% (20/20), 3.32 KiB | 0 bytes/s, done.
-Total 20 (delta 15), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/15)   [Kremote: Resolving deltas:   6% (1/15)   [Kremote: Resolving deltas:  13% (2/15)   [Kremote: Resolving deltas:  20% (3/15)   [Kremote: Resolving deltas:  26% (4/15)   [Kremote: Resolving deltas:  33% (5/15)   [Kremote: Resolving deltas:  40% (6/15)   [Kremote: Resolving deltas:  46% (7/15)   [Kremote: Resolving deltas:  53% (8/15)   [Kremote: Resolving deltas:  60% (9/15)   [Kremote: Resolving deltas:  66% (10/15)   [Kremote: Resolving deltas:  73% (11/15)   [Kremote: Resolving deltas:  80% (12/15)   [Kremote: Resolving deltas:  86% (13/15)   [Kremote: Resolving deltas:  93% (14/15)   [Kremote: Resolving deltas: 100% (15/15)   [Kremote: Resolving deltas: 100% (15/15), completed with 15 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   2807834..e0fa9f9  master -> master
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "minor"[K change"[K to code"
-[master 34e10af] minor change to code
- 2 files changed, 68 insertions(+), 2 deletions(-)
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 10, done.
-Delta compression using up to 8 threads.
-Compressing objects:  10% (1/10)   Compressing objects:  20% (2/10)   Compressing objects:  30% (3/10)   Compressing objects:  40% (4/10)   Compressing objects:  50% (5/10)   Compressing objects:  60% (6/10)   Compressing objects:  70% (7/10)   Compressing objects:  80% (8/10)   Compressing objects:  90% (9/10)   Compressing objects: 100% (10/10)   Compressing objects: 100% (10/10), done.
-Writing objects:  10% (1/10)   Writing objects:  20% (2/10)   Writing objects:  30% (3/10)   Writing objects:  40% (4/10)   Writing objects:  50% (5/10)   Writing objects:  60% (6/10)   Writing objects:  70% (7/10)   Writing objects:  80% (8/10)   Writing objects:  90% (9/10)   Writing objects: 100% (10/10)   Writing objects: 100% (10/10), 2.46 KiB | 0 bytes/s, done.
-Total 10 (delta 6), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/6)   [Kremote: Resolving deltas:  16% (1/6)   [Kremote: Resolving deltas:  33% (2/6)   [Kremote: Resolving deltas:  50% (3/6)   [Kremote: Resolving deltas:  66% (4/6)   [Kremote: Resolving deltas:  83% (5/6)   [Kremote: Resolving deltas: 100% (6/6)   [Kremote: Resolving deltas: 100% (6/6), completed with 6 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   e0fa9f9..34e10af  master -> master
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Changes to be committed:
-  (use "git reset HEAD <file>..." to unstage)
-
-	[32mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[32mmodified:   .Rproj.user/646C9B94/console06/INDEX001[m
-	[32mmodified:   .Rproj.user/646C9B94/sources/prop/INDEX[m
-	[32mmodified:   base_pop/scripts/DESeq_scripts/genes_in_QTL.Rmd[m
-
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "genes_in_QTL.Rmd update"
-[master 8bf03f5] genes_in_QTL.Rmd update
- 4 files changed, 24 insertions(+), 13 deletions(-)
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 14, done.
-Delta compression using up to 8 threads.
-Compressing objects:   7% (1/13)   Compressing objects:  15% (2/13)   Compressing objects:  23% (3/13)   Compressing objects:  30% (4/13)   Compressing objects:  38% (5/13)   Compressing objects:  46% (6/13)   Compressing objects:  53% (7/13)   Compressing objects:  61% (8/13)   Compressing objects:  69% (9/13)   Compressing objects:  76% (10/13)   Compressing objects:  84% (11/13)   Compressing objects:  92% (12/13)   Compressing objects: 100% (13/13)   Compressing objects: 100% (13/13), done.
-Writing objects:   7% (1/14)   Writing objects:  14% (2/14)   Writing objects:  21% (3/14)   Writing objects:  28% (4/14)   Writing objects:  35% (5/14)   Writing objects:  42% (6/14)   Writing objects:  50% (7/14)   Writing objects:  57% (8/14)   Writing objects:  64% (9/14)   Writing objects:  71% (10/14)   Writing objects:  78% (11/14)   Writing objects:  85% (12/14)   Writing objects:  92% (13/14)   Writing objects: 100% (14/14)   Writing objects: 100% (14/14), 1.31 KiB | 0 bytes/s, done.
-Total 14 (delta 10), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/10)   [Kremote: Resolving deltas:  10% (1/10)   [Kremote: Resolving deltas:  20% (2/10)   [Kremote: Resolving deltas:  30% (3/10)   [Kremote: Resolving deltas:  40% (4/10)   [Kremote: Resolving deltas:  50% (5/10)   [Kremote: Resolving deltas:  60% (6/10)   [Kremote: Resolving deltas:  70% (7/10)   [Kremote: Resolving deltas:  80% (8/10)   [Kremote: Resolving deltas:  90% (9/10)   [Kremote: Resolving deltas: 100% (10/10)   [Kremote: Resolving deltas: 100% (10/10), completed with 10 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   bb0006b..8bf03f5  master -> master
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[31mmodified:   .Rproj.user/646C9B94/console06/INDEX001[m
-	[31mmodified:   base_pop/scripts/DESeq_scripts/genes_in_QTL.Rmd[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "minor change to code"
-[master 0ac33e2] minor change to code
- 3 files changed, 80 insertions(+), 5 deletions(-)
- rewrite .Rproj.user/646C9B94/console06/INDEX001 (72%)
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-fatal: unable to access 'https://github.com/nochet/BasePop_RNAseq.git/': Could not resolve host: github.com
-]0;~/MyGithub/BasePop_RNAseq[?1034hBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is ahead of 'origin/master' by 1 commit.
-  (use "git push" to publish your local commits)
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[31mmodified:   .Rproj.user/646C9B94/console06/INDEX001[m
-	[31mmodified:   .Rproj.user/646C9B94/pcs/source-pane.pper[m
-	[31mmodified:   .Rproj.user/646C9B94/pcs/windowlayoutstate.pper[m
-	[31mmodified:   .Rproj.user/646C9B94/pcs/workbench-pane.pper[m
-	[31mmodified:   base_pop/scripts/DESeq_scripts/Genes_under_peaks.R[m
-	[31mmodified:   base_pop/scripts/DESeq_scripts/genes_in_QTL.Rmd[m
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-
-	[31mbase_pop/processed/DESEQ/DEG_QTL/gene_map_table.csv[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "updated code"
-[master 7e7b5b5] updated code
- 8 files changed, 31588 insertions(+), 11 deletions(-)
- create mode 100644 base_pop/processed/DESEQ/DEG_QTL/gene_map_table.csv
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 30, done.
-Delta compression using up to 8 threads.
-Compressing objects:   3% (1/29)   Compressing objects:   6% (2/29)   Compressing objects:  10% (3/29)   Compressing objects:  13% (4/29)   Compressing objects:  17% (5/29)   Compressing objects:  20% (6/29)   Compressing objects:  24% (7/29)   Compressing objects:  27% (8/29)   Compressing objects:  31% (9/29)   Compressing objects:  34% (10/29)   Compressing objects:  37% (11/29)   Compressing objects:  41% (12/29)   Compressing objects:  44% (13/29)   Compressing objects:  48% (14/29)   Compressing objects:  51% (15/29)   Compressing objects:  55% (16/29)   Compressing objects:  58% (17/29)   Compressing objects:  62% (18/29)   Compressing objects:  65% (19/29)   Compressing objects:  68% (20/29)   Compressing objects:  72% (21/29)   Compressing objects:  75% (22/29)   Compressing objects:  79% (23/29)   Compressing objects:  82% (24/29)   Compressing objects:  86% (25/29)   Compressing objects:  89% (26/29)   Compressing objects:  93% (27/29)   Compressing objects:  96% (28/29)   Compressing objects: 100% (29/29)   Compressing objects: 100% (29/29), done.
-Writing objects:   3% (1/30)   Writing objects:   6% (2/30)   Writing objects:  10% (3/30)   Writing objects:  13% (4/30)   Writing objects:  16% (5/30)   Writing objects:  20% (6/30)   Writing objects:  23% (7/30)   Writing objects:  26% (8/30)   Writing objects:  30% (9/30)   Writing objects:  33% (10/30)   Writing objects:  36% (11/30)   Writing objects:  40% (12/30)   Writing objects:  43% (13/30)   Writing objects:  46% (14/30)   Writing objects:  50% (15/30)   Writing objects:  53% (16/30)   Writing objects:  56% (17/30)   Writing objects:  60% (18/30)   Writing objects:  63% (19/30)   Writing objects:  66% (20/30)   Writing objects:  70% (21/30)   Writing objects:  73% (22/30)   Writing objects:  76% (23/30)   Writing objects:  80% (24/30)   Writing objects:  83% (25/30)   Writing objects:  86% (26/30)   Writing objects:  90% (27/30)   Writing objects:  93% (28/30)   Writing objects:  96% (29/30)   Writing objects: 100% (30/30)   Writing objects: 100% (30/30), 3.37 KiB | 0 bytes/s, done.
-Total 30 (delta 21), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/21)   [Kremote: Resolving deltas:   9% (2/21)   [Kremote: Resolving deltas:  19% (4/21)   [Kremote: Resolving deltas:  28% (6/21)   [Kremote: Resolving deltas:  38% (8/21)   [Kremote: Resolving deltas:  42% (9/21)   [Kremote: Resolving deltas:  52% (11/21)   [Kremote: Resolving deltas:  57% (12/21)   [Kremote: Resolving deltas:  61% (13/21)   [Kremote: Resolving deltas:  66% (14/21)   [Kremote: Resolving deltas:  76% (16/21)   [Kremote: Resolving deltas:  85% (18/21)   [Kremote: Resolving deltas:  90% (19/21)   [Kremote: Resolving deltas: 100% (21/21)   [Kremote: Resolving deltas: 100% (21/21), completed with 13 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   8bf03f5..7e7b5b5  master -> master
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954.env[m
-	[31mmodified:   projectNotes.md[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "ProjectNotes updated". updated"m updated"d updated"
-[master 0e34fd9] ProjectNotes.md updated
- 3 files changed, 37 insertions(+), 1 deletion(-)
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 8, done.
-Delta compression using up to 8 threads.
-Compressing objects:  12% (1/8)   Compressing objects:  25% (2/8)   Compressing objects:  37% (3/8)   Compressing objects:  50% (4/8)   Compressing objects:  62% (5/8)   Compressing objects:  75% (6/8)   Compressing objects:  87% (7/8)   Compressing objects: 100% (8/8)   Compressing objects: 100% (8/8), done.
-Writing objects:  12% (1/8)   Writing objects:  25% (2/8)   Writing objects:  37% (3/8)   Writing objects:  50% (4/8)   Writing objects:  62% (5/8)   Writing objects:  75% (6/8)   Writing objects:  87% (7/8)   Writing objects: 100% (8/8)   Writing objects: 100% (8/8), 1.59 KiB | 0 bytes/s, done.
-Total 8 (delta 5), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/5)   [Kremote: Resolving deltas:  20% (1/5)   [Kremote: Resolving deltas:  40% (2/5)   [Kremote: Resolving deltas:  60% (3/5)   [Kremote: Resolving deltas:  80% (4/5)   [Kremote: Resolving deltas: 100% (5/5)   [Kremote: Resolving deltas: 100% (5/5), completed with 5 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   7e7b5b5..0e34fd9  master -> master
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[31mmodified:   base_pop/scripts/DESeq_scripts/genes_in_QTL.Rmd[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -m[KA
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit "List of DEGs inder QTL peaks"
-error: pathspec 'List of DEGs inder QTL peaks' did not match any file(s) known to git.
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Everything up-to-date
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git pushcommit "List of DEGs inder QTL peaks"[1@-[1@m[1@ 
-[master 0c7d58b] List of DEGs inder QTL peaks
- 2 files changed, 35 insertions(+), 4 deletions(-)
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 10, done.
-Delta compression using up to 8 threads.
-Compressing objects:  10% (1/10)   Compressing objects:  20% (2/10)   Compressing objects:  30% (3/10)   Compressing objects:  40% (4/10)   Compressing objects:  50% (5/10)   Compressing objects:  60% (6/10)   Compressing objects:  70% (7/10)   Compressing objects:  80% (8/10)   Compressing objects:  90% (9/10)   Compressing objects: 100% (10/10)   Compressing objects: 100% (10/10), done.
-Writing objects:  10% (1/10)   Writing objects:  20% (2/10)   Writing objects:  30% (3/10)   Writing objects:  40% (4/10)   Writing objects:  50% (5/10)   Writing objects:  60% (6/10)   Writing objects:  70% (7/10)   Writing objects:  80% (8/10)   Writing objects:  90% (9/10)   Writing objects: 100% (10/10)   Writing objects: 100% (10/10), 1.33 KiB | 0 bytes/s, done.
-Total 10 (delta 7), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/7)   [Kremote: Resolving deltas:  14% (1/7)   [Kremote: Resolving deltas:  28% (2/7)   [Kremote: Resolving deltas:  42% (3/7)   [Kremote: Resolving deltas:  57% (4/7)   [Kremote: Resolving deltas:  71% (5/7)   [Kremote: Resolving deltas:  85% (6/7)   [Kremote: Resolving deltas: 100% (7/7)   [Kremote: Resolving deltas: 100% (7/7), completed with 7 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   0e34fd9..0c7d58b  master -> master
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "minor"
-[master 5cb852f] minor
- 3 files changed, 24 insertions(+), 4 deletions(-)
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 11, done.
-Delta compression using up to 8 threads.
-Compressing objects:   9% (1/11)   Compressing objects:  18% (2/11)   Compressing objects:  27% (3/11)   Compressing objects:  36% (4/11)   Compressing objects:  45% (5/11)   Compressing objects:  54% (6/11)   Compressing objects:  63% (7/11)   Compressing objects:  72% (8/11)   Compressing objects:  81% (9/11)   Compressing objects:  90% (10/11)   Compressing objects: 100% (11/11)   Compressing objects: 100% (11/11), done.
-Writing objects:   9% (1/11)   Writing objects:  18% (2/11)   Writing objects:  27% (3/11)   Writing objects:  36% (4/11)   Writing objects:  45% (5/11)   Writing objects:  54% (6/11)   Writing objects:  63% (7/11)   Writing objects:  72% (8/11)   Writing objects:  81% (9/11)   Writing objects:  90% (10/11)   Writing objects: 100% (11/11)   Writing objects: 100% (11/11), 1.24 KiB | 0 bytes/s, done.
-Total 11 (delta 8), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/8)   [Kremote: Resolving deltas:  12% (1/8)   [Kremote: Resolving deltas:  25% (2/8)   [Kremote: Resolving deltas:  37% (3/8)   [Kremote: Resolving deltas:  50% (4/8)   [Kremote: Resolving deltas:  62% (5/8)   [Kremote: Resolving deltas:  75% (6/8)   [Kremote: Resolving deltas:  87% (7/8)   [Kremote: Resolving deltas: 100% (8/8)   [Kremote: Resolving deltas: 100% (8/8), completed with 8 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   0c7d58b..5cb852f  master -> master
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "ProjNotes and DESeq script split into 3" [A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[K"
-[master 204e531] ProjNotes and DESeq script split into 3
- 8 files changed, 249 insertions(+), 917 deletions(-)
- copy base_pop/scripts/DESeq_scripts/{prep_DESeq.Rmd => BaseP_DESeq.Rmd} (73%)
- create mode 100644 base_pop/scripts/DESeq_scripts/BaseP_DESeq_Visuals.Rmd
- rewrite base_pop/scripts/DESeq_scripts/prep_DESeq.Rmd (89%)
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 18, done.
-Delta compression using up to 8 threads.
-Compressing objects:   5% (1/17)   Compressing objects:  11% (2/17)   Compressing objects:  17% (3/17)   Compressing objects:  23% (4/17)   Compressing objects:  29% (5/17)   Compressing objects:  35% (6/17)   Compressing objects:  41% (7/17)   Compressing objects:  47% (8/17)   Compressing objects:  52% (9/17)   Compressing objects:  58% (10/17)   Compressing objects:  64% (11/17)   Compressing objects:  70% (12/17)   Compressing objects:  76% (13/17)   Compressing objects:  82% (14/17)   Compressing objects:  88% (15/17)   Compressing objects:  94% (16/17)   Compressing objects: 100% (17/17)   Compressing objects: 100% (17/17), done.
-Writing objects:   5% (1/18)   Writing objects:  11% (2/18)   Writing objects:  16% (3/18)   Writing objects:  22% (4/18)   Writing objects:  27% (5/18)   Writing objects:  33% (6/18)   Writing objects:  38% (7/18)   Writing objects:  44% (8/18)   Writing objects:  50% (9/18)   Writing objects:  55% (10/18)   Writing objects:  61% (11/18)   Writing objects:  66% (12/18)   Writing objects:  72% (13/18)   Writing objects:  77% (14/18)   Writing objects:  83% (15/18)   Writing objects:  88% (16/18)   Writing objects:  94% (17/18)   Writing objects: 100% (18/18)   Writing objects: 100% (18/18), 3.52 KiB | 0 bytes/s, done.
-Total 18 (delta 13), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/13)   [Kremote: Resolving deltas:   7% (1/13)   [Kremote: Resolving deltas:  15% (2/13)   [Kremote: Resolving deltas:  23% (3/13)   [Kremote: Resolving deltas:  30% (4/13)   [Kremote: Resolving deltas:  38% (5/13)   [Kremote: Resolving deltas:  46% (6/13)   [Kremote: Resolving deltas:  53% (7/13)   [Kremote: Resolving deltas:  61% (8/13)   [Kremote: Resolving deltas:  69% (9/13)   [Kremote: Resolving deltas:  84% (11/13)   [Kremote: Resolving deltas:  92% (12/13)   [Kremote: Resolving deltas: 100% (13/13)   [Kremote: Resolving deltas: 100% (13/13), completed with 12 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   5cb852f..204e531  master -> master
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is ahead of 'origin/master' by 1 commit.
-  (use "git push" to publish your local commits)
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[31mmodified:   .Rproj.user/646C9B94/console06/INDEX001[m
-	[31mmodified:   base_pop/scripts/DESeq_scripts/genes_in_QTL.Rmd[m
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-
-	[31mbase_pop/processed/DESEQ/DEG_QTL/iisprobe_gene_CG_decoder.csv[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-warning: CRLF will be replaced by LF in base_pop/processed/DESEQ/DEG_QTL/iisprobe_gene_CG_decoder.csv.
-The file will have its original line endings in your working directory.
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "IIS/TOR Stanley et al 2017 check" [A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[K"
-[master d5177f8] IIS/TOR Stanley et al 2017 check
- 5 files changed, 152 insertions(+), 248 deletions(-)
- rewrite .Rproj.user/646C9B94/console06/INDEX001 (85%)
- create mode 100644 base_pop/processed/DESEQ/DEG_QTL/iisprobe_gene_CG_decoder.csv
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 16, done.
-Delta compression using up to 8 threads.
-Compressing objects:   6% (1/16)   Compressing objects:  12% (2/16)   Compressing objects:  18% (3/16)   Compressing objects:  25% (4/16)   Compressing objects:  31% (5/16)   Compressing objects:  37% (6/16)   Compressing objects:  43% (7/16)   Compressing objects:  50% (8/16)   Compressing objects:  56% (9/16)   Compressing objects:  62% (10/16)   Compressing objects:  68% (11/16)   Compressing objects:  75% (12/16)   Compressing objects:  81% (13/16)   Compressing objects:  87% (14/16)   Compressing objects:  93% (15/16)   Compressing objects: 100% (16/16)   Compressing objects: 100% (16/16), done.
-Writing objects:   6% (1/16)   Writing objects:  12% (2/16)   Writing objects:  18% (3/16)   Writing objects:  25% (4/16)   Writing objects:  31% (5/16)   Writing objects:  37% (6/16)   Writing objects:  43% (7/16)   Writing objects:  50% (8/16)   Writing objects:  56% (9/16)   Writing objects:  62% (10/16)   Writing objects:  68% (11/16)   Writing objects:  75% (12/16)   Writing objects:  81% (13/16)   Writing objects:  87% (14/16)   Writing objects:  93% (15/16)   Writing objects: 100% (16/16)   Writing objects: 100% (16/16), 2.73 KiB | 0 bytes/s, done.
-Total 16 (delta 12), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/12)   [Kremote: Resolving deltas:   8% (1/12)   [Kremote: Resolving deltas:  16% (2/12)   [Kremote: Resolving deltas:  25% (3/12)   [Kremote: Resolving deltas:  33% (4/12)   [Kremote: Resolving deltas:  41% (5/12)   [Kremote: Resolving deltas:  50% (6/12)   [Kremote: Resolving deltas:  58% (7/12)   [Kremote: Resolving deltas:  66% (8/12)   [Kremote: Resolving deltas:  75% (9/12)   [Kremote: Resolving deltas:  83% (10/12)   [Kremote: Resolving deltas:  91% (11/12)   [Kremote: Resolving deltas: 100% (12/12)   [Kremote: Resolving deltas: 100% (12/12), completed with 12 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   7c17085..d5177f8  master -> master
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Changes not staged for commit:
-  (use "git add/rm <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[31mmodified:   .Rproj.user/646C9B94/console06/INDEX001[m
-	[31mmodified:   FlyBase_Lists/CV_aging.csv[m
-	[31mdeleted:    base_pop/processed/DESEQ/DEG_QTL/iisprobe_gene_CG_decoder.csv[m
-	[31mmodified:   base_pop/scripts/DESeq_scripts/genes_in_QTL.Rmd[m
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-
-	[31mFlyBase_Lists/CV_terms.csv[m
-	[31mbase_pop/processed/DESEQ/CV_terms.csv[m
-	[31mbase_pop/processed/DESEQ/iisprobe_gene_CG_decoder.csv[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-warning: CRLF will be replaced by LF in FlyBase_Lists/CV_aging.csv.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in FlyBase_Lists/CV_terms.csv.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in base_pop/processed/DESEQ/CV_terms.csv.
-The file will have its original line endings in your working directory.
-warning: CRLF will be replaced by LF in base_pop/processed/DESEQ/iisprobe_gene_CG_decoder.csv.
-The file will have its original line endings in your working directory.
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "CV term analysis of DEGs"
-[master bf5a6c2] CV term analysis of DEGs
- 7 files changed, 2627 insertions(+), 184 deletions(-)
- rewrite .Rproj.user/646C9B94/console06/INDEX001 (72%)
- rewrite FlyBase_Lists/CV_aging.csv (99%)
- create mode 100644 FlyBase_Lists/CV_terms.csv
- create mode 100644 base_pop/processed/DESEQ/CV_terms.csv
- rename base_pop/processed/DESEQ/{DEG_QTL => }/iisprobe_gene_CG_decoder.csv (100%)
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git pusk[Kh
-Counting objects: 18, done.
-Delta compression using up to 8 threads.
-Compressing objects:   5% (1/18)   Compressing objects:  11% (2/18)   Compressing objects:  16% (3/18)   Compressing objects:  22% (4/18)   Compressing objects:  27% (5/18)   Compressing objects:  33% (6/18)   Compressing objects:  38% (7/18)   Compressing objects:  44% (8/18)   Compressing objects:  50% (9/18)   Compressing objects:  55% (10/18)   Compressing objects:  61% (11/18)   Compressing objects:  66% (12/18)   Compressing objects:  72% (13/18)   Compressing objects:  77% (14/18)   Compressing objects:  83% (15/18)   Compressing objects:  88% (16/18)   Compressing objects:  94% (17/18)   Compressing objects: 100% (18/18)   Compressing objects: 100% (18/18), done.
-Writing objects:   5% (1/18)   Writing objects:  11% (2/18)   Writing objects:  16% (3/18)   Writing objects:  22% (4/18)   Writing objects:  27% (5/18)   Writing objects:  33% (6/18)   Writing objects:  38% (7/18)   Writing objects:  44% (8/18)   Writing objects:  50% (9/18)   Writing objects:  55% (10/18)   Writing objects:  61% (11/18)   Writing objects:  66% (12/18)   Writing objects:  72% (13/18)   Writing objects:  77% (14/18)   Writing objects:  83% (15/18)   Writing objects:  88% (16/18)   Writing objects:  94% (17/18)   Writing objects: 100% (18/18)   Writing objects: 100% (18/18), 7.12 KiB | 0 bytes/s, done.
-Total 18 (delta 13), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/13)   [Kremote: Resolving deltas:   7% (1/13)   [Kremote: Resolving deltas:  15% (2/13)   [Kremote: Resolving deltas:  23% (3/13)   [Kremote: Resolving deltas:  30% (4/13)   [Kremote: Resolving deltas:  38% (5/13)   [Kremote: Resolving deltas:  46% (6/13)   [Kremote: Resolving deltas:  53% (7/13)   [Kremote: Resolving deltas:  61% (8/13)   [Kremote: Resolving deltas:  69% (9/13)   [Kremote: Resolving deltas:  76% (10/13)   [Kremote: Resolving deltas:  84% (11/13)   [Kremote: Resolving deltas:  92% (12/13)   [Kremote: Resolving deltas: 100% (13/13)   [Kremote: Resolving deltas: 100% (13/13), completed with 12 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   d5177f8..bf5a6c2  master -> master
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	[31mmodified:   .Rproj.user/646C9B94/console06/125AB954[m
-	[31mmodified:   base_pop/scripts/DESeq_scripts/genes_in_QTL.Rmd[m
-	[31mmodified:   base_pop/scripts/GOscripts/CV_Terms.Rmd[m
-
-no changes added to commit (use "git add" and/or "git commit -a")
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git add -A
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git commit -m "moved CV code from genes_in_QTL.Rmd to CV_Terms.Rmd"
-[master 19fbb67] moved CV code from genes_in_QTL.Rmd to CV_Terms.Rmd
- 3 files changed, 132 insertions(+), 162 deletions(-)
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git push
-Counting objects: 12, done.
-Delta compression using up to 8 threads.
-Compressing objects:   8% (1/12)   Compressing objects:  16% (2/12)   Compressing objects:  25% (3/12)   Compressing objects:  33% (4/12)   Compressing objects:  41% (5/12)   Compressing objects:  50% (6/12)   Compressing objects:  58% (7/12)   Compressing objects:  66% (8/12)   Compressing objects:  75% (9/12)   Compressing objects:  83% (10/12)   Compressing objects:  91% (11/12)   Compressing objects: 100% (12/12)   Compressing objects: 100% (12/12), done.
-Writing objects:   8% (1/12)   Writing objects:  16% (2/12)   Writing objects:  25% (3/12)   Writing objects:  33% (4/12)   Writing objects:  41% (5/12)   Writing objects:  50% (6/12)   Writing objects:  58% (7/12)   Writing objects:  66% (8/12)   Writing objects:  75% (9/12)   Writing objects:  83% (10/12)   Writing objects:  91% (11/12)   Writing objects: 100% (12/12)   Writing objects: 100% (12/12), 3.08 KiB | 0 bytes/s, done.
-Total 12 (delta 7), reused 0 (delta 0)
-remote: Resolving deltas:   0% (0/7)   [Kremote: Resolving deltas:  14% (1/7)   [Kremote: Resolving deltas:  28% (2/7)   [Kremote: Resolving deltas:  42% (3/7)   [Kremote: Resolving deltas:  57% (4/7)   [Kremote: Resolving deltas:  71% (5/7)   [Kremote: Resolving deltas:  85% (6/7)   [Kremote: Resolving deltas: 100% (7/7)   [Kremote: Resolving deltas: 100% (7/7), completed with 7 local objects.[K
-To https://github.com/nochet/BasePop_RNAseq.git
-   bf5a6c2..19fbb67  master -> master
-]0;~/MyGithub/BasePop_RNAseqBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git pull
-Already up-to-date.
-]0;~/MyGithub/BasePop_RNAseq[?1034hBio-KingLab-MBP1:BasePop_RNAseq ngomae$ [KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ git pull
-remote: Enumerating objects: 11, done.[K
-remote: Counting objects:   9% (1/11)   [Kremote: Counting objects:  18% (2/11)   [Kremote: Counting objects:  27% (3/11)   [Kremote: Counting objects:  36% (4/11)   [Kremote: Counting objects:  45% (5/11)   [Kremote: Counting objects:  54% (6/11)   [Kremote: Counting objects:  63% (7/11)   [Kremote: Counting objects:  72% (8/11)   [Kremote: Counting objects:  81% (9/11)   [Kremote: Counting objects:  90% (10/11)   [Kremote: Counting objects: 100% (11/11)   [Kremote: Counting objects: 100% (11/11), done.[K
-remote: Compressing objects: 100% (1/1)   [Kremote: Compressing objects: 100% (1/1), done.[K
-remote: Total 6 (delta 5), reused 6 (delta 5), pack-reused 0[K
-Unpacking objects:  16% (1/6)   Unpacking objects:  33% (2/6)   Unpacking objects:  50% (3/6)   Unpacking objects:  66% (4/6)   Unpacking objects:  83% (5/6)   Unpacking objects: 100% (6/6)   Unpacking objects: 100% (6/6), done.
-From https://github.com/nochet/BasePop_RNAseq
-   19fbb67..6d330e7  master     -> origin/master
-Updating 19fbb67..6d330e7
-Fast-forward
- base_pop/scripts/DESeq_scripts/genes_in_QTL.Rmd | 180 [32m+++++++++++[m[31m---------[m
- 1 file changed, 102 insertions(+), 78 deletions(-)
-[KBio-KingLab-MBP1:BasePop_RNAseq ngomae$ cd base_pop/processed/
-]0;~/MyGithub/BasePop_RNAseq/base_pop/processedBio-KingLab-MBP1:processed ngomae$ ls
-DESEQ				describe_samples.csv		gene_count_matrix_pl3c.csv
-GO_interaction.xlsx		describe_samplesDE.csv		gene_map_table_fb_2018_04.tsv
-Old-gene_count_matrix.csv	describe_samplesDEpl.csv	gtf_list.txt
-Old-transcript_count_matrix.csv	describe_samples_batch.csv	perl_postPrep_S04
-S03_short_ballG			describe_samples_pl.csv		phenotypes.csv
-automated_gene_summaries.tsv	gene_association.fb		results
-ballG				gene_count_matrix_pl.csv	transcript_count_matrix_pl.csv
-]0;~/MyGithub/BasePop_RNAseq/base_pop/processedBio-KingLab-MBP1:processed ngomae$ rsync -ahvrP automated_gene_summaries.tsv engoma@nivalis.biology.misso uri.edu:/MyGithum[Kb/BasePop_RNAseq/base_pop/processed
-engoma@nivalis.biology.missouri.edu's password: 
-building file list ... 
- 0 files...1 file to consider
-rsync: connection unexpectedly closed (8 bytes received so far) [sender]
-rsync error: error in rsync protocol data stream (code 12) at /BuildRoot/Library/Caches/com.apple.xbs/Sources/rsync/rsync-52.200.1/rsync/io.c(453) [sender=2.6.9]
-]0;~/MyGithub/BasePop_RNAseq/base_pop/processedBio-KingLab-MBP1:processed ngomae$ rsync -ahvrP automated_gene_summaries.tsv engoma@nivalis.biology.missouuri.edu:/MyGithub/BasePop_RNAseq/base_pop/processed~/MyGithub/BasePop_RNAseq/base_pop/processed[C[C[C[C[C[C[C[C[C
-engoma@nivalis.biology.missouri.edu's password: 
-building file list ... 
- 0 files...1 file to consider
-automated_gene_summaries.tsv
-      32.77K   0%    0.00kB/s    0:00:00      21.14M  16%   20.12MB/s    0:00:05      39.68M  30%   18.92MB/s    0:00:04      59.21M  45%   18.72MB/s    0:00:03      78.09M  59%   18.54MB/s    0:00:02      98.27M  74%   18.29MB/s    0:00:01     112.03M  85%   17.16MB/s    0:00:01     126.65M  96%   16.06MB/s    0:00:00     131.25M 100%   17.15MB/s    0:00:07 (xfer#1, to-check=0/1)
-
-sent 131.27M bytes  received 42 bytes  8.47M bytes/sec
-total size is 131.25M  speedup is 1.00
-]0;~/MyGithub/BasePop_RNAseq/base_pop/processedBio-KingLab-MBP1:processed ngomae$ 
