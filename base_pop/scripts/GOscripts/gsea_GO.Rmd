@@ -1,0 +1,139 @@
+---
+title: "Gene set analysis"
+author: "Enoch Ng'oma"
+date: "12/20/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(DESeq2)
+library(tidyverse)
+library(gage)
+library(pathview)
+library(AnnotationDbi)
+
+#library(help="gage")
+#library(EGSEA)
+#library(limma)
+```
+
+# Expression matrix
+
+```{r}
+countdata <- read.csv("../../processed/DESEQ/Expr_countData.csv")
+rownames(countdata) <- countdata[,1]
+countdata[,1] <- NULL
+countdata <- as.matrix(countdata)
+
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+rownames(phenDat.sva) <- phenDat.sva[,1]
+phenDat.sva[,1] <- NULL
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
+phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, sep="")
+```
+
+## Get DEseq object
+
+```{r}
+# dds <- DESeqDataSetFromMatrix(countData = countdata, 
+#                                    colData = phenDat.sva, 
+#                                    design = ~ SV1 + batch + treat_tissue)
+# dds <- estimateSizeFactors(dds)
+# nc <- counts(dds, normalized=TRUE)
+# filter <- rowSums(nc >= 10) >= 2
+# #dds <- dds[filter,]
+# dds <- estimateDispersions(dds, fitType = "local")
+# dds <- nbinomWaldTest(dds, maxit = 1000, useOptim = TRUE)
+
+# dds.01 <- DESeqDataSetFromMatrix(countData = countdata, 
+#                                    colData = phenDat.sva, 
+#                                    design = ~ SV1 + batch + tissue + treatment)
+# lrt.treatment <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + tissue)
+# lrt.treatAll <- results(lrt.treatment)
+
+# save(lrt.treatment, file="../../processed/DESEQ/GO/lrt.treatment.Rda")
+
+load("../../processed/DESEQ/GO/lrt.treatment.Rda")
+
+lrt.treatment
+summary(lrt.treatAll)
+resultsNames(lrt.treatment)
+lrt.treatAll <- results(lrt.treatment)
+lrt.treatAll = lrt.treatAll[order(lrt.treatAll$padj),]
+
+#load("../../processed/DESEQ/dds_deseq01.Rda")
+#load("../../processed/DESEQ/dds_deseq.02.Rda")
+```
+
+# DESeq2-GAGE workflow
+# need libraries: gage, pathview and org.Dm.eg.db
+
+```{r}
+# Get Dmel gene annotation database
+# How?: http://www.gettinggeneticsdone.com/2015/12/tutorial-rna-seq-differential.html
+
+#library(pathview)
+data(bods)
+print(bods)
+
+# InstallBioconductor package "org.Dm.eg.db"
+library(org.Dm.eg.db)
+columns(org.Dm.eg.db)
+
+# Add annotation maps to results object
+
+# gene symbol
+lrt.treatAll$symbol = mapIds(org.Dm.eg.db,
+                     keys=row.names(lrt.treatAll), 
+                     column="SYMBOL",
+                     keytype="FLYBASE",
+                     multiVals="first")
+
+# entrez id
+lrt.treatAll$entrez = mapIds(org.Dm.eg.db,
+                     keys=row.names(lrt.treatAll), 
+                     column="ENTREZID",
+                     keytype="FLYBASE",
+                     multiVals="first")
+
+# full gene name
+lrt.treatAll$name =   mapIds(org.Dm.eg.db,
+                     keys=row.names(lrt.treatAll), 
+                     column="GENENAME",
+                     keytype="FLYBASE",
+                     multiVals="first")
+
+head(lrt.treatAll, 10)
+```
+
+# Pathway anaylsis with GAGE
+# Aim: enriched pathways
+
+```{r}
+library(gageData)
+library(help="gageData")
+
+data(go.sets.hs)
+data(go.subs.hs)
+gobpsets = go.sets.hs[go.subs.hs$BP]
+
+gobpres = gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
+
+lapply(gobpres, head)
+
+# Get pre-built set for Dmel from http://www.go2msig.org/cgi-bin/prebuilt.cgi
+gsets=readList("../../processed/DESEQ/GO/Drosophila_melanogaster_GSEA_GO_sets_all_symbols_highquality_April_2015.gmt")
+gsets[1:3]
+```
+
+```{r}
+gsets=readList("../../processed/DESEQ/GO/GeneSets_Dmel.gmt")
+gsets[1:3]
+
+# Convert gsets gene symbols to Entrez IDs
+data(egSymb)
+gsets.sym <- lapply(gsets, sym2eg)
+gsets.sym[1:3] # few associations - see Powell (2014)
+```
