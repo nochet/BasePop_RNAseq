@@ -115,6 +115,22 @@ head(lrt.treatAll, 10)
 library(gageData)
 library(help="gageData")
 
+# Generate up-to-date KEGG pathway gene sets 
+kegg_sets <- kegg.gsets(species = "dme", id.type = "kegg", check.new=FALSE)
+kegg_sets = kegg_sets[sigmet.idx]
+head(kegg_sets, 3)
+
+data(kegg_sets)
+data(sigmet.idx.hs)
+
+
+# Generate up-to-date GO (Gene Ontology) gene sets
+go_sets <- go.gsets(species = "Fly", 
+                    pkg.name="org.Dm.eg.db", 
+                    id.type = "eg", 
+                    keep.evidence=FALSE)
+
+
 data(go.sets.hs)
 data(go.subs.hs)
 gobpsets = go.sets.hs[go.subs.hs$BP]
