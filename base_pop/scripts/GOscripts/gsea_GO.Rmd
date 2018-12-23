@@ -34,7 +34,7 @@ phenDat.sva$batch <- as.factor(phenDat.sva$batch)
 phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, sep="")
 ```
 
-## Get DEseq object
+# Get DEseq object
 
 ```{r}
 # dds <- DESeqDataSetFromMatrix(countData = countdata, 
@@ -57,6 +57,7 @@ phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, 
 
 load("../../processed/DESEQ/GO/lrt.treatment.Rda")
 
+lrt.treatAll <- results(lrt.treatment)
 lrt.treatment
 summary(lrt.treatAll)
 resultsNames(lrt.treatment)
@@ -69,10 +70,10 @@ lrt.treatAll = lrt.treatAll[order(lrt.treatAll$padj),]
 
 # DESeq2-GAGE workflow
 # need libraries: gage, pathview and org.Dm.eg.db
+# Used this tutorial together with all 3 vignettes: http://www.gettinggeneticsdone.com/2015/12/tutorial-rna-seq-differential.html
 
 ```{r}
 # Get Dmel gene annotation database
-# How?: http://www.gettinggeneticsdone.com/2015/12/tutorial-rna-seq-differential.html
 
 #library(pathview)
 data(bods)
@@ -106,6 +107,7 @@ lrt.treatAll$name =   mapIds(org.Dm.eg.db,
                      multiVals="first")
 
 head(lrt.treatAll, 10)
+head(lrt.treatAll$symbol)
 ```
 
 # Pathway anaylsis with GAGE
@@ -113,43 +115,105 @@ head(lrt.treatAll, 10)
 
 ```{r}
 library(gageData)
-library(help="gageData")
+#library(help="gageData")
 
 # Generate up-to-date KEGG pathway gene sets 
-kegg_sets <- kegg.gsets(species = "dme", id.type = "kegg", check.new=FALSE)
-kegg_sets = kegg_sets[sigmet.idx]
-head(kegg_sets, 3)
+kegg_sets <- kegg.gsets(species = "dme", id.type = "entrez", check.new=FALSE)
 
-data(kegg_sets)
-data(sigmet.idx.hs)
+# check that expr data and gene sets both use entrez
+lapply(kegg_sets[1:3],head)
+head(kegg_sets[[1]])
 
+kegg_sets.dm = kegg_sets$kg.sets[kegg_sets$sigmet.idx]
+head(kegg_sets.dm, 3)
 
+#kegg.sets.dm = id.map.fb[kegg.sets$sigmet.idx]
+
+# gage() needs vector of fold changes named with Entrez gene IDs
+foldchanges = lrt.treatAll$log2FoldChange
+names(foldchanges) = lrt.treatAll$entrez
+head(foldchanges)
+
+# Get the results
+keggres = gage(foldchanges, gsets=kegg_sets.dm, same.dir=TRUE)
+
+# Look at both up (greater), down (less), and statatistics.
+lapply(keggres, head)
+
+# Get top 5 upregulated pathways
+keggrespathways = data.frame(id=rownames(keggres$greater), keggres$greater) %>% 
+  tbl_df() %>% 
+  filter(row_number()<=5) %>% 
+  .$id %>% 
+  as.character()
+keggrespathways
+
+# Get the IDs (using substr())
+keggresids = substr(keggrespathways, start=1, stop=8)
+keggresids
+
+# Make pathway plots with pathview()
+# Define plotting function to loop through all 5 pathways
+plot_pathway = function(pid) pathview(gene.data=foldchanges, pathway.id=pid, species="dme", new.signature=FALSE)
+
+# Plot multiple pathways (plots saved to disk and returns a throwaway list object)
+tmp = sapply(keggresids, function(pid) pathview(gene.data=foldchanges, pathway.id=pid, species="dme"))
+```
+
+# Construct map between FlyBase ID and Entrez Gene ID
+# See "Gene set and data preparation", for ID conversion
+
+```{r}
+#id.map.fb <- id2eg(ids = lrt.treatAll$symbol, 
+#                   category = "SYMBOL", org = "Dm")
+
+# Map data onto Entrez Gene IDs 
+# note different sum.method can be used
+#entrez.data <- mol.sum(mol.data = lrt.treatAll$symbol, 
+#                       id.map = id.map.fb,
+#                       sum.method = "mean")
+#lapply(entrez.data[1:3],head)
+```
+
+# Gene Ontology (GO)
+
+```{r}
 # Generate up-to-date GO (Gene Ontology) gene sets
 go_sets <- go.gsets(species = "Fly", 
                     pkg.name="org.Dm.eg.db", 
                     id.type = "eg", 
                     keep.evidence=FALSE)
 
-
-data(go.sets.hs)
-data(go.subs.hs)
-gobpsets = go.sets.hs[go.subs.hs$BP]
-
+# Do GO on BP only (i.e. see ...$go.subs)
+gobpsets = go_sets$go.sets[go_sets$go.subs$BP]
 gobpres = gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
-
 lapply(gobpres, head)
 
-# Get pre-built set for Dmel from http://www.go2msig.org/cgi-bin/prebuilt.cgi
-gsets=readList("../../processed/DESEQ/GO/Drosophila_melanogaster_GSEA_GO_sets_all_symbols_highquality_April_2015.gmt")
-gsets[1:3]
+# Get top 5 upregulated pathways
+gobpterms = data.frame(id=rownames(gobpres$greater), gobpres$greater) %>% 
+  tbl_df() %>% 
+  filter(row_number()<=10) %>% 
+  .$id %>% 
+  as.character()
+gobpterms
+
+# Get the IDs (using substr())
+gobpids = substr(gobpterms, start=1, stop=10)
+gobpids
 ```
 
+
+
 ```{r}
-gsets=readList("../../processed/DESEQ/GO/GeneSets_Dmel.gmt")
-gsets[1:3]
+# Get pre-built gene sets for Dmel from http://www.go2msig.org/cgi-bin/prebuilt.cgi
+#gsets=readList("../../processed/DESEQ/GO/Drosophila_melanogaster_GSEA_GO_sets_all_symbols_highquality_April_2015.gmt")
+#gsets[1:3]
+
+#gsets=readList("../../processed/DESEQ/GO/GeneSets_Dmel.gmt")
+#gsets[1:3]
 
 # Convert gsets gene symbols to Entrez IDs
-data(egSymb)
-gsets.sym <- lapply(gsets, sym2eg)
-gsets.sym[1:3] # few associations - see Powell (2014)
+#data(egSymb)
+#gsets.sym <- lapply(gsets, sym2eg)
+#gsets.sym[1:3] # few associations - see Powell (2014)
 ```
