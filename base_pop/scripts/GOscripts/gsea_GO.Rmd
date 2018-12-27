@@ -108,6 +108,9 @@ lrt.treatAll$name =   mapIds(org.Dm.eg.db,
 
 head(lrt.treatAll, 10)
 head(lrt.treatAll$symbol)
+
+# Save to use with EnrichmentBrowser later
+save(lrt.treatAll, file="../../processed/DESEQ/GO/lrt.treatAll.Rda")
 ```
 
 # Pathway anaylsis with GAGE

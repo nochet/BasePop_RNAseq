@@ -1,0 +1,71 @@
+---
+title: "GO with EnrichmentBrowser"
+author: "Enoch Ng'oma"
+date: "12/25/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(DESeq2)
+library(EnrichmentBrowser)
+library(dplyr)
+```
+
+# Data
+
+```{r}
+load("../../processed/DESEQ/GO/lrt.treatment.Rda")
+
+lrt.treatAll_EB <- results(lrt.treatment)
+summary(lrt.treatAll_EB)
+resultsNames(lrt.treatment)
+lrt.treatAll_EB <- results(lrt.treatment)
+lrt.treatAll_EB = lrt.treatAll_EB[order(lrt.treatAll_EB$padj),]
+
+colnames(lrt.treatAll_EB$FBgn) <- rownames(lrt.treatAll_EB)
+
+# Rownames to column (matrix object)
+
+#Try use %in% instead and preserve the DESeq object class
+write.csv(lrt.treatAll_EB, "../../processed/DESEQ/GO/lrt.treatAll_EB.csv")
+
+EB <- read.csv("../../processed/DESEQ/GO/lrt.treatAll_EB.csv")
+names(EB)[1]<-"FBgn"
+```
+
+# Get CG ids from a precomputed file
+
+```{r}
+# gene map table
+gmtable <- read.csv("../../processed/DESEQ/DEG_QTL/gene_map_table.csv", 
+                 stringsAsFactors = FALSE)
+which(gmtable$gname == "d")
+gmtable$gname[gmtable$gname == "d"] <- "CG42840" 
+gmtable <- select(gmtable, -X)
+
+# Merge by FBgn
+mEB <- inner_join(EB,gmtable, by="FBgn")
+
+# Make FBgn into row names again
+rownames(mEB) <- mEB$gname
+mEB$gname <- NULL
+```
+
+# Map CG ids to entrez (using idMap() in EnrichmentBrowser)
+
+```{r}
+# List available ids for Fly
+idTypes("dme")
+
+# Id mapping from Fly to entrez
+head(rownames(mEB))
+mEB <- as.matrix(mEB)
+mEB.entid <- idMap(mEB, org="dme", from="FLYBASECG", to="ENTREZID")
+```
+
+
+
+
+
