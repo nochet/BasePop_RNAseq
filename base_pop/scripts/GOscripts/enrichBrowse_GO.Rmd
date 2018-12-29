@@ -13,7 +13,99 @@ library(EnrichmentBrowser)
 library(dplyr)
 ```
 
-# Data
+# Expression count data
+
+```{r}
+# Expression matrix
+countdata <- read.csv("../../processed/DESEQ/Expr_countData.csv")
+names(countdata)[1]<-"FBgn"
+```
+
+# Get CG ids from a precomputed FlyBase file
+
+```{r}
+# gene map table
+gmtable <- read.csv("../../processed/DESEQ/DEG_QTL/
+                    gene_map_table.csv", 
+                    stringsAsFactors = FALSE)
+which(gmtable$gname == "d")
+gmtable$gname[gmtable$gname == "d"] <- "CG42840" 
+
+# Merge by FBgn
+CG.names <- inner_join(countdata,gmtable, by="FBgn")
+
+# Make CG id into row names instead of FBgn
+rownames(CG.names) <- CG.names$gname
+CG.names$gname <- NULL
+CG.names <- CG.names[,2:55]
+```
+
+# Create a DESeq SummarizedExperiment object
+
+```{r}
+CG.names <- as.matrix(CG.names)
+
+# Sample data (mcols)
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+rownames(phenDat.sva) <- phenDat.sva[,1]
+phenDat.sva[,1] <- NULL
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
+phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, sep="")
+
+# DESeq model
+dds <- DESeqDataSetFromMatrix(countData = CG.names, 
+                                    colData = phenDat.sva, 
+                                    design = ~ SV1 + batch + treat_tissue)
+dds <- estimateSizeFactors(dds)
+nc <- counts(dds, normalized=TRUE)
+filter <- rowSums(nc >= 10) >= 2
+#dds <- dds[filter,]
+dds <- estimateDispersions(dds, fitType = "local")
+dds <- nbinomWaldTest(dds, maxit = 1000, useOptim = TRUE)
+
+dds.01 <- DESeqDataSetFromMatrix(countData = CG.names, 
+                                    colData = phenDat.sva, 
+                                    design = ~ SV1 + batch + tissue + treatment)
+
+lrt.treatment <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + tissue)
+lrt.treatAll <- results(lrt.treatment)
+
+# save(lrt.treatment, file="../../processed/DESEQ/GO/lrt.treatment.Rda")
+
+#load("../../processed/DESEQ/GO/lrt.treatment.Rda")
+
+lrt.treatAll <- results(lrt.treatment)
+lrt.treatment
+summary(lrt.treatAll)
+resultsNames(lrt.treatment)
+lrt.treatAll = lrt.treatAll[order(lrt.treatAll$padj),]
+```
+
+#NEED CLASS SUMMARIZEDEXPERIMENT TO CONTINUE
+
+# Map CG ids to entrez (using idMap() in EnrichmentBrowser)
+
+```{r}
+# List available ids for Fly
+idTypes("dme")
+
+# Id mapping from Fly to entrez
+head(rownames(lrt.treatAll))
+entrez.names <- idMap(lrt.treatAll, org="dme", from="FLYBASECG", to="ENTREZID")
+```
+
+
+
+```{r}
+x
+
+
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+rownames(phenDat.sva) <- phenDat.sva[,1]
+phenDat.sva[,1] <- NULL
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
+```
+# RUN DESEQ WITH CG IDS
 
 ```{r}
 load("../../processed/DESEQ/GO/lrt.treatment.Rda")
@@ -27,43 +119,13 @@ lrt.treatAll_EB = lrt.treatAll_EB[order(lrt.treatAll_EB$padj),]
 colnames(lrt.treatAll_EB$FBgn) <- rownames(lrt.treatAll_EB)
 
 # Rownames to column (matrix object)
-
-#Try use %in% instead and preserve the DESeq object class
 write.csv(lrt.treatAll_EB, "../../processed/DESEQ/GO/lrt.treatAll_EB.csv")
 
 EB <- read.csv("../../processed/DESEQ/GO/lrt.treatAll_EB.csv")
 names(EB)[1]<-"FBgn"
 ```
 
-# Get CG ids from a precomputed file
 
-```{r}
-# gene map table
-gmtable <- read.csv("../../processed/DESEQ/DEG_QTL/gene_map_table.csv", 
-                 stringsAsFactors = FALSE)
-which(gmtable$gname == "d")
-gmtable$gname[gmtable$gname == "d"] <- "CG42840" 
-gmtable <- select(gmtable, -X)
-
-# Merge by FBgn
-mEB <- inner_join(EB,gmtable, by="FBgn")
-
-# Make FBgn into row names again
-rownames(mEB) <- mEB$gname
-mEB$gname <- NULL
-```
-
-# Map CG ids to entrez (using idMap() in EnrichmentBrowser)
-
-```{r}
-# List available ids for Fly
-idTypes("dme")
-
-# Id mapping from Fly to entrez
-head(rownames(mEB))
-mEB <- as.matrix(mEB)
-mEB.entid <- idMap(mEB, org="dme", from="FLYBASECG", to="ENTREZID")
-```
 
 
 
