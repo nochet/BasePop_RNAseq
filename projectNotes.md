@@ -127,8 +127,25 @@ Precomputed FlyBase files:
 http://flybase.org/cgi-bin/get_static_page.pl?file=bulkdata7.html&title=Current%20Release
 
 
-2018-11-30 (EGK)
 
+
+2018-12-27 (EN)
+Wanted to compare results with a different approach: ENRICHMENTBROWSER
+`/scripts/GOscripts/enrichBrowse_GO.Rmd`
+Stuck on achieving a `SummarizedExperiment` class matrix of results
+I have a `DESeqResults` class object
+
+2018-12-22 (EN)
+Gene set enrichment analysis using GAGE
+`/scripts/GOscripts/gsea_GO.Rmd`
+	Load `load("../../processed/DESEQ/GO/lrt.treatment.Rda")`
+	Need libraries: gage, pathview and org.Dm.eg.db
+	Followed this tutorial alongside all 3 vignettes: http://www.gettinggeneticsdone.com/2015/12/tutorial-rna-seq-differential.html
+		Mapped FlyBase CG SYMBOLs in our results to fly annotation database `org.Dm.eg.db`
+		Converted CG SYMBOLs to ENTREZ
+		Performed pathway and GO analyses
+
+2018-11-30 (EGK)
 Computed fold changes with shrinkage (method= normal). Made plots of fold changes in DR and HS relative to control for body, ovary & head. P-values are the adjusted p-values for the OVERALL effect of treatment, so could be driven by one diet or tissue. Script is foldchange_DEseq.Rmd, fold change data is in all_fc_dat.rda and plot is FC_all.pdf
 
 
@@ -147,8 +164,6 @@ Run `deseq()` on model without- and model with interaction
 Transform DESeq results using 	1) Variance Stabilization Transformation (vst),
 								2) Regularized Log Transformation (rlog)
 Plot 2 PCA graphs for PC1/PC2, one for for each transformation; both for the interaction because PCA plots for both DESeq models not different 
-
-
 
 2018-10-26 (EN)
 Making PCA for DESeq data
