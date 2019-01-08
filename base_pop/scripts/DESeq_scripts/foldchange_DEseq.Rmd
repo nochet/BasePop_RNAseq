@@ -72,8 +72,11 @@ for(oo in organs)
 {
 
 FC_DRC <- lfcShrink(dds, contrast=c("treat_tissue",paste("DR_",oo,sep=""),paste("C_",oo,sep="")), type="normal")
+
 FC_HSC <- lfcShrink(dds, contrast=c("treat_tissue",paste("HS_",oo,sep=""),paste("C_",oo,sep="")), type="normal")
   
+FC_DRHS <- lfcShrink(dds, contrast=c("treat_tissue",paste("DR_",oo,sep=""),paste("HS_",oo,sep="")), type="normal")
+
 plot.dat <- data.frame("gname" = rownames(lrt.treatAll), 
                        "Pval"= lrt.treatAll$pvalue, 
                        "Padj"= lrt.treatAll$padj, 
@@ -155,7 +158,14 @@ colnames(FC_HSC) <- c('baseMean',
                       paste("p_HS_",oo,sep=""),
                       paste("padj_HS_",oo,sep=""))
 
-all.fc.dat <- cbind(all.fc.dat, FC_DRC[,2:6],FC_HSC[,2:6])
+colnames(FC_DRHS) <- c('baseMean',
+                      paste("FC_DRHS_",oo,sep=""),
+                      paste("FCse_DRHS_",oo,sep=""),
+                      paste("stat_DRHS_",oo,sep=""),
+                      paste("p_DRHS_",oo,sep=""),
+                      paste("padj_DRHS_",oo,sep=""))
+
+all.fc.dat <- cbind(all.fc.dat, FC_DRC[,2:6],FC_HSC[,2:6],FC_DRHS[,2:6])
 
 pp.list[[oo]] <- pp
 
