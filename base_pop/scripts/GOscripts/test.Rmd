@@ -1,0 +1,231 @@
+---
+title: "Gene set analysis"
+author: "Enoch Ng'oma"
+date: "12/20/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(DESeq2)
+library(tidyverse)
+library(gage)
+library(pathview)
+library(AnnotationDbi)
+
+#library(help="gage")
+#library(EGSEA)
+#library(limma)
+```
+
+# Expression matrix
+
+```{r}
+countdata <- read.csv("../../processed/DESEQ/Expr_countData.csv")
+rownames(countdata) <- countdata[,1]
+countdata[,1] <- NULL
+countdata <- as.matrix(countdata)
+
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+rownames(phenDat.sva) <- phenDat.sva[,1]
+phenDat.sva[,1] <- NULL
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
+phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, sep="")
+```
+
+# Get DEseq object
+
+```{r}
+# dds <- DESeqDataSetFromMatrix(countData = countdata, 
+#                                    colData = phenDat.sva, 
+#                                    design = ~ SV1 + batch + treat_tissue)
+# dds <- estimateSizeFactors(dds)
+# nc <- counts(dds, normalized=TRUE)
+# filter <- rowSums(nc >= 10) >= 2
+# #dds <- dds[filter,]
+# dds <- estimateDispersions(dds, fitType = "local")
+# dds <- nbinomWaldTest(dds, maxit = 1000, useOptim = TRUE)
+
+# dds.01 <- DESeqDataSetFromMatrix(countData = countdata, 
+#                                    colData = phenDat.sva, 
+#                                    design = ~ SV1 + batch + tissue + treatment)
+# lrt.treatment <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + tissue)
+# lrt.treatAll <- results(lrt.treatment)
+
+# save(lrt.treatment, file="../../processed/DESEQ/GO/lrt.treatment.Rda")
+
+load("../../processed/DESEQ/GO/lrt.treatment.Rda")
+
+lrt.treatAll <- results(lrt.treatment)
+lrt.treatment
+summary(lrt.treatAll)
+resultsNames(lrt.treatment)
+lrt.treatAll <- results(lrt.treatment)
+lrt.treatAll = lrt.treatAll[order(lrt.treatAll$padj),]
+
+#load("../../processed/DESEQ/dds_deseq01.Rda")
+#load("../../processed/DESEQ/dds_deseq.02.Rda")
+```
+
+# DESeq2-GAGE workflow
+# need libraries: gage, pathview and org.Dm.eg.db
+# Used this tutorial together with all 3 vignettes: http://www.gettinggeneticsdone.com/2015/12/tutorial-rna-seq-differential.html
+
+```{r}
+# Get Dmel gene annotation database
+
+#library(pathview)
+data(bods)
+print(bods)
+
+# InstallBioconductor package "org.Dm.eg.db"
+library(org.Dm.eg.db)
+columns(org.Dm.eg.db)
+
+# Add annotation maps to results object
+
+# gene symbol
+lrt.treatAll$symbol = mapIds(org.Dm.eg.db,
+                     keys=row.names(lrt.treatAll), 
+                     column="SYMBOL",
+                     keytype="FLYBASE",
+                     multiVals="first")
+
+# entrez id
+lrt.treatAll$entrez = mapIds(org.Dm.eg.db,
+                     keys=row.names(lrt.treatAll), 
+                     column="ENTREZID",
+                     keytype="FLYBASE",
+                     multiVals="first")
+
+# full gene name
+lrt.treatAll$name =   mapIds(org.Dm.eg.db,
+                     keys=row.names(lrt.treatAll), 
+                     column="GENENAME",
+                     keytype="FLYBASE",
+                     multiVals="first")
+
+head(lrt.treatAll, 10)
+head(lrt.treatAll$symbol)
+
+# Save to use with EnrichmentBrowser later
+#save(lrt.treatAll, file="../../processed/DESEQ/GO/lrt.treatAll.Rda")
+```
+
+# Pathway anaylsis with GAGE
+# Aim: enriched pathways
+
+```{r}
+#library(gageData)
+#library(help="gageData")
+
+# Generate up-to-date KEGG pathway gene sets 
+kegg_sets <- kegg.gsets(species = "dme", id.type = "entrez", check.new=FALSE)
+
+# check that expr data and gene sets both use entrez
+lapply(kegg_sets[1:3],head)
+head(kegg_sets[[1]])
+
+kegg_sets.dm = kegg_sets$kg.sets[kegg_sets$sigmet.idx]
+head(kegg_sets.dm, 3)
+
+#kegg.sets.dm = id.map.fb[kegg.sets$sigmet.idx]
+
+# gage() needs vector of fold changes named with Entrez gene IDs
+foldchanges = lrt.treatAll$log2FoldChange
+names(foldchanges) = lrt.treatAll$entrez
+head(foldchanges)
+
+# Get the results
+keggres = gage(foldchanges, gsets=kegg_sets.dm, same.dir=TRUE)
+
+# Look at both up (greater), down (less), and statatistics
+lapply(keggres, head)
+
+head(keggres$greater[, 1:5], 4)
+head(keggres$stats[,1:2], 4)
+
+# Get top 5 upregulated pathways
+keggrespathways = data.frame(id=rownames(keggres$greater), keggres$greater) %>% 
+  tbl_df() %>% 
+  filter(row_number()<=5) %>% 
+  .$id %>% 
+  as.character()
+keggrespathways
+
+# Get the IDs (using substr())
+keggresids = substr(keggrespathways, start=1, stop=8)
+keggresids
+
+# Make pathway plots with pathview()
+# Define plotting function to loop through all 5 pathways
+plot_pathway = function(pid) pathview(gene.data=foldchanges, pathway.id=pid, species="dme", new.signature=FALSE)
+
+# Plot multiple pathways (plots saved to disk and returns a throwaway list object)
+tmp = sapply(keggresids, function(pid) pathview(gene.data=foldchanges, pathway.id=pid, species="dme"))
+
+# Sort and count signficant gene sets based on q- or p-value cutoffs:
+keggres.sig<-sigGeneSet(keggres, outname="keggres")
+# curious!!!
+```
+
+# Construct map between FlyBase ID and Entrez Gene ID
+# See "Gene set and data preparation", for ID conversion
+
+```{r}
+#id.map.fb <- id2eg(ids = lrt.treatAll$symbol, 
+#                   category = "SYMBOL", org = "Dm")
+
+# Map data onto Entrez Gene IDs 
+# note different sum.method can be used
+#entrez.data <- mol.sum(mol.data = lrt.treatAll$symbol, 
+#                       id.map = id.map.fb,
+#                       sum.method = "mean")
+#lapply(entrez.data[1:3],head)
+```
+
+# Gene Ontology (GO)
+
+```{r}
+# Generate up-to-date GO (Gene Ontology) gene sets
+go_sets <- go.gsets(species = "Fly", 
+                    pkg.name="org.Dm.eg.db", 
+                    id.type = "eg", 
+                    keep.evidence=FALSE)
+
+# Do GO on BP only (i.e. see ...$go.subs)
+gobpsets = go_sets$go.sets[go_sets$go.subs$BP]
+gobpres = gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
+lapply(gobpres, head)
+
+# Get top 5 upregulated pathways
+gobpterms = data.frame(id=rownames(gobpres$greater), gobpres$greater) %>% 
+  tbl_df() %>% 
+  filter(row_number()<=10) %>% 
+  .$id %>% 
+  as.character()
+gobpterms
+
+# Get the IDs (using substr())
+gobpids = substr(gobpterms, start=1, stop=10)
+gobpids
+
+
+```
+
+
+
+```{r}
+# Get pre-built gene sets for Dmel from http://www.go2msig.org/cgi-bin/prebuilt.cgi
+#gsets=readList("../../processed/DESEQ/GO/Drosophila_melanogaster_GSEA_GO_sets_all_symbols_highquality_April_2015.gmt")
+#gsets[1:3]
+
+#gsets=readList("../../processed/DESEQ/GO/GeneSets_Dmel.gmt")
+#gsets[1:3]
+
+# Convert gsets gene symbols to Entrez IDs
+#data(egSymb)
+#gsets.sym <- lapply(gsets, sym2eg)
+#gsets.sym[1:3] # few associations - see Powell (2014)
+```
