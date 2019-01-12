@@ -17,13 +17,9 @@ library(AnnotationDbi)
 # Get Dmel gene annotation database
 library(org.Dm.eg.db)
 
-
-#library(help="gage")
-#library(EGSEA)
-#library(limma)
 ```
 
-# Set up pathways etc
+# Set up kegg and GO gene sets
 
 ```{r}
 columns(org.Dm.eg.db)
@@ -35,6 +31,7 @@ kegg_sets <- kegg.gsets(species = "dme", id.type = "entrez", check.new=FALSE)
 lapply(kegg_sets[1:3],head)
 head(kegg_sets[[1]])
 
+# sigmet.idx: signaling or metabolisms pathways
 kegg_sets.dm = kegg_sets$kg.sets[kegg_sets$sigmet.idx]
 head(kegg_sets.dm, 3)
 
@@ -46,7 +43,7 @@ go_sets <- go.gsets(species = "Fly",
                     id.type = "eg", 
                     keep.evidence=FALSE)
 
-# Do GO on BP only (i.e. see ...$go.subs)
+# Do GO on Biological Process only (i.e. see ...$go.subs)
 gobpsets = go_sets$go.sets[go_sets$go.subs$BP]
 ```
 
@@ -54,7 +51,6 @@ gobpsets = go_sets$go.sets[go_sets$go.subs$BP]
 # DESeq2-GAGE workflow
 # need libraries: gage, pathview and org.Dm.eg.db
 # Used this tutorial together with all 3 vignettes: http://www.gettinggeneticsdone.com/2015/12/tutorial-rna-seq-differential.html
-
 
 ```{r}
 
@@ -86,49 +82,88 @@ all.fc.dat$name =   mapIds(org.Dm.eg.db,
 head(all.fc.dat, 10)
 head(all.fc.dat$symbol)
 
-
 ```
 
 # Pathway anaylsis with GAGE
 # Aim: enriched pathways
 
 ```{r}
-
 cc.sets <- c("FC_DR_B","FC_DR_O","FC_DR_H",
-             "FC_HS_B","FC_HS_O","FC_HS_H")
+             "FC_HS_B","FC_HS_O","FC_HS_H",
+             "FC_DRHS_B","FC_DRHS_O","FC_DRHS_H")
 
-#"FC_DRHS_B","FC_DRHS_O","FC_DRHS_H"
+e.names <- all.fc.dat$entrez
 
-# gage() needs vector of fold changes named with Entrez gene IDs
-foldchanges = all.fc.dat$FC_DR_B
+all.fc.dat <- all.fc.dat[,cc.sets]
 
-names(foldchanges) = all.fc.dat$entrez
-head(foldchanges)
+out.list <- vector(mode='list', length=length(cc.sets))
+names(out.list)  <- cc.sets
 
-# Get the results
-keggres = gage(foldchanges, gsets=kegg_sets.dm, same.dir=TRUE)
+for (ii in 1:length(cc.sets)) 
+  {
 
-# Look at both up (greater), down (less), and statatistics.
-lapply(keggres, head)
+  fc.i <- all.fc.dat[,ii]
+  names(fc.i) <- e.names
 
-# Get top 5 upregulated pathways
-keggrespathways = data.frame(id=rownames(keggres$greater), keggres$greater) %>% 
-  tbl_df() %>% 
-  filter(row_number()<=5) %>% 
-  .$id %>% 
-  as.character()
-keggrespathways
+  fc.kegg = gage(fc.i, gsets = kegg_sets.dm, same.dir = TRUE)
+  #  sel.up <- fc.kegg$greater[, "q.val"] < 0.1 &
+  #         !is.na(fc.kegg$greater[, "q.val"])
+  # path.ids.up <- rownames(fc.kegg$greater)[sel.up]
+  # sel.down <- fc.kegg$less[, "q.val"] < 0.1 &
+  #            !is.na(fc.kegg$less[,"q.val"])
+  # path.ids.dwn <- rownames(fc.kegg$less)[sel.down]
+  # path.ids2 <- substr(c(path.ids.up, path.ids.dwn), 1, 8)
 
-# Get the IDs (using substr())
-keggresids = substr(keggrespathways, start=1, stop=8)
-keggresids
+#view first 3 pathways 
+#pv.out.list <- sapply(path.ids2[1:3], function(pid) pathview(
+#                        gene.data =  fc.i, pathway.id = pid,
+#                        species = "dme", out.suffix=out.suffix))
+  
+out.list[[ii]] <- fc.kegg
+}
 
-# Make pathway plots with pathview()
-# Define plotting function to loop through all 5 pathways
-plot_pathway = function(pid) pathview(gene.data=foldchanges, pathway.id=pid, species="dme", new.signature=FALSE)
+# Get all regulated pathways
+up.DR_B <- subset(out.list$FC_DR_B$greater, 
+                     out.list$FC_DR_B$greater[,"q.val"] < 0.1)
+# dn.DR_B <- subset(out.list$FC_DR_B$less, 
+#                      out.list$FC_DR_B$gless[,"q.val"] < 0.1) # zero
+# up.DR_O <- subset(out.list$FC_DR_O$greater, 
+#                      out.list$FC_DR_O$greater[,"q.val"] < 0.1) #zero
+# dn.DR_O <- subset(out.list$FC_DR_O$less, 
+#                      out.list$FC_DR_O$gless[,"q.val"] < 0.1) #zero
+up.DR_H <- subset(out.list$FC_DR_H$greater, 
+                     out.list$FC_DR_H$greater[,"q.val"] < 0.1)
+# dn.DR_H <- subset(out.list$FC_DR_H$less, 
+#                      out.list$FC_DR_H$gless[,"q.val"] < 0.1)
 
-# Plot multiple pathways (plots saved to disk and returns a throwaway list object)
-tmp = sapply(keggresids, function(pid) pathview(gene.data=foldchanges, pathway.id=pid, species="dme"))
+# up.HS_B <- subset(out.list$FC_HS_B$greater, 
+#                      out.list$FC_HS_B$greater[,"q.val"] < 0.1)
+# dn.HS_B <- subset(out.list$FC_HS_B$less, 
+#                      out.list$FC_HS_B$gless[,"q.val"] < 0.1)
+# up.HS_O <- subset(out.list$FC_HS_O$greater, 
+#                      out.list$FC_HS_O$greater[,"q.val"] < 0.1)
+# dn.HS_O <- subset(out.list$FC_HS_O$less, 
+#                      out.list$FC_HS_O$gless[,"q.val"] < 0.1)
+# up.HS_H <- subset(out.list$FC_HS_H$greater, 
+#                      out.list$FC_HS_H$greater[,"q.val"] < 0.1)
+dn.HS_H <- subset(out.list$FC_HS_H$less, 
+                     out.list$FC_HS_H$less[,"q.val"] < 0.1)
+
+up.DRHS_B <- subset(out.list$FC_DRHS_B$greater, 
+                     out.list$FC_DRHS_B$greater[,"q.val"] < 0.1)
+# dn.DRHS_B <- subset(out.list$FC_DRHS_B$less, 
+#                      out.list$FC_DRHS_B$gless[,"q.val"] < 0.1)
+up.DRHS_O <- subset(out.list$FC_DRHS_O$greater, 
+                     out.list$FC_DRHS_O$greater[,"q.val"] < 0.1)
+# dn.DRHS_O <- subset(out.list$FC_DRHS_O$less, 
+#                      out.list$FC_DRHS_O$gless[,"q.val"] < 0.1)
+# up.DRHS_H <- subset(out.list$FC_DRHS_H$greater, 
+#                      out.list$FC_DRHS_H$greater[,"q.val"] < 0.1)
+# dn.DRHS_H <- subset(out.list$FC_DRHS_H$less, 
+#                      out.list$FC_DRHS_H$less[,"q.val"] < 0.1)
+
+# Tabulate regulated pathways
+
 ```
 
 # Construct map between FlyBase ID and Entrez Gene ID
