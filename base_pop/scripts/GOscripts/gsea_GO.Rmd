@@ -121,10 +121,12 @@ for (ii in 1:length(cc.sets))
   
 out.list[[ii]] <- fc.kegg
 }
+lapply(out.list[[ii]], head)
 
 # Get all regulated pathways
 up.DR_B <- subset(out.list$FC_DR_B$greater, 
-                     out.list$FC_DR_B$greater[,"q.val"] < 0.1)
+                     out.list$FC_DR_B$greater[,"q.val"] < 0.1)%>%
+  as.data.frame()
 # dn.DR_B <- subset(out.list$FC_DR_B$less, 
 #                      out.list$FC_DR_B$gless[,"q.val"] < 0.1) # zero
 # up.DR_O <- subset(out.list$FC_DR_O$greater, 
@@ -132,7 +134,8 @@ up.DR_B <- subset(out.list$FC_DR_B$greater,
 # dn.DR_O <- subset(out.list$FC_DR_O$less, 
 #                      out.list$FC_DR_O$gless[,"q.val"] < 0.1) #zero
 up.DR_H <- subset(out.list$FC_DR_H$greater, 
-                     out.list$FC_DR_H$greater[,"q.val"] < 0.1)
+                     out.list$FC_DR_H$greater[,"q.val"] < 0.1)%>%
+  as.data.frame()
 # dn.DR_H <- subset(out.list$FC_DR_H$less, 
 #                      out.list$FC_DR_H$gless[,"q.val"] < 0.1)
 
@@ -147,14 +150,17 @@ up.DR_H <- subset(out.list$FC_DR_H$greater,
 # up.HS_H <- subset(out.list$FC_HS_H$greater, 
 #                      out.list$FC_HS_H$greater[,"q.val"] < 0.1)
 dn.HS_H <- subset(out.list$FC_HS_H$less, 
-                     out.list$FC_HS_H$less[,"q.val"] < 0.1)
+                     out.list$FC_HS_H$less[,"q.val"] < 0.1)%>%
+  as.data.frame()
 
 up.DRHS_B <- subset(out.list$FC_DRHS_B$greater, 
-                     out.list$FC_DRHS_B$greater[,"q.val"] < 0.1)
+                     out.list$FC_DRHS_B$greater[,"q.val"] < 0.1)%>%
+  as.data.frame()
 # dn.DRHS_B <- subset(out.list$FC_DRHS_B$less, 
 #                      out.list$FC_DRHS_B$gless[,"q.val"] < 0.1)
 up.DRHS_O <- subset(out.list$FC_DRHS_O$greater, 
-                     out.list$FC_DRHS_O$greater[,"q.val"] < 0.1)
+                     out.list$FC_DRHS_O$greater[,"q.val"] < 0.1)%>%
+  as.data.frame()
 # dn.DRHS_O <- subset(out.list$FC_DRHS_O$less, 
 #                      out.list$FC_DRHS_O$gless[,"q.val"] < 0.1)
 # up.DRHS_H <- subset(out.list$FC_DRHS_H$greater, 
@@ -162,43 +168,115 @@ up.DRHS_O <- subset(out.list$FC_DRHS_O$greater,
 # dn.DRHS_H <- subset(out.list$FC_DRHS_H$less, 
 #                      out.list$FC_DRHS_H$less[,"q.val"] < 0.1)
 
-# Tabulate regulated pathways
-
 ```
 
-# Construct map between FlyBase ID and Entrez Gene ID
-# See "Gene set and data preparation", for ID conversion
+# Table of all enriched pathways
 
 ```{r}
-#id.map.fb <- id2eg(ids = lrt.treatAll$symbol, 
-#                   category = "SYMBOL", org = "Dm")
+# add identifier colum to each list
+up.DR_B$compare <- "up.DR_B"
+up.DR_H$compare <- "up.DR_H"
+dn.HS_H$compare <- "dn.HS_H"
+up.DRHS_B$compare <- "up.DRHS_B"
+up.DRHS_O$compare <- "up.DRHS_O" 
 
-# Map data onto Entrez Gene IDs 
-# note different sum.method can be used
-#entrez.data <- mol.sum(mol.data = lrt.treatAll$symbol, 
-#                       id.map = id.map.fb,
-#                       sum.method = "mean")
-#lapply(entrez.data[1:3],head)
+
+enrich.path <- rbind(up.DR_B,up.DR_H,
+                  dn.HS_H,up.DRHS_B,up.DRHS_O)
+
 ```
 
 # Gene Ontology (GO)
 
 ```{r}
+go.list <- vector(mode='list', length=length(cc.sets))
+names(go.list)  <- cc.sets
 
-gobpres = gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
-lapply(gobpres, head)
+for (kk in 1:length(cc.sets)) 
+  {
 
-# Get top 5 upregulated pathways
-gobpterms = data.frame(id=rownames(gobpres$greater), gobpres$greater) %>% 
-  tbl_df() %>% 
-  filter(row_number()<=10) %>% 
-  .$id %>% 
-  as.character()
-gobpterms
+  fc.k <- all.fc.dat[,kk]
+  names(fc.k) <- e.names
 
-# Get the IDs (using substr())
-gobpids = substr(gobpterms, start=1, stop=10)
-gobpids
+  gobpres = gage(fc.k, gsets=gobpsets, same.dir=TRUE)
+go.list[[kk]] <- gobpres
+}
+
+lapply(go.list[[kk]], head)
+
+# Get enriched GO terms
+goup.DR_B <- subset(go.list$FC_DR_B$greater, 
+                     go.list$FC_DR_B$greater[,"q.val"] < 0.1)%>%
+  as.data.frame()
+# godn.DR_B <- subset(go.list$FC_DR_B$less, 
+#                        go.list$FC_DR_B$gless[,"q.val"] < 0.1) %>%
+#   as.data.frame()
+# goup.DR_O <- subset(go.list$FC_DR_O$greater, 
+#                      go.list$FC_DR_O$greater[,"q.val"] < 0.1) %>%
+#   as.data.frame()
+# godn.DR_O <- subset(go.list$FC_DR_O$less, 
+#                       go.list$FC_DR_O$gless[,"q.val"] < 0.1) %>%
+#    as.data.frame()
+goup.DR_H <- subset(go.list$FC_DR_H$greater, 
+                     go.list$FC_DR_H$greater[,"q.val"] < 0.1)%>%
+  as.data.frame()
+# godn.DR_H <- subset(go.list$FC_DR_H$less, 
+#                       go.list$FC_DR_H$gless[,"q.val"] < 0.1) %>%
+#    as.data.frame()
+
+goup.HS_B <- subset(go.list$FC_HS_B$greater, 
+                      go.list$FC_HS_B$greater[,"q.val"] < 0.1) %>%
+   as.data.frame()
+# godn.HS_B <- subset(go.list$FC_HS_B$less, 
+#                       go.list$FC_HS_B$gless[,"q.val"] < 0.1) %>%
+#    as.data.frame()
+# goup.HS_O <- subset(go.list$FC_HS_O$greater, 
+#                       go.list$FC_HS_O$greater[,"q.val"] < 0.1) %>%
+#    as.data.frame()
+# godn.HS_O <- subset(go.list$FC_HS_O$less, 
+#                       go.list$FC_HS_O$gless[,"q.val"] < 0.1) %>%
+#    as.data.frame()
+goup.HS_H <- subset(go.list$FC_HS_H$greater, 
+                      go.list$FC_HS_H$greater[,"q.val"] < 0.1) %>%
+   as.data.frame()
+godn.HS_H <- subset(go.list$FC_HS_H$less, 
+                     go.list$FC_HS_H$less[,"q.val"] < 0.1)%>%
+  as.data.frame()
+
+goup.DRHS_B <- subset(go.list$FC_DRHS_B$greater, 
+                     go.list$FC_DRHS_B$greater[,"q.val"] < 0.1)%>%
+  as.data.frame()
+# godn.DRHS_B <- subset(go.list$FC_DRHS_B$less, 
+#                       go.list$FC_DRHS_B$gless[,"q.val"] < 0.1) %>%
+#    as.data.frame()
+# goup.DRHS_O <- subset(go.list$FC_DRHS_O$greater, 
+#                      go.list$FC_DRHS_O$greater[,"q.val"] < 0.1)%>%
+#   as.data.frame()
+# godn.DRHS_O <- subset(go.list$FC_DRHS_O$less, 
+#                       go.list$FC_DRHS_O$gless[,"q.val"] < 0.1) %>%
+#    as.data.frame()
+# goup.DRHS_H <- subset(go.list$FC_DRHS_H$greater, 
+#                       go.list$FC_DRHS_H$greater[,"q.val"] < 0.1) %>%
+#    as.data.frame()
+godn.DRHS_H <- subset(go.list$FC_DRHS_H$less, 
+                      go.list$FC_DRHS_H$less[,"q.val"] < 0.1) %>%
+   as.data.frame()
+```
+
+# Table of all enriched pathways
+
+```{r}
+# add identifier colum to each list
+goup.DR_B$compare <- "up.DR_B"
+goup.DR_H$compare <- "up.DR_H"
+goup.HS_B$compare <- "up.HS_B"
+goup.HS_H$compare <- "up.HS_H"
+godn.HS_H$compare <- "dn.HS_H"
+goup.DRHS_B$compare <- "up.DRHS_B"
+godn.DRHS_H$compare <- "dn.DRHS_H" 
+
+enrich.goterms <- rbind(goup.DR_B,goup.DR_H,goup.HS_B,goup.HS_H,
+                  godn.HS_H,goup.DRHS_B,godn.DRHS_H)
 ```
 
 
