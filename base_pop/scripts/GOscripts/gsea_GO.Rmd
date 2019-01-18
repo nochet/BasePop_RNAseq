@@ -55,6 +55,7 @@ gobpsets = go_sets$go.sets[go_sets$go.subs$BP]
 ```{r}
 
 load(file="../../processed/DESEQ/all_fc_dat.rda")
+head(rownames(all.fc.dat))
 
 # Add annotation maps to results object
 
@@ -123,68 +124,110 @@ out.list[[ii]] <- fc.kegg
 }
 lapply(out.list[[ii]], head)
 
-# Get all regulated pathways
-up.DR_B <- subset(out.list$FC_DR_B$greater, 
-                     out.list$FC_DR_B$greater[,"q.val"] < 0.1)%>%
-  as.data.frame()
-# dn.DR_B <- subset(out.list$FC_DR_B$less, 
-#                      out.list$FC_DR_B$gless[,"q.val"] < 0.1) # zero
-# up.DR_O <- subset(out.list$FC_DR_O$greater, 
-#                      out.list$FC_DR_O$greater[,"q.val"] < 0.1) #zero
-# dn.DR_O <- subset(out.list$FC_DR_O$less, 
-#                      out.list$FC_DR_O$gless[,"q.val"] < 0.1) #zero
-up.DR_H <- subset(out.list$FC_DR_H$greater, 
-                     out.list$FC_DR_H$greater[,"q.val"] < 0.1)%>%
-  as.data.frame()
-# dn.DR_H <- subset(out.list$FC_DR_H$less, 
-#                      out.list$FC_DR_H$gless[,"q.val"] < 0.1)
-
-# up.HS_B <- subset(out.list$FC_HS_B$greater, 
-#                      out.list$FC_HS_B$greater[,"q.val"] < 0.1)
-# dn.HS_B <- subset(out.list$FC_HS_B$less, 
-#                      out.list$FC_HS_B$gless[,"q.val"] < 0.1)
-# up.HS_O <- subset(out.list$FC_HS_O$greater, 
-#                      out.list$FC_HS_O$greater[,"q.val"] < 0.1)
-# dn.HS_O <- subset(out.list$FC_HS_O$less, 
-#                      out.list$FC_HS_O$gless[,"q.val"] < 0.1)
-# up.HS_H <- subset(out.list$FC_HS_H$greater, 
-#                      out.list$FC_HS_H$greater[,"q.val"] < 0.1)
-dn.HS_H <- subset(out.list$FC_HS_H$less, 
-                     out.list$FC_HS_H$less[,"q.val"] < 0.1)%>%
-  as.data.frame()
-
-up.DRHS_B <- subset(out.list$FC_DRHS_B$greater, 
-                     out.list$FC_DRHS_B$greater[,"q.val"] < 0.1)%>%
-  as.data.frame()
-# dn.DRHS_B <- subset(out.list$FC_DRHS_B$less, 
-#                      out.list$FC_DRHS_B$gless[,"q.val"] < 0.1)
-up.DRHS_O <- subset(out.list$FC_DRHS_O$greater, 
-                     out.list$FC_DRHS_O$greater[,"q.val"] < 0.1)%>%
-  as.data.frame()
-# dn.DRHS_O <- subset(out.list$FC_DRHS_O$less, 
-#                      out.list$FC_DRHS_O$gless[,"q.val"] < 0.1)
-# up.DRHS_H <- subset(out.list$FC_DRHS_H$greater, 
-#                      out.list$FC_DRHS_H$greater[,"q.val"] < 0.1)
-# dn.DRHS_H <- subset(out.list$FC_DRHS_H$less, 
-#                      out.list$FC_DRHS_H$less[,"q.val"] < 0.1)
-
+#xx <- do.call(rbind, out.list)
+#lj <- mapply(function(a,b) length(intersect(a,b)), 
+#out.list$FC_DR_B$greater, out.list$FC_DR_O$greater, SIMPLIFY = FALSE)
+#lk <- which(lj>0)
 ```
 
-# Table of all enriched pathways
+# Get all enriched pathways
 
 ```{r}
-# add identifier colum to each list
-up.DR_B$compare <- "up.DR_B"
-up.DR_H$compare <- "up.DR_H"
-dn.HS_H$compare <- "dn.HS_H"
-up.DRHS_B$compare <- "up.DRHS_B"
-up.DRHS_O$compare <- "up.DRHS_O" 
+# up.DR_B <- subset(out.list$FC_DR_B$greater, 
+#                      out.list$FC_DR_B$greater[,"q.val"] < 0.1)%>%
+#   as.data.frame()
 
+up.DR_B <- subset(out.list$FC_DR_B$greater)%>%as.data.frame()%>%add_column(compare = "up.DR_B")
+up.DR_B <- rownames_to_column(up.DR_B, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+dn.DR_B <- subset(out.list$FC_DR_B$less)%>%as.data.frame()%>%add_column(compare = "dn.DR_B")
+dn.DR_B <- rownames_to_column(dn.DR_B, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+up.DR_O <- subset(out.list$FC_DR_O$greater)%>%as.data.frame()%>%add_column(compare = "up.DR_O")
+up.DR_O <- rownames_to_column(up.DR_O, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+dn.DR_O <- subset(out.list$FC_DR_O$less)%>%as.data.frame()%>%add_column(compare = "dn.DR_O")
+dn.DR_O <- rownames_to_column(dn.DR_O, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+up.DR_H <- subset(out.list$FC_DR_H$greater)%>%as.data.frame()%>%add_column(compare = "up.DR_H")
+up.DR_H <- rownames_to_column(up.DR_H, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+dn.DR_H <- subset(out.list$FC_DR_H$less)%>%as.data.frame()%>%add_column(compare = "dn.DR_H")
+dn.DR_H <- rownames_to_column(dn.DR_H, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
 
-enrich.path <- rbind(up.DR_B,up.DR_H,
-                  dn.HS_H,up.DRHS_B,up.DRHS_O)
+up.HS_B <- subset(out.list$FC_HS_B$greater)%>%as.data.frame()%>%add_column(compare = "up.HS_B")
+up.HS_B <- rownames_to_column(up.HS_B, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+dn.HS_B <- subset(out.list$FC_HS_B$less)%>%as.data.frame()%>%add_column(compare = "dn.HS_B")
+dn.HS_B <- rownames_to_column(dn.HS_B, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+up.HS_O <- subset(out.list$FC_HS_O$greater)%>%as.data.frame()%>%add_column(compare = "up.HS_O")
+up.HS_O <- rownames_to_column(up.HS_O, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+dn.HS_O <- subset(out.list$FC_HS_O$less)%>%as.data.frame()%>%add_column(compare = "dn.HS_O")
+dn.HS_O <- rownames_to_column(dn.HS_O, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+up.HS_H <- subset(out.list$FC_HS_H$greater)%>%as.data.frame()%>%add_column(compare = "up.HS_H")
+up.HS_H <- rownames_to_column(up.HS_H, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+dn.HS_H <- subset(out.list$FC_HS_H$less)%>%as.data.frame()%>%add_column(compare = "dn.HS_H")
+dn.HS_H <- rownames_to_column(dn.HS_H, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
 
+up.DRHS_B <- subset(out.list$FC_DRHS_B$greater)%>%as.data.frame()%>%add_column(compare = "up.DRHS_B")
+up.DRHS_B <- rownames_to_column(up.DRHS_B, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+dn.DRHS_B <- subset(out.list$FC_DRHS_B$less)%>%as.data.frame()%>%add_column(compare = "dn.DRHS_B")
+  dn.DRHS_B <- rownames_to_column(dn.DRHS_B, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+up.DRHS_O <- subset(out.list$FC_DRHS_O$greater)%>%as.data.frame()%>%add_column(compare = "up.DRHS_O")
+up.DRHS_O <- rownames_to_column(up.DRHS_O, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+dn.DRHS_O <- subset(out.list$FC_DRHS_O$less)%>%as.data.frame()%>%add_column(compare = "dn.DRHS_O")
+dn.DRHS_O <- rownames_to_column(dn.DRHS_O, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+up.DRHS_H <- subset(out.list$FC_DRHS_H$greater)%>%as.data.frame()%>%add_column(compare = "up.DRHS_H")
+up.DRHS_H <- rownames_to_column(up.DRHS_H, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+dn.DRHS_H <- subset(out.list$FC_DRHS_H$less)%>%as.data.frame()%>%add_column(compare = "dn.DRHS_H")
+dn.DRHS_H <- rownames_to_column(dn.DRHS_H, "pathway")%>%
+  dplyr::select(pathway,stat.mean,q.val,set.size,compare)
+
+enrich.path <- rbind(up.DR_B,dn.DR_B,up.DR_O,dn.DR_O,up.DR_H,dn.DR_H,
+                     up.HS_B,dn.HS_B,up.HS_O,dn.HS_O,up.HS_H,dn.HS_H,
+                     up.DRHS_B,dn.DRHS_B,up.DRHS_O,dn.DRHS_O,up.DRHS_H,dn.DRHS_H)
 ```
+
+# Filter
+
+```{r}
+# Pathways that differ by diet globally
+ids <- strsplit(enrich.path$compare, split = "_", fixed = TRUE)
+ids <- unlist(lapply(ids, function(x) x[1]))
+enrich.path$diet <- ids
+enrich.path$diet <- gsub('DRHS', 'DH', enrich.path$diet)
+(enrich.path <- enrich.path[order(enrich.path$q.val), ])
+#dup <- enrich.path[duplicated(enrich.path), ]
+
+# qval < 0.05
+pqval05 <- subset(enrich.path,enrich.path$q.val<0.05)
+pqval05 <- pqval05[order(pqval05$compare),]
+unq05 <- unique(pqval05$pathway)
+
+# view one pathway
+x <- subset(enrich.path,c(enrich.path$diet=="dn.HS" & 
+                            enrich.path$pathway=="dme01200 Carbon metabolism"))
+x <- x[order(x$pathway),]
+
+
+
+#y <- subset(enrich.path, diet == "up.HS_B"|q.val <=0.05)
+#xy <- which(x$pathway %in% y$pathway)
+
+#glob_up.DR_HS <- subset(enrich.path, glob_up.DR_HS>0)
+```
+
 
 # Gene Ontology (GO)
 
@@ -203,82 +246,101 @@ go.list[[kk]] <- gobpres
 }
 
 lapply(go.list[[kk]], head)
+```
 
 # Get enriched GO terms
-goup.DR_B <- subset(go.list$FC_DR_B$greater, 
-                     go.list$FC_DR_B$greater[,"q.val"] < 0.1)%>%
-  as.data.frame()
-# godn.DR_B <- subset(go.list$FC_DR_B$less, 
-#                        go.list$FC_DR_B$gless[,"q.val"] < 0.1) %>%
-#   as.data.frame()
-# goup.DR_O <- subset(go.list$FC_DR_O$greater, 
-#                      go.list$FC_DR_O$greater[,"q.val"] < 0.1) %>%
-#   as.data.frame()
-# godn.DR_O <- subset(go.list$FC_DR_O$less, 
-#                       go.list$FC_DR_O$gless[,"q.val"] < 0.1) %>%
-#    as.data.frame()
-goup.DR_H <- subset(go.list$FC_DR_H$greater, 
-                     go.list$FC_DR_H$greater[,"q.val"] < 0.1)%>%
-  as.data.frame()
-# godn.DR_H <- subset(go.list$FC_DR_H$less, 
-#                       go.list$FC_DR_H$gless[,"q.val"] < 0.1) %>%
-#    as.data.frame()
-
-goup.HS_B <- subset(go.list$FC_HS_B$greater, 
-                      go.list$FC_HS_B$greater[,"q.val"] < 0.1) %>%
-   as.data.frame()
-# godn.HS_B <- subset(go.list$FC_HS_B$less, 
-#                       go.list$FC_HS_B$gless[,"q.val"] < 0.1) %>%
-#    as.data.frame()
-# goup.HS_O <- subset(go.list$FC_HS_O$greater, 
-#                       go.list$FC_HS_O$greater[,"q.val"] < 0.1) %>%
-#    as.data.frame()
-# godn.HS_O <- subset(go.list$FC_HS_O$less, 
-#                       go.list$FC_HS_O$gless[,"q.val"] < 0.1) %>%
-#    as.data.frame()
-goup.HS_H <- subset(go.list$FC_HS_H$greater, 
-                      go.list$FC_HS_H$greater[,"q.val"] < 0.1) %>%
-   as.data.frame()
-godn.HS_H <- subset(go.list$FC_HS_H$less, 
-                     go.list$FC_HS_H$less[,"q.val"] < 0.1)%>%
-  as.data.frame()
-
-goup.DRHS_B <- subset(go.list$FC_DRHS_B$greater, 
-                     go.list$FC_DRHS_B$greater[,"q.val"] < 0.1)%>%
-  as.data.frame()
-# godn.DRHS_B <- subset(go.list$FC_DRHS_B$less, 
-#                       go.list$FC_DRHS_B$gless[,"q.val"] < 0.1) %>%
-#    as.data.frame()
-# goup.DRHS_O <- subset(go.list$FC_DRHS_O$greater, 
-#                      go.list$FC_DRHS_O$greater[,"q.val"] < 0.1)%>%
-#   as.data.frame()
-# godn.DRHS_O <- subset(go.list$FC_DRHS_O$less, 
-#                       go.list$FC_DRHS_O$gless[,"q.val"] < 0.1) %>%
-#    as.data.frame()
-# goup.DRHS_H <- subset(go.list$FC_DRHS_H$greater, 
-#                       go.list$FC_DRHS_H$greater[,"q.val"] < 0.1) %>%
-#    as.data.frame()
-godn.DRHS_H <- subset(go.list$FC_DRHS_H$less, 
-                      go.list$FC_DRHS_H$less[,"q.val"] < 0.1) %>%
-   as.data.frame()
-```
-
-# Table of all enriched pathways
 
 ```{r}
-# add identifier colum to each list
-goup.DR_B$compare <- "up.DR_B"
-goup.DR_H$compare <- "up.DR_H"
-goup.HS_B$compare <- "up.HS_B"
-goup.HS_H$compare <- "up.HS_H"
-godn.HS_H$compare <- "dn.HS_H"
-goup.DRHS_B$compare <- "up.DRHS_B"
-godn.DRHS_H$compare <- "dn.DRHS_H" 
+goup.DR_B <- subset(go.list$FC_DR_B$greater)%>%as.data.frame()%>%add_column(compare = "goup.DR_B")
+goup.DR_B <- rownames_to_column(goup.DR_B, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+godn.DR_B <- subset(go.list$FC_DR_B$less)%>%as.data.frame()%>%add_column(compare = "godn.DR_B")
+godn.DR_B <- rownames_to_column(godn.DR_B, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+goup.DR_O <- subset(go.list$FC_DR_O$greater)%>%as.data.frame()%>%add_column(compare = "goup.DR_O")
+goup.DR_O <- rownames_to_column(goup.DR_O, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+godn.DR_O <- subset(go.list$FC_DR_O$less)%>%as.data.frame()%>%add_column(compare = "godn.DR_O")
+godn.DR_O <- rownames_to_column(godn.DR_O, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+goup.DR_H <- subset(go.list$FC_DR_H$greater)%>%as.data.frame()%>%add_column(compare = "goup.DR_H")
+goup.DR_H <- rownames_to_column(goup.DR_H, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+godn.DR_H <- subset(go.list$FC_DR_H$less)%>%as.data.frame()%>%add_column(compare = "godn.DR_H")
+godn.DR_H <- rownames_to_column(godn.DR_H, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
 
-enrich.goterms <- rbind(goup.DR_B,goup.DR_H,goup.HS_B,goup.HS_H,
-                  godn.HS_H,goup.DRHS_B,godn.DRHS_H)
+goup.HS_B <- subset(go.list$FC_HS_B$greater)%>%as.data.frame()%>%add_column(compare = "goup.HS_B")
+goup.HS_B <- rownames_to_column(goup.HS_B, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+godn.HS_B <- subset(go.list$FC_HS_B$less)%>%as.data.frame()%>%add_column(compare = "godn.HS_B")
+godn.HS_B <- rownames_to_column(godn.HS_B, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+goup.HS_O <- subset(go.list$FC_HS_O$greater)%>%as.data.frame()%>%add_column(compare = "goup.HS_O")
+goup.HS_O <- rownames_to_column(goup.HS_O, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+godn.HS_O <- subset(go.list$FC_HS_O$less)%>%as.data.frame()%>%add_column(compare = "godn.HS_O")
+godn.HS_O <- rownames_to_column(godn.HS_O, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+goup.HS_H <- subset(go.list$FC_HS_H$greater)%>%as.data.frame()%>%add_column(compare = "goup.HS_H")
+goup.HS_H <- rownames_to_column(goup.HS_H, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+godn.HS_H <- subset(go.list$FC_HS_H$less)%>%as.data.frame()%>%add_column(compare = "godn.HS_H")
+godn.HS_H <- rownames_to_column(godn.HS_H, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+
+goup.DRHS_B <- subset(go.list$FC_DRHS_B$greater)%>%as.data.frame()%>%add_column(compare = "goup.DRHS_B")
+goup.DRHS_B <- rownames_to_column(goup.DRHS_B, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+godn.DRHS_B <- subset(go.list$FC_DRHS_B$less)%>%as.data.frame()%>%add_column(compare = "godn.DRHS_B")
+  godn.DRHS_B <- rownames_to_column(godn.DRHS_B, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+goup.DRHS_O <- subset(go.list$FC_DRHS_O$greater)%>%as.data.frame()%>%add_column(compare = "goup.DRHS_O")
+goup.DRHS_O <- rownames_to_column(goup.DRHS_O, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+godn.DRHS_O <- subset(go.list$FC_DRHS_O$less)%>%as.data.frame()%>%add_column(compare = "godn.DRHS_O")
+godn.DRHS_O <- rownames_to_column(godn.DRHS_O, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+goup.DRHS_H <- subset(go.list$FC_DRHS_H$greater)%>%as.data.frame()%>%add_column(compare = "goup.DRHS_H")
+goup.DRHS_H <- rownames_to_column(goup.DRHS_H, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+godn.DRHS_H <- subset(go.list$FC_DRHS_H$less)%>%as.data.frame()%>%add_column(compare = "godn.DRHS_H")
+godn.DRHS_H <- rownames_to_column(godn.DRHS_H, "goterm")%>%
+  dplyr::select(goterm,stat.mean,q.val,set.size,compare)
+
+enrich.goterm <- rbind(goup.DR_B,godn.DR_B,goup.DR_O,godn.DR_O,goup.DR_H,godn.DR_H,
+                        goup.HS_B,godn.HS_B,goup.HS_O,godn.HS_O,goup.HS_H,godn.HS_H,
+                        goup.DRHS_B,godn.DRHS_B,goup.DRHS_O,godn.DRHS_O,goup.DRHS_H,godn.DRHS_H)
 ```
 
+# Filter GO terms
+
+```{r}
+# GO terms that differ by diet globally
+its <- strsplit(enrich.goterm$compare, split = "_", fixed = TRUE)
+its <- unlist(lapply(its, function(x) x[1]))
+enrich.goterm$diet <- its
+enrich.goterm$diet <- gsub('DRHS', 'DH', enrich.goterm$diet)
+(enrich.goterm <- enrich.goterm[order(enrich.goterm$q.val), ])
+#dup <- enrich.goterm[duplicated(enrich.goterm), ]
+
+# qval < 0.05
+gqval05 <- subset(enrich.goterm,enrich.goterm$q.val>0.05 & enrich.goterm$q.val<0.1)
+gqval05 <- gqval05[order(gqval05$compare),]
+ung05 <- unique(gqval05$goterm)
+
+# view one pathway
+z <- subset(enrich.goterm,c(enrich.goterm$diet=="dn.HS" & 
+                            enrich.goterm$goterm=="GO:0005975 carbohydrate metabolic process"))
+z <- z[order(x$goterm),]
+
+
+
+#y <- subset(enrich.path, diet == "up.HS_B"|q.val <=0.05)
+#xy <- which(x$pathway %in% y$pathway)
+
+#glob_up.DR_HS <- subset(enrich.path, glob_up.DR_HS>0)
+```
 
 
 ```{r}
