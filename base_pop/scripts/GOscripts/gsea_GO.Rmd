@@ -122,6 +122,7 @@ for (ii in 1:length(cc.sets))
   
 out.list[[ii]] <- fc.kegg
 }
+
 lapply(out.list[[ii]], head)
 
 sigGeneSet(out.list[[1]], cutoff = 0.1,heatmap = TRUE,
@@ -133,6 +134,21 @@ sigGeneSet(out.list[[1]], cutoff = 0.1,heatmap = TRUE,
 # Get pathways
 
 ```{r}
+
+enrich.path <- data.frame("pathway"=character(length=0),
+                          "stat.mean"=numeric(length=0),
+                          "contrast"=character(length=0), stringsAsFactors = FALSE)
+
+for(fc.set in cc.sets)
+{
+  sub.fc <- out.list[[fc.set]][[1]]%>%as.data.frame()%>%add_column(contrast = fc.set)
+sub.fc <- rownames_to_column(sub.fc, "pathway")%>%
+  dplyr::select(pathway,stat.mean,contrast)
+enrich.path <- rbind(enrich.path, sub.fc)
+  
+}
+
+
 
  # paths <- out.list
  # for(f in c("greater","less")){
@@ -152,20 +168,20 @@ sigGeneSet(out.list[[1]], cutoff = 0.1,heatmap = TRUE,
 DR_B <- out.list[[1]][[1]]%>%as.data.frame()%>%add_column(contrast = "DR_B")
 DR_B <- rownames_to_column(DR_B, "pathway")%>%
   dplyr::select(pathway,stat.mean,contrast)
-DR_O <- out.list[[1]][[2]]%>%as.data.frame()%>%add_column(contrast = "DR_O")
+DR_O <- out.list[[1]][[1]]%>%as.data.frame()%>%add_column(contrast = "DR_O")
 DR_O <- rownames_to_column(DR_O, "pathway")%>%
   dplyr::select(pathway,stat.mean,contrast)
-DR_H <- out.list[[1]][[3]]%>%as.data.frame()%>%add_column(contrast = "DR_H")
+DR_H <- out.list[[3]][[1]]%>%as.data.frame()%>%add_column(contrast = "DR_H")
 DR_H <- rownames_to_column(DR_H, "pathway")%>%
   dplyr::select(pathway,stat.mean,contrast)
 
-HS_B <- out.list[[2]][[1]]%>%as.data.frame()%>%add_column(contrast = "HS_B")
+HS_B <- out.list[[4]][[1]]%>%as.data.frame()%>%add_column(contrast = "HS_B")
 HS_B <- rownames_to_column(HS_B, "pathway")%>%
   dplyr::select(pathway,stat.mean,contrast)
-HS_O <- out.list[[2]][[2]]%>%as.data.frame()%>%add_column(contrast = "HS_O")
+HS_O <- out.list[[5]][[1]]%>%as.data.frame()%>%add_column(contrast = "HS_O")
 HS_O <- rownames_to_column(HS_O, "pathway")%>%
   dplyr::select(pathway,stat.mean,contrast)
-HS_H <- out.list[[2]][[3]]%>%as.data.frame()%>%add_column(contrast = "HS_H")
+HS_H <- out.list[[6]][[1]]%>%as.data.frame()%>%add_column(contrast = "HS_H")
 HS_H <- rownames_to_column(HS_H, "pathway")%>%
   dplyr::select(pathway,stat.mean,contrast)
 
