@@ -70,6 +70,8 @@ dds.02 <- DESeqDataSetFromMatrix(countData = countdata,
                                    colData = phenDat.sva, 
                                    design = ~ SV1 + batch + tissue*treatment)
 
+save(dds.02, file="../../processed/DESEQ/dds.02.Rda")
+
 dds_deseq.02 <- estimateSizeFactors(dds.02)
 nc <- counts(dds_deseq.02, normalized=TRUE)
 filter <- rowSums(nc >= 10) >= 2

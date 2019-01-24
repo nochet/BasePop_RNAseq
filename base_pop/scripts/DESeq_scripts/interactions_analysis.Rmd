@@ -1,0 +1,45 @@
+---
+title: "Interactions"
+author: "EGK & EN"
+date: "1/23/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("ggplot2")
+library(cowplot)
+```
+
+```{r}
+load(file="../../processed/DESEQ/lrtInt_allPadj.Rda")
+load(file="../../processed/DESEQ/dds.02.Rda")
+
+lrt.intAll[which.min(lrt.intAll$padj),]
+
+gg <- rownames(subset(lrt.intAll, padj < 0.0000001))
+
+ccs <- c(2, 14, 17, 18, 28, 33)
+ps <- vector(mode='list', length=length(ccs))
+counter <-1
+
+for(jj in ccs)
+{
+
+ww <- which(rownames(dds.02)==gg[jj])
+
+d <- plotCounts(dds.02, gene=ww, intgroup=c("treatment", "tissue"), 
+                returnData=TRUE)
+
+p1<- ggplot(d, aes(x=treatment, y=count, color=tissue)) + 
+  geom_point(position=position_jitter(w=0.1,h=0)) + 
+  scale_y_log10(breaks=c(25,100,400)) +
+  theme(legend.position='none')
+ps[[counter]]<- p1
+counter <- counter+1
+}
+
+pall <- plot_grid(plotlist=ps,nrow=2)
+
+ggsave(pall, filename = "../../plots/Interaction_ex.pdf", height = 8, width=10)
+```
