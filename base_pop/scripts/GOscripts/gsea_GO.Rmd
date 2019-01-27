@@ -107,18 +107,6 @@ for (ii in 1:length(cc.sets))
   names(fc.i) <- e.names
 
   fc.kegg = gage(fc.i, gsets = kegg_sets.dm, same.dir = TRUE)
-  #  sel.up <- fc.kegg$greater[, "q.val"] < 0.1 &
-  #         !is.na(fc.kegg$greater[, "q.val"])
-  # path.ids.up <- rownames(fc.kegg$greater)[sel.up]
-  # sel.down <- fc.kegg$less[, "q.val"] < 0.1 &
-  #            !is.na(fc.kegg$less[,"q.val"])
-  # path.ids.dwn <- rownames(fc.kegg$less)[sel.down]
-  # path.ids2 <- substr(c(path.ids.up, path.ids.dwn), 1, 8)
-
-#view first 3 pathways 
-#pv.out.list <- sapply(path.ids2[1:3], function(pid) pathview(
-#                        gene.data =  fc.i, pathway.id = pid,
-#                        species = "dme", out.suffix=out.suffix))
   
 out.list[[ii]] <- fc.kegg
 }
@@ -142,81 +130,23 @@ enrich.path <- data.frame("pathway"=character(length=0),
 for(fc.set in cc.sets)
 {
   sub.fc <- out.list[[fc.set]][[1]]%>%as.data.frame()%>%add_column(contrast = fc.set)
-sub.fc <- rownames_to_column(sub.fc, "pathway")%>%
+  
+sub.fc <- rownames_to_column(sub.fc, "pathway") %>%
   dplyr::select(pathway,stat.mean,contrast)
+
 enrich.path <- rbind(enrich.path, sub.fc)
   
 }
 
-
-
- # paths <- out.list
- # for(f in c("greater","less")){
- #   paths[[f]] <- do.call("rbind", lapply(out.list, function(x) x[[f]]))
- # }
-# 
-# l1 <- do.call('c', out.list)
-# lapply(split(l1,sub('.*\\.', '', names(l1))),
-#                       function(x) do.call(rbind, x))
-# 
-# l1 <- lapply(c("greater","less"), function(u) do.call(rbind, lapply(out.list, `[[`, u)))
-
-# up.DR_B <- subset(out.list$FC_DR_B$greater, 
-#                      out.list$FC_DR_B$greater[,"q.val"] < 0.1)%>%
-#   as.data.frame()
-
-DR_B <- out.list[[1]][[1]]%>%as.data.frame()%>%add_column(contrast = "DR_B")
-DR_B <- rownames_to_column(DR_B, "pathway")%>%
-  dplyr::select(pathway,stat.mean,contrast)
-DR_O <- out.list[[1]][[1]]%>%as.data.frame()%>%add_column(contrast = "DR_O")
-DR_O <- rownames_to_column(DR_O, "pathway")%>%
-  dplyr::select(pathway,stat.mean,contrast)
-DR_H <- out.list[[3]][[1]]%>%as.data.frame()%>%add_column(contrast = "DR_H")
-DR_H <- rownames_to_column(DR_H, "pathway")%>%
-  dplyr::select(pathway,stat.mean,contrast)
-
-HS_B <- out.list[[4]][[1]]%>%as.data.frame()%>%add_column(contrast = "HS_B")
-HS_B <- rownames_to_column(HS_B, "pathway")%>%
-  dplyr::select(pathway,stat.mean,contrast)
-HS_O <- out.list[[5]][[1]]%>%as.data.frame()%>%add_column(contrast = "HS_O")
-HS_O <- rownames_to_column(HS_O, "pathway")%>%
-  dplyr::select(pathway,stat.mean,contrast)
-HS_H <- out.list[[6]][[1]]%>%as.data.frame()%>%add_column(contrast = "HS_H")
-HS_H <- rownames_to_column(HS_H, "pathway")%>%
-  dplyr::select(pathway,stat.mean,contrast)
-
-DRHS_B <- out.list[[3]][[1]]%>%as.data.frame()%>%add_column(contrast = "DRHS_B")
-DRHS_B <- rownames_to_column(DRHS_B, "pathway")%>%
-  dplyr::select(pathway,stat.mean,contrast)
-DRHS_O <- out.list[[3]][[2]]%>%as.data.frame()%>%add_column(contrast = "DRHS_O")
-DRHS_O <- rownames_to_column(DRHS_O, "pathway")%>%
-  dplyr::select(pathway,stat.mean,contrast)
-DRHS_H <- out.list[[3]][[3]]%>%as.data.frame()%>%add_column(contrast = "DRHS_H")
-DRHS_H <- rownames_to_column(DRHS_H, "pathway")%>%
-  dplyr::select(pathway,stat.mean,contrast)
-
-  enrich.path <- rbind(DR_B,DR_O,DR_H,
-                       HS_B,HS_O,HS_H,
-                       DRHS_B,DRHS_O,DRHS_H)
-
 ```
 
-# Subset for pathway and contrast
+# Correlate pathways for contrasts
 
 ```{r}
-# tt <- strsplit(enrich.path$contrast, split = ".", fixed = TRUE)
-# tt <- unlist(lapply(tt, function(x) x[2]))
-# enrich.path$contrast <- tt
-# #(enrich.path <- enrich.path[order(enrich.path$q.val), ])
-# enrich.path$contrast <- NULL
-
-#pqval <- enrich.path[,c(1,2,5)]
-#contrs <- unique(pqval$contrast)
-
 p.statmean <- enrich.path %>% spread(contrast,stat.mean)
 head(p.statmean, 10)
 
-subset(p.statmean,c(p.statmean$HS_H & p.statmean$pathway ==
+subset(p.statmean,c(p.statmean$FC_HS_H & p.statmean$pathway ==
                      "dme00010 Glycolysis / Gluconeogenesis"))
 
 #library(reshape2)
@@ -230,19 +160,12 @@ library(GGally)
 
 ggpairs(p.statmean[,2:9]) 
 
-# Something amiss in gage()?? See this:
-subset(enrich.path,enrich.path$pathway=="dme03010 Ribosome")
-out.list[[1]][[1]]["dme03010 Ribosome",]
-out.list[[1]][[2]]["dme03010 Ribosome",]
-out.list[[1]][[3]]["dme03010 Ribosome",]
-# all have one value of stat.mean, and issue is common
-# last one misses values
-# Someone raises suspicion ith ribosome here: https://support.bioconductor.org/p/37575/
 ```
 
 # Gene Ontology (GO)
 
 ```{r}
+# takes a while 
 go.list <- vector(mode='list', length=length(cc.sets))
 names(go.list)  <- cc.sets
 
@@ -262,66 +185,27 @@ lapply(go.list[[kk]], head)
 # Get enriched GO terms
 
 ```{r}
-goup.DR_B <- subset(go.list$FC_DR_B$greater)%>%as.data.frame()%>%add_column(contrast = "goup.DR_B")
-goup.DR_B <- rownames_to_column(goup.DR_B, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
-godn.DR_B <- subset(go.list$FC_DR_B$less)%>%as.data.frame()%>%add_column(contrast = "godn.DR_B")
-godn.DR_B <- rownames_to_column(godn.DR_B, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
-goup.DR_O <- subset(go.list$FC_DR_O$greater)%>%as.data.frame()%>%add_column(contrast = "goup.DR_O")
-goup.DR_O <- rownames_to_column(goup.DR_O, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
-godn.DR_O <- subset(go.list$FC_DR_O$less)%>%as.data.frame()%>%add_column(contrast = "godn.DR_O")
-godn.DR_O <- rownames_to_column(godn.DR_O, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
-goup.DR_H <- subset(go.list$FC_DR_H$greater)%>%as.data.frame()%>%add_column(contrast = "goup.DR_H")
-goup.DR_H <- rownames_to_column(goup.DR_H, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
-godn.DR_H <- subset(go.list$FC_DR_H$less)%>%as.data.frame()%>%add_column(contrast = "godn.DR_H")
-godn.DR_H <- rownames_to_column(godn.DR_H, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
+enrich.goterm <- data.frame("goterm"=character(length=0),
+                          "stat.mean"=numeric(length=0),
+                          "contrast"=character(length=0), stringsAsFactors = FALSE)
 
-goup.HS_B <- subset(go.list$FC_HS_B$greater)%>%as.data.frame()%>%add_column(contrast = "goup.HS_B")
-goup.HS_B <- rownames_to_column(goup.HS_B, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
-godn.HS_B <- subset(go.list$FC_HS_B$less)%>%as.data.frame()%>%add_column(contrast = "godn.HS_B")
-godn.HS_B <- rownames_to_column(godn.HS_B, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
-goup.HS_O <- subset(go.list$FC_HS_O$greater)%>%as.data.frame()%>%add_column(contrast = "goup.HS_O")
-goup.HS_O <- rownames_to_column(goup.HS_O, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
-godn.HS_O <- subset(go.list$FC_HS_O$less)%>%as.data.frame()%>%add_column(contrast = "godn.HS_O")
-godn.HS_O <- rownames_to_column(godn.HS_O, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
-goup.HS_H <- subset(go.list$FC_HS_H$greater)%>%as.data.frame()%>%add_column(contrast = "goup.HS_H")
-goup.HS_H <- rownames_to_column(goup.HS_H, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
-godn.HS_H <- subset(go.list$FC_HS_H$less)%>%as.data.frame()%>%add_column(contrast = "godn.HS_H")
-godn.HS_H <- rownames_to_column(godn.HS_H, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
+for(fc.set in cc.sets)
+{
+  sub.fc <- go.list[[fc.set]][[1]]%>%as.data.frame()%>%add_column(contrast = fc.set)
+  
+sub.fc <- rownames_to_column(sub.fc, "goterm") %>%
+  dplyr::select(goterm,stat.mean,contrast)
 
-goup.DRHS_B <- subset(go.list$FC_DRHS_B$greater)%>%as.data.frame()%>%add_column(contrast = "goup.DRHS_B")
-goup.DRHS_B <- rownames_to_column(goup.DRHS_B, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
-godn.DRHS_B <- subset(go.list$FC_DRHS_B$less)%>%as.data.frame()%>%add_column(contrast = "godn.DRHS_B")
-  godn.DRHS_B <- rownames_to_column(godn.DRHS_B, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
-goup.DRHS_O <- subset(go.list$FC_DRHS_O$greater)%>%as.data.frame()%>%add_column(contrast = "goup.DRHS_O")
-goup.DRHS_O <- rownames_to_column(goup.DRHS_O, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
-godn.DRHS_O <- subset(go.list$FC_DRHS_O$less)%>%as.data.frame()%>%add_column(contrast = "godn.DRHS_O")
-godn.DRHS_O <- rownames_to_column(godn.DRHS_O, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
-goup.DRHS_H <- subset(go.list$FC_DRHS_H$greater)%>%as.data.frame()%>%add_column(contrast = "goup.DRHS_H")
-goup.DRHS_H <- rownames_to_column(goup.DRHS_H, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
-godn.DRHS_H <- subset(go.list$FC_DRHS_H$less)%>%as.data.frame()%>%add_column(contrast = "godn.DRHS_H")
-godn.DRHS_H <- rownames_to_column(godn.DRHS_H, "goterm")%>%
-  dplyr::select(goterm,stat.mean,q.val,set.size,contrast)
+enrich.goterm <- rbind(enrich.goterm, sub.fc)
+}
 
-enrich.goterm <- rbind(goup.DR_B,godn.DR_B,goup.DR_O,godn.DR_O,goup.DR_H,godn.DR_H,
-                        goup.HS_B,godn.HS_B,goup.HS_O,godn.HS_O,goup.HS_H,godn.HS_H,
-                        goup.DRHS_B,godn.DRHS_B,goup.DRHS_O,godn.DRHS_O,goup.DRHS_H,godn.DRHS_H)
+go.smean <- enrich.goterm %>% spread(contrast,stat.mean)
+head(go.smean, 10)
+
+subset(go.smean,c(go.smean$FC_DR_B & go.smean$goterm ==
+                     "GO:0017144 drug metabolic process"))
+
+ggpairs(go.smean[,2:9]) 
 ```
 
 # Filter GO terms
