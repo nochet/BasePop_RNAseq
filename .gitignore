@@ -55,7 +55,6 @@ Thumbs.db
 
 #R stuff#
 #######
-*.Rda
 *.Rhistory
 *.Rproj
 *.Rproj.user
