@@ -1,0 +1,49 @@
+---
+title: "EnrichPlot"
+author: "Enoch Ng'oma"
+date: "1/30/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(enrichplot)
+library(DOSE)
+
+```
+
+```{r}
+
+load(file="../../processed/DESEQ/lrt.treatment.Rda")
+head(rownames(lrt.treatment))
+
+# Add annotation maps to results object
+
+# gene symbol
+lrt.treatment$symbol = mapIds(org.Dm.eg.db,
+                     keys=row.names(lrt.treatment), 
+                     column="SYMBOL",
+                     keytype="FLYBASE",
+                     multiVals="first")
+
+# entrez id
+lrt.treatment$entrez = mapIds(org.Dm.eg.db,
+                     keys=row.names(lrt.treatment), 
+                     column="ENTREZID",
+                     keytype="FLYBASE",
+                     multiVals="first")
+
+# full gene name
+lrt.treatment$name =   mapIds(org.Dm.eg.db,
+                     keys=row.names(lrt.treatment), 
+                     column="GENENAME",
+                     keytype="FLYBASE",
+                     multiVals="first")
+
+head(lrt.treatment, 10)
+head(lrt.treatment$symbol)
+
+all.genes <- lrt.treatment[,"entrez"]
+```
+

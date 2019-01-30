@@ -113,10 +113,10 @@ out.list[[ii]] <- fc.kegg
 
 lapply(out.list[[ii]], head)
 
-sigGeneSet(out.list[[1]], cutoff = 0.1,heatmap = TRUE,
-           qpval = c("q.val","p.val")[1],
-           outname="array", pdf.size = c(7,7),
-           p.limit=c(0.5, 5.5), stat.limit=5)
+# sigGeneSet(out.list[[ii]], cutoff = 0.1,heatmap = TRUE,
+#            qpval = c("q.val","p.val")[1],
+#            outname="array", pdf.size = c(7,7),
+#            p.limit=c(0.5, 5.5), stat.limit=5)
 ```
 
 # Get pathways
@@ -125,6 +125,7 @@ sigGeneSet(out.list[[1]], cutoff = 0.1,heatmap = TRUE,
 
 enrich.path <- data.frame("pathway"=character(length=0),
                           "stat.mean"=numeric(length=0),
+                          "q.val"=numeric(length = 0),
                           "contrast"=character(length=0), stringsAsFactors = FALSE)
 
 for(fc.set in cc.sets)
@@ -132,15 +133,34 @@ for(fc.set in cc.sets)
   sub.fc <- out.list[[fc.set]][[1]]%>%as.data.frame()%>%add_column(contrast = fc.set)
   
 sub.fc <- rownames_to_column(sub.fc, "pathway") %>%
-  dplyr::select(pathway,stat.mean,contrast)
+  dplyr::select(pathway,stat.mean,q.val,contrast)
 
 enrich.path <- rbind(enrich.path, sub.fc)
   
 }
-
 ```
 
-# Correlate pathways for contrasts
+# Significant pathways
+
+```{r}
+# Pathways that differ by diet globally
+pqval01 <- subset(enrich.path,enrich.path$q.val<0.1)
+pqval01 <- pqval01[order(pqval01$stat.mean, decreasing = TRUE),]
+unq01 <- unique(pqval01$pathway)
+
+ggplot(pqval01, aes(x=contrast, y=stat.mean, col=q.val)) +
+  geom_point(stat = "identity") + ylab("Magnitude of gene-set level changes") +
+  xlab("Diet contrast relative C diet") 
+
+ggplot(pqval01, aes(x=pathway, y=stat.mean, col=q.val, label = contrast)) +
+  geom_point() + ylab("Magnitude of geneset level changes") +
+  xlab("Diet contrast relative C except DRHS") + 
+  geom_text(aes(label = contrast), check_overlap = TRUE) +
+  theme(axis.text.x = element_text(angle = 80, hjust=1))
+ 
+```
+
+# Correlate pathways for pair-contrasts
 
 ```{r}
 p.statmean <- enrich.path %>% spread(contrast,stat.mean)
@@ -149,14 +169,7 @@ head(p.statmean, 10)
 subset(p.statmean,c(p.statmean$FC_HS_H & p.statmean$pathway ==
                      "dme00010 Glycolysis / Gluconeogenesis"))
 
-#library(reshape2)
 library(GGally)
-
-# d <- melt(path_wide,id.vars="pathway")
-# 
-# ggplot(d, aes(pathway, value)) + 
-#   geom_point() +
-#   facet_wrap(~variable)
 
 ggpairs(p.statmean[,2:9]) 
 
@@ -270,3 +283,4 @@ z <- z[order(x$goterm),]
 # xy <- which(x$pathway %in% y$pathway)
 # glob_up.DR_HS <- subset(enrich.path, glob_up.DR_HS>0)
 ```
+
