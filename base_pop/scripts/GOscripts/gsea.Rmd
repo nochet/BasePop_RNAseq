@@ -1,0 +1,255 @@
+---
+title: "Gene set analysis using Molecular Signatures Database (MSIGDBR)"
+author: "Enoch Ng'oma"
+date: "1/31/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(msigdbr)
+library(clusterProfiler)
+library(org.Dm.eg.db)
+library(tidyverse)
+
+# Tutorial: https://bioconductor.org/packages/release/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html
+
+msigdbr_show_species()
+keytypes(org.Dm.eg.db)
+```
+
+# Retrieve all fly gene sets
+
+```{r}
+m_df = msigdbr(species = "Drosophila melanogaster")
+head(m_df)
+
+# msigdbr() output can also be manipulated as a data frame
+m_df = msigdbr(species = "Drosophila melanogaster") %>%
+  dplyr::filter(gs_cat == "H")
+# Google: MSigDB gene set collections
+
+head(m_df)
+```
+
+# Prep geneList
+
+```{r}
+#load(file="../../processed/DESEQ/all_fc_dat.rda")
+#head(rownames(all.fc.dat))
+
+load(file="../../processed/DESEQ/lrt.treatment.Rda")
+head(rownames(lrt.treatment))
+
+# Prep background gene list (all genes)
+backgenes <- as.data.frame(lrt.treatment) 
+backgenes <- rownames_to_column(backgenes, var="FLYBASE") %>%
+  dplyr::select(FLYBASE,log2FoldChange) %>%
+  dplyr::rename(FC = log2FoldChange) 
+
+# Map ids to entrez
+backg <- bitr(backgenes$FLYBASE, 
+                  fromType = "FLYBASE", 
+                  toType = "ENTREZID", 
+                  OrgDb = "org.Dm.eg.db")
+
+backgenes <- right_join(backgenes, backg, by="FLYBASE") 
+backgenes <- backgenes[,c("ENTREZID", "FC")]
+
+backgenes <- as.matrix(column_to_rownames(backgenes, var = "ENTREZID"))
+backgenes <- backgenes[order(backgenes, decreasing = TRUE),]
+
+
+# Prep significant genes
+allFC <- subset(lrt.treatment, lrt.treatment$padj<0.05)
+
+allFC <- as.data.frame(allFC) 
+allFC <- rownames_to_column(allFC, "FLYBASE") %>%
+  dplyr::select(FLYBASE,log2FoldChange) %>%
+  dplyr::rename(FC = log2FoldChange) 
+
+allFC.entrz <- bitr(allFC$FLYBASE, 
+                    fromType="FLYBASE",
+                    #toType=c("ENTREZID","SYMBOL","FLYBASECG"),
+                    toType="ENTREZID",
+                    OrgDb="org.Dm.eg.db")
+head(allFC.entrz)
+
+allFC <- right_join(allFC.entrz, allFC, by="FLYBASE") 
+allFC <- allFC[,c("ENTREZID", "FC")]
+
+allFC.entid <- as.matrix(column_to_rownames(allFC, var = "ENTREZID"))
+#gene <- names(allFC)[abs(allFC$FC) > 2]
+allFC.entid <- allFC.entid[order(allFC$ENTREZID, decreasing = TRUE),]
+
+```
+
+# GO classification
+## i.e. GO distribution at a specific level of GO tree
+
+```{r}
+
+ggo <- groupGO(gene = names(allFC.entid),
+               OrgDb = org.Dm.eg.db,
+               ont = "BP",
+               level = 3,
+               readable = TRUE)
+# readable = TRUE, means input gene IDs will be converted to gene symbols
+
+barplot(ggo, drop=TRUE, showCategory=12)
+```
+
+# GO over-representation test
+
+```{r}
+ego <- enrichGO(gene          = names(allFC.entid),
+                universe      = names(backgenes),
+                OrgDb         = org.Dm.eg.db,
+                keyType       = "ENTREZID",
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+                readable      = TRUE)
+head(ego)
+
+barplot(ego, showCategory=12)
+dotplot(ego)
+
+# Enrichment map
+emapplot(ego)
+
+# Complex biological associations
+## categorySize can be scaled by 'pvalue' or 'geneNum'
+cnetplot(ego, categorySize="pvalue", foldChange=allFC.entid)
+
+goplot(ego)
+```
+
+# GO Gene Set Enrichment Analysis
+# Ref: https://github.com/GuangchuangYu/DOSE/wiki/how-to-prepare-your-own-geneList
+
+```{r}
+#allFC.entid <- as.data.frame(allFC.entid)
+
+geneList <- allFC[,2]
+names(geneList) = as.character(allFC[,1])
+geneList = sort(geneList, decreasing = TRUE)
+
+ego3 <- gseGO(geneList     = geneList,
+              OrgDb        = org.Dm.eg.db,
+              keyType      = "ENTREZID",
+              ont          = "BP",
+              nPerm        = 10000,
+              minGSSize    = 100,
+              maxGSSize    = 500,
+              pvalueCutoff = 0.05,
+              verbose      = FALSE)
+
+dotplot(ego3)
+emapplot(ego3)
+cnetplot(ego3, categorySize="pvalue", foldChange=allFC.entid)
+
+```
+
+# KEGG pathway analysis
+# List of organisms: https://www.genome.jp/kegg/catalog/org_list.html
+
+```{r}
+search_kegg_organism('dme', by='kegg_code')
+dmel <- search_kegg_organism('Drosophila melanogaster', by='scientific_name')
+dim(dmel)
+head(dmel)
+
+# KEGG over-representation
+
+# try convert one entrez id to kegg
+bitr_kegg("40937", fromType="ncbi-geneid", toType="kegg", organism='dme')
+# Looks like ncibi gene id = entrez id
+# http://bioportal.bioontology.org/ontologies/EDAM?p=classes&conceptid=data_1027
+
+# Convert ids to kegg
+# KEGG API instructions: https://guangchuangyu.github.io/2016/05/convert-biological-id-with-kegg-api-using-clusterprofiler/
+
+eg2np <- bitr_kegg(as.character(allFC[,1]), 
+                   fromType='ncbi-geneid', 
+                   toType='kegg', 
+                   organism = "dme")
+head(eg2np) # 15 genes don't map
+
+# Enriched KEEG pathways
+kk <- enrichKEGG(gene = eg2np$kegg,
+                organism = 'dme',
+                keyType      = "kegg",
+                #pvalueCutoff = 0.01,
+                pAdjustMethod = "BH",
+                #universe = backgenes,
+                #minGSSize = 15, 
+                #maxGSSize = 500,
+                qvalueCutoff=0.05)
+head(as.data.frame(kk))
+
+barplot(kk, showCategory=12)
+dotplot(kk, showCategory =12)
+emapplot(kk)
+cnetplot(kk, categorySize="pvalue", foldChange=allFC.entid)
+
+
+# KEGG gene set enrichment analysis
+# fixme!
+circ = as.character(sort(eg2np$kegg, decreasing = TRUE))
+kk2 <- gseKEGG(geneList     = circ,
+               organism     = "dme",
+               keyType      = "kegg",
+               #nPerm        = 10000,
+               #minGSSize    = 15,
+               #pvalueCutoff = 0.05,
+               verbose      = FALSE)
+head(kk2)
+
+# Settings are described here: https://support.bioconductor.org/p/96512/
+
+# KEGG Module over-representation test
+mkk <- enrichMKEGG(gene = circ,
+                   organism = 'dme',
+                   keyType  = "kegg")
+                   #universe = backgenes,
+                   #minGSSize = 10,
+                   #maxGSSize = 500,
+                   #qvalueCutoff = 0.2)
+```
+
+# DAVID functional analysis with clusterProfiler
+
+```{r}
+david <- enrichDAVID(gene = names(allFC.entid),
+                     idType = "ENTREZ_GENE_ID",
+                     #listType = "Gene",
+                     annotation = "GOTERM_BP_FAT",
+                     david.user = "ngomae@missouri.edu")
+
+david_kegg <- enrichDAVID(gene = names(allFC.entid),
+                     idType = "ENTREZ_GENE_ID",
+                     #listType = "Gene",
+                     annotation = "KEGG_PATHWAY",
+                     david.user = "ngomae@missouri.edu")
+```
+
+# Ignore
+
+```{r}
+# Use gene sets data frame for clusterProfiler (Entrez Gene IDs)
+m_t2g = m_df %>% dplyr::select(gs_name, entrez_gene) %>% as.data.frame()
+enricher(gene = genes_entrez, TERM2GENE = m_t2g)
+
+# Use gene sets data frame for clusterProfiler (gene symbols)
+m_t2g = m_df %>% dplyr::select(gs_name, gene_symbol) %>% as.data.frame()
+enricher(gene = genes_symbols, TERM2GENE = m_t2g)
+
+# Use the gene sets data frame for fgsea
+#m_list = m_df %>% split(x = .$gene_symbol, f = .$gs_name)
+
+#fgsea(pathways = m_list, ...)
+```
+
