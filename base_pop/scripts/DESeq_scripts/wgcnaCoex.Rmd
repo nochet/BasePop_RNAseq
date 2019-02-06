@@ -40,7 +40,24 @@ rlog.trt <- read.table("../../processed/DESEQ/rlog.01.txt", sep = "\t",
 
 
 ```{r}
+# get data into WGCNA format - genes as columns, samples as rows
+rlog.trt = as.data.frame(t(rlog.trt)) 
+dim(rlog.trt) 
 
+# Check gene outliers
+outls = goodSamplesGenes(rlog.trt, verbose = 3)
+outls$allOK 
+
+# Define the adjacency matrix using soft thresholding with beta=6
+ADJ1=abs(cor(rlog.trt,use="p"))^6
+
+k=softConnectivity(datE=rlog.trt,power=6)
+
+# Plot a histogram of k and a scale free topology plot
+sizeGrWindow(10,5)
+par(mfrow=c(1,2))
+hist(k)
+scaleFreePlot(k, main="Check scale free topology\n")
 ```
 
 
