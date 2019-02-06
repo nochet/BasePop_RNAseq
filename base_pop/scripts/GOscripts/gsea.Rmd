@@ -71,8 +71,8 @@ allFC <- rownames_to_column(allFC, "FLYBASE") %>%
 
 allFC.entrz <- bitr(allFC$FLYBASE, 
                     fromType="FLYBASE",
-                    #toType=c("ENTREZID","SYMBOL","FLYBASECG"),
-                    toType="ENTREZID",
+                    toType=c("ENTREZID","SYMBOL","FLYBASECG"),
+                    #toType="ENTREZID",
                     OrgDb="org.Dm.eg.db")
 head(allFC.entrz)
 
@@ -121,10 +121,13 @@ dotplot(ego)
 emapplot(ego)
 
 # Complex biological associations
-## categorySize can be scaled by 'pvalue' or 'geneNum'
+
 cnetplot(ego, categorySize="pvalue", foldChange=allFC.entid)
 
-goplot(ego)
+ggsave("../../plots/Overrep_geneConceptnetwork_trt.pdf",
+       plot=last_plot(), width = 25, height = 20, units = "cm")
+
+#goplot(ego)
 ```
 
 # GO Gene Set Enrichment Analysis
@@ -147,9 +150,13 @@ ego3 <- gseGO(geneList     = geneList,
               pvalueCutoff = 0.05,
               verbose      = FALSE)
 
+eggo3 <- setReadable(ego3, 'org.Dm.eg.db')
+
 dotplot(ego3)
 emapplot(ego3)
-cnetplot(ego3, categorySize="pvalue", foldChange=allFC.entid)
+cnetplot(eggo3, categorySize="pvalue", foldChange=allFC.entid)
+ggsave("../../plots/GSEA_geneConceptnetwork_trt.pdf",
+       plot=last_plot(), width = 25, height = 20, units = "cm")
 
 ```
 

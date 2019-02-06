@@ -1,0 +1,46 @@
+---
+title: "WGCNA clustering"
+author: "Enoch Ng'oma"
+date: "2/5/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Tutorials
+# https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/Tutorials/FemaleLiver-02-networkConstr-man.pdf
+# https://wikis.utexas.edu/display/bioiteam/Clustering+using+WGCNA
+
+library(WGCNA)
+library(DESeq2)
+library(flashClust)
+options(stringsAsFactors = FALSE)
+allowWGCNAThreads()
+```
+
+```{r}
+load("../../processed/DESEQ/dds_deseq01.Rda")
+#load("../../processed/DESEQ/dds_deseq.02.Rda")
+
+rlog.01 <- rlog(dds_deseq.01, blind = TRUE, fitType = "parametric")
+#rlog.02 <- rlog(dds_deseq.02, blind = TRUE, fitType = "parametric")
+
+#save(rlog.01, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.01.Rda")
+#save(rlog.02, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.02.Rda")
+write.table(assay(rlog.01), file="../../processed/DESEQ/rlog.01.txt", sep="\t")
+
+rlog.trt <- read.table("../../processed/DESEQ/rlog.01.txt", sep = "\t",
+                       stringsAsFactors = FALSE)
+#load("../../processed/DESEQ/rlogTransform_on_dds_deseq.02.Rda")
+
+
+```
+
+
+
+```{r}
+
+```
+
+
