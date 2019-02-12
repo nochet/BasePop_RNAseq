@@ -1,0 +1,286 @@
+---
+title: "Untitled"
+author: "Enoch Ng'oma"
+date: "2/10/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(DESeq2)
+library(limma)
+
+```
+
+```{r}
+# Expression matrix
+countdata <- read.csv("../../processed/DESEQ/Expr_countData.csv")
+rownames(countdata) <- countdata[,1]
+countdata[,1] <- NULL
+countdata <- as.matrix(countdata)
+
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+rownames(phenDat.sva) <- phenDat.sva[,1]
+phenDat.sva[,1] <- NULL
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
+```
+
+```{r}
+counts.limma <- removeBatchEffect(countdata, batch=phenDat.sva$batch,
+                                  batch2=phenDat.sva$SV1, 
+                                  design = model.matrix(~ tissue + treatment))
+
+par(mfrow=c(1,2))
+boxplot(as.data.frame(countdata),main="Original")
+boxplot(as.data.frame(counts.limma),main="Batch corrected")
+
+# rlog/Voom normalization
+rlogtrt <- rlog(countdata, blind = TRUE, fitType = "parametric")
+
+#counts_voom = voom(counts.limma)
+```
+
+
+
+```{r}
+# get data into WGCNA format - genes as columns, samples as rows
+rlogtrt = as.data.frame(t(rlogtrt)) 
+dim(rlogtrt) 
+
+# Check gene outliers
+outls = goodSamplesGenes(rlogtrt, verbose = 3)
+outls$allOK 
+
+#If outls$allOK = FALSE, remove offending genes
+if (!outls$allOK)
+   {if (sum(!outls$goodGenes)>0)
+       printFlush(paste("Removing genes:", paste(names(rlogtrt)[!outls$goodGenes], collapse= ", ")));
+       if (sum(!outls$goodSamples)>0)
+           printFlush(paste("Removing samples:", paste(rownames(rlogtrt)[!outls$goodSamples], collapse=", ")))
+       rlogtrt= rlogtrt[outls$goodSamples, outls$goodGenes]
+       }
+
+save(rlogtrt, phenDat.sva, file="../../processed/DESEQ/SamplesAndTraits.RData")
+
+load("../../processed/DESEQ/SamplesAndTraits.RData")
+```
+
+# Cluster samples to check outliers
+
+```{r}
+sampleTree = hclust(dist(rlogtrt), method = "average");
+
+sizeGrWindow(12,9) # inches
+par(cex = 0.6);
+par(mar = c(0,4,2,0))
+plot(sampleTree, 
+     main = "Sample clustering to detect outliers", 
+     sub="", xlab="", cex.lab = 1.5,
+     cex.axis = 1.5, cex.main = 2)
+```
+
+# Select soft power
+
+```{r}
+# Choose a soft threshold power
+powers = c(c(1:10), seq(from =10, to=30, by=1)) 
+sft = pickSoftThreshold(rlogtrt, powerVector=powers, 
+                        verbose =5, 
+                        networkType="signed")
+  
+sizeGrWindow(9,5)
+par(mfrow= c(1,2))
+cex1=0.9
+plot(sft$fitIndices[,1], 
+     -sign(sft$fitIndices[,3])*sft$fitIndices[,2], 
+     xlab= "Soft Threshold (power)", 
+     ylab="Scale Free Topology Model Fit, signed R^2", 
+     type= "n", main= paste("Scale independence"))
+
+text(sft$fitIndices[,1], 
+     -sign(sft$fitIndices[,3])*sft$fitIndices[,2], 
+     labels=powers, cex=cex1, col="red")
+
+abline(h=0.90, col="red")
+
+plot(sft$fitIndices[,1], sft$fitIndices[,5], 
+     xlab= "Soft Threshold (power)", 
+     ylab="Mean Connectivity", 
+     type="n", main = paste("Mean connectivity"))
+
+text(sft$fitIndices[,1], sft$fitIndices[,5], 
+     labels=powers, cex=cex1, col="red")
+ 
+# Choose a power lowest power for which the scale free topology index reaches 0.90
+```
+
+# Construct a gene co-expression matrix and generate modules
+# softPower threshold explained here: https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/faq.html
+
+```{r}
+# Build a adjacency "correlation" matrix
+enableWGCNAThreads()
+softPower = 15
+adjacency = adjacency(rlogtrt, power=softPower, type="signed")
+#specify signed network type
+ 
+# Translate the adjacency into topological overlap matrix (TOM) and calculate the corresponding dissimilarity:
+
+TOM = TOMsimilarity(adjacency, TOMType="signed") # specify network type
+dissTOM = 1-TOM
+```
+
+# Generate modules
+
+```{r}
+# Create gene tree by average linkage hierarchical clustering 
+geneTree = flashClust(as.dist(dissTOM), method="average")
+plot(geneTree, xlab="", sub="", 
+     main= "Gene Clustering on TOM-based dissimilarity", 
+     labels= FALSE, hang=0.04)
+
+# Set minimum number of genes in a module
+minModuleSize = 30
+
+# Module identification using dynamic tree cut algorithm
+dynamicMods = cutreeDynamic(dendro= geneTree, 
+                            distM= dissTOM, deepSplit=2,
+                            pamRespectsDendro= FALSE, 
+                            minClusterSize = minModuleSize,
+                            verbose = 2)
+# Modules identified
+table(dynamicMods)
+
+# Assign module colours
+dynamicColors= labels2colors(dynamicMods)
+
+# Plot dendrogram of igengenes
+plotDendroAndColors(geneTree, dynamicColors, 'Module colours', 
+                    dendroLabels = FALSE, hang = 0.03,
+                    addGuide = TRUE, guideHang = 0.05, main='')
+
+MEList= moduleEigengenes(rlogtrt, 
+                         colors= dynamicColors,
+                         softPower = softPower)
+                         
+MEs= MEList$eigengenes;
+
+# Calculate dissimilarity of module eigengenes
+MEDiss= 1-cor(MEs);
+# Cluster module eigengenes
+METree= flashClust(as.dist(MEDiss), method= "average")
+
+save(dynamicMods, MEList, MEs, MEDiss, METree, file= "../../processed/DESEQ/Network_allSamples_signed_RLDfiltered.RData")
+```
+
+# Plot module tree
+
+```{r}
+# Plot the result with phytools package
+par(mar=c(2,2,2,2))
+
+plot.phylo(as.phylo(METree),type = 'fan',
+           show.tip.label = FALSE, main='')
+tiplabels(frame = 'circle',col='black',
+          text=rep('',length(unique(dynamicMods))), 
+          bg = levels(as.factor(dynamicColors)))
+
+
+# Plot tree showing how the eigengenes cluster together
+#pdf(file="../../plots/clusterwithoutmodulecolors.pdf")
+plot(METree, 
+     main= "Clustering of module eigengenes", 
+     xlab= "", sub= "")
+
+# Set threshold for merging modules 
+# Can choose no merge i.e. MEDissThres=0.0)
+# A height cut of 0.25, corresponds to correlation of 0.75
+MEDissThres = 0.25
+merge = mergeCloseModules(rlogtrt, 
+                          dynamicColors, 
+                          cutHeight= MEDissThres, 
+                          verbose =3)
+mergedColors = merge$colors
+mergedMEs = merge$newMEs
+#dev.off()
+
+# Plot dendrogram with module colors below it
+pdf(file="../../plots/cluster.pdf")
+plotDendroAndColors(geneTree, 
+                    cbind(dynamicColors, mergedColors), 
+                    c("Dynamic Tree Cut", "Merged dynamic"),
+                    dendroLabels= FALSE, hang=0.03, 
+                    addGuide= TRUE, guideHang=0.05)
+moduleColors = mergedColors
+colorOrder = c("grey", standardColors(50))
+moduleLabels = match(moduleColors, colorOrder)-1
+MEs = mergedMEs
+dev.off()
+ 
+save(MEs, moduleLabels, moduleColors, geneTree, file= "../../processed/DESEQ/Network_allSamples_signed_nomerge_RLDfiltered.RData")
+```
+
+# Relate gene expression modules to sample traits
+# start here: https://peterlangfelder.com/2018/11/25/working-with-categorical-variables/
+
+```{r}
+# Sample data
+phenDat <- read.csv("../../processed/describe_samples.csv")
+names(phenDat)
+rownames(phenDat) <- phenDat[,1]
+phenDat[,1] <- NULL
+
+# Binarize into pairwise indicators
+# https://peterlangfelder.com/2018/11/25/working-with-categorical-variables/
+phenDat <- phenDat[,1]
+
+# Binarize it into pairwise indicators
+phen.out = binarizeCategoricalVariable(phenDat,
+                                       includePairwise = TRUE,
+                                       includeLevelVsAll = TRUE);
+data.frame(phenDat, phen.out);
+
+# rlog-transformed exprs data
+rlogtrt <- read.table("../../processed/DESEQ/rlog.01.txt", 
+                       sep = "\t",
+                       stringsAsFactors = FALSE)
+
+# Check and order sample IDs to match exprs ids
+all(rownames(phen.out) %in% colnames(rlogtrt))
+rlogtrt <- rlogtrt[, rownames(phen.out)]
+all(rownames(phen.out) == colnames(rlogtrt))
+
+rlogtrt = as.data.frame(t(rlogtrt)) 
+# Correlate traits 
+# Define number of genes and samples
+nGenes = ncol(rlogtrt)
+nSamples = nrow(rlogtrt)
+
+# Recalculate MEs with color labels
+MEs0 = moduleEigengenes(rlogtrt, moduleColors)$eigengenes
+MEs = orderMEs(MEs0)
+moduleTraitCor = cor(MEs, phenDat.sva$SV1, use= "p") # y needs numeric??
+moduleTraitPvalue = corPvalueStudent(moduleTraitCor, nSamples)
+
+# Print correlation heatmap between modules and traits
+textMatrix= paste(signif(moduleTraitCor, 2), 
+                  signif(moduleTraitPvalue, 1), ")", sep= "")
+dim(textMatrix)= dim(moduleTraitCor)
+
+par(mar= c(2, 2, 3, 3))
+
+# Heatmap plot of corelation values 
+labeledHeatmap(Matrix= moduleTraitCor,
+            xLabels= moduleTraitCor[1],
+            yLabels= names(MEs),
+            ySymbols= names(MEs),
+            colorLabels= TRUE,
+            colors= blueWhiteRed(50),
+            textMatrix= textMatrix,
+            setStdMargins= FALSE,
+            cex.text= 0.5,
+            zlim= c(-1,1),
+            main= paste("Module-trait relationships"))
+```
+

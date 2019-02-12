@@ -154,11 +154,14 @@ vsd.02 <- varianceStabilizingTransformation(dds_deseq.02,
 #rlog.01 <- rlog(dds_deseq.01, blind = TRUE, fitType = "parametric")
 #rlog.02 <- rlog(dds_deseq.02, blind = TRUE, fitType = "parametric")
 
-#save(rlog.01, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.01.Rda")
-#save(rlog.02, file = "../../processed/DESEQ/rlogTransform_on_dds_deseq.02.Rda")
+#save(rlog.01, file = "../../processed/DESEQ/rlog_dds_deseq.01.Rda")
+#save(rlog.02, file = "../../processed/DESEQ/rlog_dds_deseq.02.Rda")
+write.table(assay(rlog.01), 
+            file="../../processed/DESEQ/rlog.01.txt", 
+            sep="\t")
 
-load("../../processed/DESEQ/rlogTransform_on_dds_deseq.01.Rda")
-load("../../processed/DESEQ/rlogTransform_on_dds_deseq.02.Rda")
+load("../../processed/DESEQ/rlog_dds_deseq.01.Rda")
+load("../../processed/DESEQ/rlog_dds_deseq.02.Rda")
 
 
 # PC1/PC2: Choose one variance stabilization (vst) plot 
