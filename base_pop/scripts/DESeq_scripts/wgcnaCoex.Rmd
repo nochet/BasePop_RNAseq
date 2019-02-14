@@ -3,6 +3,8 @@ title: "WGCNA clustering"
 author: "Enoch Ng'oma"
 date: "2/5/2019"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -15,10 +17,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 library(WGCNA)
-#library(DESeq2)
+library(DESeq2)
 library(flashClust)
 library(ape)
-#library(limma)
+library(limma)
 
 options(stringsAsFactors = FALSE)
 allowWGCNAThreads()
@@ -30,14 +32,15 @@ set.seed(341072)
 # Data
 
 ```{r}
-# countdata <- read.csv("../../processed/DESEQ/Expr_countData.csv")
-# rownames(countdata) <- countdata[,1]
-# countdata[,1] <- NULL
-# countdata <- as.matrix(countdata)
+countdata <- read.csv("../../processed/DESEQ/Expr_countData.csv")
+rownames(countdata) <- countdata[,1]
+countdata[,1] <- NULL
+countdata <- as.matrix(countdata)
 
 phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
 rownames(phenDat.sva) <- phenDat.sva[,1]
 phenDat.sva[,1] <- NULL
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
 phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, sep="")
 
 load("../../processed/DESEQ/dds_deseq01.Rda")
@@ -46,97 +49,54 @@ load("../../processed/DESEQ/dds_deseq01.Rda")
 # DESeq object
 
 ```{r}
-# dds <- DESeqDataSetFromMatrix(countData = countdata, 
-#                               colData = phenDat.sva, 
-#                               design = ~ SV1 + batch + tissue + treatment)
-# 
-# dds.wg <- estimateSizeFactors(dds)
-# nc <- counts(dds.wg, normalized=TRUE)
-# filter <- rowSums(nc >= 10) >= 2
-# dds.wg <- dds.wg[filter,]
-# dds.wg <- estimateDispersions(dds.wg, fitType = "local")
-# dds.wg <- nbinomWaldTest(dds.wg, maxit = 1000, useOptim = TRUE)
-# 
-# dds.wgg <- DESeqDataSetFromMatrix(countData = countdata, 
-#                               colData = phenDat.sva, 
-#                               design = ~ SV1 + batch + tissue)
-# 
-# dds.wg1 <- estimateSizeFactors(dds.wgg)
-# nc <- counts(dds.wg1, normalized=TRUE)
-# filter <- rowSums(nc >= 10) >= 2
-# dds.wg1 <- dds.wg1[filter,]
-# dds.wg1 <- estimateDispersions(dds.wg1, fitType = "local")
-# dds.wg1 <- nbinomWaldTest(dds.wg1, maxit = 1000, useOptim = TRUE)
+dd0 <- DESeqDataSetFromMatrix(countData = countdata,
+                              colData = phenDat.sva,
+                              design = ~ SV1 + batch)
 
+dd0.wg <- estimateSizeFactors(dd0)
+nc <- counts(dd0.wg, normalized=TRUE)
+filter <- rowSums(nc >= 10) >= 2
+dd0.wg <- dd0.wg[filter,]
+dd0.wg <- estimateDispersions(dd0.wg, fitType = "local")
+dd0.wg <- nbinomWaldTest(dd0.wg, maxit = 1000, useOptim = TRUE)
+
+res0 <- results(dd0.wg)
+head(res0)
 ```
 
 # rlog transform exprs data
 
 ```{r}
-# rlog.wg1 <- rlog(dds.wg1, blind = TRUE, fitType = "parametric")
-# #save(rlog.wg1, file = "../../processed/DESEQ/rlog.wg1.Rda")
-# write.table(assay(rlog.wg1), 
-#             file="../../processed/DESEQ/rlog.wg1.txt", 
+# rlog.wg0 <- rlog(dd0.wg, blind = TRUE, fitType = "parametric")
+# save(rlog.wg0, file = "../../processed/DESEQ/rlog.wg0.Rda")
+# write.table(assay(rlog.wg0),
+#             file="../../processed/DESEQ/rlog.wg0.txt",
 #             sep="\t")
-# 
-# rlog.trt <- read.table("../../processed/DESEQ/rlog.wg1.txt", 
-#                        sep = "\t", stringsAsFactors = FALSE)
-```
-
-# Compute means across replicates
-
-```{r}
-# # Prep a vector of column names
-# sampdat <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
-# sampdat$treat_tissue <- paste(sampdat$treatment,"_",sampdat$tissue, sep="")
-# sampdat <- sampdat[order(sampdat[,2], sampdat[,3]), ]
-# 
-# # Sort columns
-# col_order <- sampdat[,'X']
-# rlog.trt <- rlog.trt[, col_order]
-# #rlog.trt = as.data.frame(t(rlog.trt)) 
-# dim(rlog.trt) 
-# 
-# # Number of rows per group 
-# n <- 6
-# 
-# # Number of groups
-# n_grp <- nrow(rlog.trt) / n
-# 
-# # Column indices (one vector per group)
-# idx_grp <- split(seq(rlog.trt), rep(seq(n_grp), each = n))
-# 
-# # Calculate the row means for all groups
-# rlog.avg <- lapply(idx_grp, function(i) {
-#     # subset of the data frame
-#     tmp <- rlog.trt[i]
-#     # calculate row means
-#     rowMeans(tmp, na.rm = TRUE)
-# })
-# rlog.avg <- as.data.frame(rlog.avg)
-# 
-# # Grab names of first column of each group
-# names_frst <- names(rlog.trt)[sapply(idx_grp, "[", 1)]
-# 
-# # Modify column names of new data frame
-# names(rlog.avg) <- names_frst
-
 ```
 
 # WGCNA Preliminaries
 
 ```{r}
-rlog.01 <- read.table("../../processed/DESEQ/rlog.01.txt", 
+rlog.wg0 <- read.table("../../processed/DESEQ/rlog.wg0.txt", 
             sep="\t", stringsAsFactors = FALSE)
 
 # get data into WGCNA format - genes as columns, samples as rows
-rlogtrt = as.data.frame(t(rlog.01)) 
+rlogtrt = as.data.frame(t(rlog.wg0)) 
 dim(rlogtrt) 
 
 # Check gene outliers
 outls = goodSamplesGenes(rlogtrt, verbose = 3)
 outls$allOK 
 
+# Sample data to numerical format
+phenDat.sva$trt_tis <- ifelse(phenDat.sva$treat_tissue == "C_B",1, 
+                          ifelse(phenDat.sva$treat_tissue=="C_H",2,
+                          ifelse(phenDat.sva$treat_tissue=="C_O",3,
+                          ifelse(phenDat.sva$treat_tissue=="DR_B",4,
+                          ifelse(phenDat.sva$treat_tissue=="DR_H",5,
+                          ifelse(phenDat.sva$treat_tissue=="DR_O",6,
+                          ifelse(phenDat.sva$treat_tissue=="HS_B",7,
+                          ifelse(phenDat.sva$treat_tissue=="HS_H",8, 9))))))))
 ```
 
 # Cluster samples to check outliers
@@ -151,6 +111,12 @@ plot(sampleTree,
      main = "Sample clustering to detect outliers", 
      sub="", xlab="", cex.lab = 1.5,
      cex.axis = 1.5, cex.main = 2)
+
+plot(sampleTree,
+main = "Sample clustering to detect outliers",
+sub="", xlab="", cex.lab = 1.5,
+cex.axis = 1.5, cex.main = 2)
+
 ```
 
 # Select soft power
@@ -192,33 +158,37 @@ text(sft$fitIndices[,1], sft$fitIndices[,5],
 # softPower threshold explained here: https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/faq.html
 
 ```{r}
-# Build a adjacency "correlation" matrix
+# Build the adjacency "correlation" matrix
+
+pe <- sft$powerEstimate
+
 enableWGCNAThreads()
-softPower = 19
-adjacency = adjacency(rlogtrt, 
+softPower = pe
+adjc = adjacency(rlogtrt, 
                       power=softPower, 
                       type="signed")
 #specify signed network type
-head(adjacency)
+head(adjc)
  
-# Translate the adjacency into topological overlap matrix (TOM) and calculate the corresponding dissimilarity:
+# Topological overlap matrix (TOM) of the adjacency matrix
+TOM = TOMsimilarity(adjc, TOMType="signed") # specify network type
 
-TOM = TOMsimilarity(adjacency, TOMType="signed") # specify network type
+# Calculate the corresponding dissimilarity
 dissTOM = 1-TOM
 
 ```
 
-# Generate modules
+# Detect modules
 
 ```{r}
-# Create gene tree by average linkage hierarchical clustering 
+# Hierarchical clustering of the genes based on TOM dissimilarity
 geneTree = flashClust(as.dist(dissTOM), method="average")
-plot(geneTree, xlab="", sub="", 
+plot(geneTree, xlab="", sub="", cex=0.3, 
      main= "Gene Clustering on TOM-based dissimilarity", 
      labels= FALSE, hang=0.04)
 
 # Set minimum number of genes in a module
-minModuleSize = 30
+minModuleSize = 20
 
 # Module identification using dynamic tree cut algorithm
 dynamicMods = cutreeDynamic(dendro= geneTree, 
@@ -232,10 +202,53 @@ table(dynamicMods)
 # Assign module colours
 dynamicColors= labels2colors(dynamicMods)
 
+table(dynamicColors)
+
 # Plot dendrogram of igengenes
 plotDendroAndColors(geneTree, dynamicColors, 'Modules', 
                     dendroLabels = FALSE, hang = 0.03,
                     addGuide = TRUE, guideHang = 0.05, main='')
+
+restGenes = (dynamicColors != "grey")
+
+# Discard unassigned genes, and focus on the rest
+adjc1 = adjacency(rlogtrt[,restGenes], 
+                      power=softPower, 
+                      type="signed")
+
+TOM1 <- TOMsimilarity(adjc1, TOMType="signed")
+
+dissTOM1 = 1-TOM1
+
+# Repeat module detection
+#colnames(dissTOM1) =rownames(diss1)
+geneTree1 <- flashClust(as.dist(dissTOM1), method="average" )
+
+plotDendroAndColors(geneTree1, 
+                    dynamicColors[restGenes], 
+                    "Dynamic Tree Cut", 
+                    dendroLabels = FALSE, 
+                    hang = 0.03, addGuide = TRUE, 
+                    guideHang = 0.05, 
+                    main = "Gene dendrogram and module colors")
+
+# Set the diagonal of the dissimilarity to NA 
+diag(dissTOM1) = NA;
+
+# Visualize the Tom plot. 
+# Raise the dissimilarity matrix to the power of 4 to bring out the module structure
+sizeGrWindow(4,4)
+
+TOMplot(dissTOM1, geneTree1, 
+        as.character(dynamicColors[restGenes]))
+
+# Extract modules
+
+module_colors= setdiff(unique(dynamicColors), "grey")
+for (color in module_colors){
+    module=rlogtrt[which(dynamicColors==color)]
+    write.table(module, paste("module_",color, ".txt",sep=""), sep="\t", row.names=FALSE, col.names=FALSE,quote=FALSE)
+}
 ```
 
 # Merge modules whose expression profiles are very similar
@@ -352,35 +365,24 @@ TOMplot(plotDiss, selectTree, selectColors, main = "Network heatmap, 400 genes")
 dev.off()
 ```
 
-# Visualize relationships between modules
-
-```{r}
-
-```
-
 # Relate gene expression modules to sample traits
 # https://peterlangfelder.com/2018/11/25/working-with-categorical-variables/
 
 ```{r}
 # Sample info
-phenDat <- read.csv("../../processed/describe_samples.csv")
-names(phenDat)
-rownames(phenDat) <- phenDat[,1]
-phenDat[,1] <- NULL
-head(phenDat)
-phenDat <- phenDat[,1]
+phenDat1 <- phenDat.sva[,c(6,7)]
 
 # Binarize categorical variable into pairwise indicators
-phen.bin = binarizeCategoricalVariable(phenDat,
+phen.bin1 = binarizeCategoricalVariable(phenDat1$trt,
 includePairwise = TRUE,
 includeLevelVsAll = FALSE,
 dropUninformative = TRUE,
 includeLevelInformation = TRUE);
 # Print the variable and the indicators
-data.frame(phenDat,phen.bin);
+data.frame(phenDat1,phen.bin1);
 
 # rlog-transformed exprs data
-rlogtrt <- read.table("../../processed/DESEQ/rlog.01.txt", 
+rlogtrt <- read.table("../../processed/DESEQ/rlog.wg0.txt", 
                        sep = "\t",
                        stringsAsFactors = FALSE)
 
@@ -397,30 +399,34 @@ dim(rlogtrt)
 nGenes = ncol(rlogtrt)
 nSamples = nrow(rlogtrt)
 
-# Recalculate MEs with color labels
-MEs0 = moduleEigengenes(rlogtrt, moduleColors)$eigengenes
-MEs = orderMEs(MEs0)
-moduleTraitCor = cor(MEs, phen.bin, use= "p") 
-moduleTraitPvalue = corPvalueStudent(moduleTraitCor, nSamples)
+# Recalculate module eigengens
+MEs = moduleEigengenes(rlogtrt, moduleColors)$eigengenes
 
-# Print correlation heatmap between modules and traits
-textMatrix= paste(signif(moduleTraitCor, 2), 
-                  signif(moduleTraitPvalue, 1), ")", sep= "")
-dim(textMatrix)= dim(moduleTraitCor)
+# Isolate treatment from sample data
+trt <- as.data.frame(phenDat.sva$trt);
+names(trt) = "treatment"
 
-par(mar= c(1, 1, 2, 2))
+# Add the weight to existing module eigengenes
+MET = orderMEs(cbind(MEs, trt))
 
-# Heatmap plot of corelation values 
-labeledHeatmap(Matrix= moduleTraitCor,
-            xLabels= moduleTraitCor,
-            yLabels= names(MEs),
-            ySymbols= names(MEs),
-            colorLabels= TRUE,
-            colors= blueWhiteRed(50),
-            textMatrix= textMatrix,
-            setStdMargins= FALSE,
-            cex.text= 0.5,
-            zlim= c(-1,1),
-            main= paste("Module-trait relationships"))
+# Plot the relationships among the eigengenes and the trait
+sizeGrWindow(9,9);
+par(cex = 0.9)
+plotEigengeneNetworks(MET, "", marDendro = c(0,4,1,2), 
+                      marHeatmap = c(3,4,1,2), 
+                      cex.lab = 0.8, 
+                      xLabelsAngle = 90)
+
+# Can split dendrogram from heatmap
+sizeGrWindow(6,6);
+par(cex = 1.0)
+plotEigengeneNetworks(MET, "Eigengene dendrogram", marDendro = c(0,4,2,0),
+                    plotHeatmaps = FALSE)
+
+par(cex = 1.0)
+plotEigengeneNetworks(MET, "Eigengene adjacency heatmap", marHeatmap = c(3,4,2,2),
+                    plotDendrograms = FALSE, xLabelsAngle = 90)
+
+
 ```
 
