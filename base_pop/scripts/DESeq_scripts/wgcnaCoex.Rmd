@@ -16,15 +16,13 @@ knitr::opts_chunk$set(echo = TRUE)
 # https://bioconductor.org/packages/release/bioc/vignettes/CVE/inst/doc/WGCNA_from_TCGA_RNAseq.html
 
 
-library(WGCNA)
 library(DESeq2)
+library(limma)
+library(WGCNA)
 library(flashClust)
 library(ape)
-library(limma)
 
 options(stringsAsFactors = FALSE)
-allowWGCNAThreads()
-#disableWGCNAThreads()
 
 set.seed(341072)
 ```
@@ -42,8 +40,6 @@ rownames(phenDat.sva) <- phenDat.sva[,1]
 phenDat.sva[,1] <- NULL
 phenDat.sva$batch <- as.factor(phenDat.sva$batch)
 phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, sep="")
-
-load("../../processed/DESEQ/dds_deseq01.Rda")
 ```
 
 # DESeq object
@@ -62,25 +58,49 @@ dd0.wg <- nbinomWaldTest(dd0.wg, maxit = 1000, useOptim = TRUE)
 
 res0 <- results(dd0.wg)
 head(res0)
+
 ```
 
-# rlog transform exprs data
+# rlog transform exprs data: design ~ SV1+batch
 
 ```{r}
-# rlog.wg0 <- rlog(dd0.wg, blind = TRUE, fitType = "parametric")
-# save(rlog.wg0, file = "../../processed/DESEQ/rlog.wg0.Rda")
-# write.table(assay(rlog.wg0),
-#             file="../../processed/DESEQ/rlog.wg0.txt",
-#             sep="\t")
+load("../../processed/DESEQ/dd0.wg.Rda")
+rlog.wg0 <- rlog(dd0.wg, blind = FALSE, fitType = "parametric")
+save(rlog.wg0, file = "../../processed/DESEQ/rlog.wg0.Rda")
+write.table(assay(rlog.wg0),
+            file="../../processed/DESEQ/rlog.wg0.txt",
+            sep="\t")
+
+rlog.wg0 <- read.table("../../processed/DESEQ/rlog.wg0.txt", 
+            sep="\t", stringsAsFactors = FALSE)
+```
+
+# Compare with rlog of DESeq full model ~ SV1+batch+tissue+treatment
+
+```{r}
+# rlog transformation of full model
+load("../../processed/DESEQ/dds_deseq01.Rda")
+rlog.wg1 <- rlog(dds_deseq.01, blind = FALSE, fitType = "parametric")
+
+write.table(assay(rlog.wg1),
+            file="../../processed/DESEQ/rlog.wg1.txt",
+            sep="\t")
+
+rlog.wg1 <- read.table("../../processed/DESEQ/rlog.wg1.txt", 
+            sep="\t", stringsAsFactors = FALSE)
+
+rlog.wg0[1:3,]
+rlog.wg1[1:3,] # different
+
 ```
 
 # WGCNA Preliminaries
 
 ```{r}
-rlog.wg0 <- read.table("../../processed/DESEQ/rlog.wg0.txt", 
-            sep="\t", stringsAsFactors = FALSE)
+allowWGCNAThreads()
+#disableWGCNAThreads()
 
-# get data into WGCNA format - genes as columns, samples as rows
+# Get data into WGCNA format - genes as columns, samples as rows
 rlogtrt = as.data.frame(t(rlog.wg0)) 
 dim(rlogtrt) 
 
@@ -209,49 +229,65 @@ plotDendroAndColors(geneTree, dynamicColors, 'Modules',
                     dendroLabels = FALSE, hang = 0.03,
                     addGuide = TRUE, guideHang = 0.05, main='')
 
-restGenes = (dynamicColors != "grey")
 
 # Discard unassigned genes, and focus on the rest
-adjc1 = adjacency(rlogtrt[,restGenes], 
-                      power=softPower, 
-                      type="signed")
-
-TOM1 <- TOMsimilarity(adjc1, TOMType="signed")
-
-dissTOM1 = 1-TOM1
-
-# Repeat module detection
-#colnames(dissTOM1) =rownames(diss1)
-geneTree1 <- flashClust(as.dist(dissTOM1), method="average" )
-
-plotDendroAndColors(geneTree1, 
-                    dynamicColors[restGenes], 
-                    "Dynamic Tree Cut", 
-                    dendroLabels = FALSE, 
-                    hang = 0.03, addGuide = TRUE, 
-                    guideHang = 0.05, 
-                    main = "Gene dendrogram and module colors")
+# This article discourages removal of grey genes:
+# https://www.researchgate.net/post/Is_there_any_advantage_in_removing_unassigned_grey_genes_when_performing_a_weighted_co-expression_analysis_WGCNA_then_running_analysis_again
+#restGenes = (dynamicColors != "grey")
+# adjc1 = adjacency(rlogtrt[,restGenes], 
+#                       power=softPower, 
+#                       type="signed")
+# 
+# TOM1 <- TOMsimilarity(adjc1, TOMType="signed")
+# 
+# dissTOM1 = 1-TOM1
+# 
+# # Repeat module detection
+# #colnames(dissTOM1) =rownames(diss1)
+# colnames(dissTOM1) =rownames(dissTOM1) =rlogtrt[restGenes]
+# 
+# geneTree1 <- flashClust(as.dist(dissTOM1), method="average" )
+# 
+# plotDendroAndColors(geneTree1, 
+#                     dynamicColors[restGenes], 
+#                     "Dynamic Tree Cut", 
+#                     dendroLabels = FALSE, 
+#                     hang = 0.03, addGuide = TRUE, 
+#                     guideHang = 0.05, 
+#                     main = "Gene dendrogram and module colors")
 
 # Set the diagonal of the dissimilarity to NA 
-diag(dissTOM1) = NA;
+diag(dissTOM) = NA;
 
 # Visualize the Tom plot. 
 # Raise the dissimilarity matrix to the power of 4 to bring out the module structure
-sizeGrWindow(4,4)
-
-TOMplot(dissTOM1, geneTree1, 
-        as.character(dynamicColors[restGenes]))
+# sizeGrWindow(4,4)
+# 
+# TOMplot(dissTOM, geneTree, #intensive!
+#         as.character(dynamicColors))
 
 # Extract modules
-
 module_colors= setdiff(unique(dynamicColors), "grey")
 for (color in module_colors){
     module=rlogtrt[which(dynamicColors==color)]
     write.table(module, paste("module_",color, ".txt",sep=""), sep="\t", row.names=FALSE, col.names=FALSE,quote=FALSE)
 }
+
+# Look at expression patterns of these genes as clustered
+module.order <- unlist(tapply(1:ncol(rlogtrt),
+                              as.factor(dynamicColors),I))
+
+m<-t(t(rlogtrt[,module.order])/
+       apply(rlogtrt[,module.order],2,max))
+
+heatmap(t(m),zlim=c(0,1),col=gray.colors(100),
+        Rowv=NA,Colv=NA,labRow=NA,scale="none",
+        RowSideColors=dynamicColors[module.order])
+
 ```
 
-# Merge modules whose expression profiles are very similar
+# Quantify module similarity by eigengene correlation. Eigengenes = Module representatives
+# i.e. merge modules whose expression profiles are very similar
 
 ```{r}
 # Calculate eigengenes
@@ -260,6 +296,8 @@ MEList= moduleEigengenes(rlogtrt,
                          softPower = softPower)
                          
 MEs= MEList$eigengenes;
+
+plotEigengeneNetworks(MEs, "", marDendro = c(0,4,1,2), marHeatmap = c(3,4,1,2))
 
 # Calculate dissimilarity of module eigengenes
 MEDiss= 1-cor(MEs);
@@ -276,12 +314,7 @@ tiplabels(frame = 'circle',col='black',
           text=rep('',length(unique(dynamicMods))), 
           bg = levels(as.factor(dynamicColors)))
 
-# Plot with WGCNA
-sizeGrWindow(7,6)
-plot(METree, main = "clustering of module eigengene",
-     xlab = "", sub = "")
-
-save(dynamicMods, MEList, MEs, MEDiss, METree, file= "../../processed/DESEQ/Network_allSamples_signed_RLDfiltered.RData")
+save(dynamicMods, MEList, MEs, MEDiss, METree, file= "../../processed/DESEQ/Network_modules_signed.RData")
 ```
 
 # Merge at a selected threshold
@@ -300,7 +333,7 @@ merge = mergeCloseModules(rlogtrt,
                           verbose =3)
 mergedColors = merge$colors;
 mergedMEs = merge$newMEs;
-#dev.off()
+
 
 # Plot dendrogram with module colors below it
 #pdf(file="../../plots/cluster.pdf")
@@ -320,25 +353,23 @@ moduleLabels = match(moduleColors, colorOrder)-1;
 MEs = mergedMEs;
 
 save(MEs, moduleLabels, moduleColors, geneTree, 
-     file= "../../processed/DESEQ/Network_allSamples_signed_merge.RData")
+     file= "../../processed/DESEQ/Network_modules_signed_merge.RData")
 
 ```
 
-# Visualize weighted network via heatmap
+# Visualize weighted network after merge via heatmap
 
 ```{r}
 # Transform dissTOM with a power to make moderately strong connections more visible in the heatmap
-plotTOM = dissTOM^20;
+plotTOM = dissTOM^18;
 
 # Set diagonal to NA for a nicer plot
 diag(plotTOM) = NA;
 
 # Call the plot function
 pdf(file = "../../plots/weighted_heat.pdf", wi = 6, he = 6)
-
 sizeGrWindow(6,6)
-TOMplot(plotTOM, geneTree, moduleColors, main = "Network heatmap plot, all genes")
-
+#TOMplot(plotTOM, geneTree, moduleColors, main = "Network heatmap plot, all genes")
 dev.off()
 
 # For 400 genes
@@ -370,10 +401,10 @@ dev.off()
 
 ```{r}
 # Sample info
-phenDat1 <- phenDat.sva[,c(6,7)]
+phenDat1 <- phenDat.sva[,6]
 
 # Binarize categorical variable into pairwise indicators
-phen.bin1 = binarizeCategoricalVariable(phenDat1$trt,
+phen.bin1 = binarizeCategoricalVariable(phenDat1,
 includePairwise = TRUE,
 includeLevelVsAll = FALSE,
 dropUninformative = TRUE,
@@ -403,7 +434,7 @@ nSamples = nrow(rlogtrt)
 MEs = moduleEigengenes(rlogtrt, moduleColors)$eigengenes
 
 # Isolate treatment from sample data
-trt <- as.data.frame(phenDat.sva$trt);
+trt <- as.data.frame(phenDat.sva$trt_tis);
 names(trt) = "treatment"
 
 # Add the weight to existing module eigengenes
