@@ -34,10 +34,10 @@ set.seed(354902)
 phenDat <- read.csv("../../processed/describe_samples.csv",
                     stringsAsFactors = FALSE)
 
-#bg_ballG <- ballgown(dataDir = "../../processed/S03_short_ballG/ballgown", samplePattern = "", pData = phenDat)
+bg_ballG <- ballgown(dataDir = "../../processed/S03_short_ballG/ballgown", samplePattern = "", pData = phenDat)
 
 # Save .Rda
-#save(bg_ballG, file = "../../processed/S03_short_ballG/bgOut_shortP.Rda")
+save(bg_ballG, file = "../../processed/S03_short_ballG/bgOut_shortP.Rda")
 
 ```
 
