@@ -1,0 +1,156 @@
+---
+title: "WGCNA"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(flashClust)
+library(WGCNA)
+library(ape)
+
+options(stringsAsFactors = FALSE)
+allowWGCNAThreads()
+
+set.seed(170024)
+```
+
+# Expression Data
+
+```{r}
+rlog.wg0 <- read.table("../../processed/DESEQ/rlog.wg0.txt",
+            sep="\t", stringsAsFactors = FALSE)
+
+```
+
+# Prep sample data for WGCNA
+
+```{r}
+# Sample info
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+rownames(phenDat.sva) <- phenDat.sva[,1]
+phenDat.sva[,1] <- NULL
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
+phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, sep="")
+
+# Sample data to numerical format
+phenDat.sva$trt_tis <- ifelse(phenDat.sva$treat_tissue == "C_B",1, 
+                          ifelse(phenDat.sva$treat_tissue=="C_H",2,
+                          ifelse(phenDat.sva$treat_tissue=="C_O",3,
+                          ifelse(phenDat.sva$treat_tissue=="DR_B",4,
+                          ifelse(phenDat.sva$treat_tissue=="DR_H",5,
+                          ifelse(phenDat.sva$treat_tissue=="DR_O",6,
+                          ifelse(phenDat.sva$treat_tissue=="HS_B",7,
+                          ifelse(phenDat.sva$treat_tissue=="HS_H",8, 9))))))))
+
+trt <- phenDat.sva[,"treat_tissue"]
+
+# Indicators for pairwise treatment contrasts
+trt_prw <- binarizeCategoricalVariable(trt, 
+                                       includePairwise = TRUE,
+                                       includeLevelVsAll = FALSE)
+data.frame(trt, trt_prw)
+
+
+# Indicators for each level vs all others
+trt_all <- binarizeCategoricalVariable(trt, 
+                                       includePairwise = FALSE,
+                                       includeLevelVsAll = TRUE)
+data.frame(trt, trt_all)
+
+```
+
+```{r}
+# Transpose matrix
+rlogtrt = as.data.frame(t(rlog.wg0)) 
+dim(rlogtrt) 
+
+# Check gene outliers or too many missing values
+outls = goodSamplesGenes(rlogtrt, verbose = 3)
+outls$allOK 
+
+# Cluster samples to check outliers
+sampleTree = hclust(dist(rlogtrt), method = "average");
+
+sizeGrWindow(12,9) # inches
+par(cex = 0.6);
+par(mar = c(0,4,2,0))
+
+plot(sampleTree, 
+     main = "Sample clustering to detect outliers", 
+     sub="", xlab="", cex.lab = 1.5,
+     cex.axis = 1.5, cex.main = 2)
+
+```
+
+# Select soft power
+
+```{r}
+# Choose a soft threshold power
+powers = c(c(1:10), seq(from =10, to=30, by=1)) 
+sft = pickSoftThreshold(rlogtrt, powerVector=powers, verbose = 5)
+                        
+  
+sizeGrWindow(9,5)
+par(mfrow= c(1,2))
+cex1=0.9
+
+# Scale-free topology fit index as a function of the sft power
+plot(sft$fitIndices[,1], 
+     -sign(sft$fitIndices[,3])*sft$fitIndices[,2], 
+     xlab= "Soft Threshold (power)", 
+     ylab="Scale Free Topology Model Fit, signed R^2", 
+     type= "n", main= paste("Scale independence"))
+
+text(sft$fitIndices[,1], 
+     -sign(sft$fitIndices[,3])*sft$fitIndices[,2], 
+     labels=powers, cex=cex1, col="red")
+
+# line corresponding to R^2 cut-off of h
+abline(h=0.90, col="red")
+
+# Mean connectivity as a function of the sft power
+plot(sft$fitIndices[,1], sft$fitIndices[,5], 
+     xlab= "Soft Threshold (power)", 
+     ylab="Mean Connectivity", 
+     type="n", main = paste("Mean connectivity"))
+
+text(sft$fitIndices[,1], sft$fitIndices[,5], 
+     labels=powers, cex=cex1, col="red")
+ 
+# Choose the lowest power for which the scale free topology index reaches 0.90
+```
+
+
+```{r}
+
+pe <- sft$powerEstimate
+
+net = blockwiseModules(rlogtrt, power = pe,
+                       TOMType = "unsigned", minModuleSize = 20,
+                       reassignThreshold = 0, mergeCutHeight = 0.20,
+                       numericLabels = TRUE, pamRespectsDendro = FALSE,
+                       saveTOMs = FALSE,
+                       #saveTOMFileBase = "rlogTOM", 
+                       verbose = 3)
+
+# open a graphics window
+sizeGrWindow(12, 9)
+
+# Convert labels to colors for plotting
+mergedColors = labels2colors(net$colors)
+
+# Plot the dendrogram and the module colors underneath
+plotDendroAndColors(net$dendrograms[[1]], mergedColors[net$blockGenes[[1]]],
+                    "Module colors",
+                    dendroLabels = FALSE, hang = 0.03,
+                    addGuide = TRUE, guideHang = 0.05)
+
+table(net$colors)
+```
+
+
+
+
+
