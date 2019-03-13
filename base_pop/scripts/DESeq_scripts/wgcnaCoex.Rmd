@@ -23,11 +23,12 @@ options(stringsAsFactors = FALSE)
 allowWGCNAThreads()
 #disableWGCNAThreads()
 
-library(DESeq2)
-library(limma)
+# library(DESeq2)
+# library(limma)
 library(tidyverse)
 library(cowplot)
 library(AnnotationDbi)
+library(org.Dm.eg.db)
 
 set.seed(341072)
 ```
@@ -62,14 +63,31 @@ phenDat.sva$trt_tis <- ifelse(phenDat.sva$treat_tissue == "C_B",1,
                           ifelse(phenDat.sva$treat_tissue=="HS_B",7,
                           ifelse(phenDat.sva$treat_tissue=="HS_H",8, 9))))))))
 
-phenDat.sva$trtm <- ifelse(phenDat.sva$treatment == "C",1, 
-                          ifelse(phenDat.sva$treatment=="DR",2,3))
+# phenDat.sva$trtm <- ifelse(phenDat.sva$treatment == "C",1, 
+#                           ifelse(phenDat.sva$treatment=="DR",2,3))
+# 
+# phenDat.sva$tiss <- ifelse(phenDat.sva$tissue == "B",1, 
+#                           ifelse(phenDat.sva$tissue=="H",2,3))  
 
-phenDat.sva$tiss <- ifelse(phenDat.sva$tissue == "B",1, 
-                          ifelse(phenDat.sva$tissue=="H",2,3))  
+#trt <- phenDat.sva[,6:8]
+#names(trt) = c("Diet-Tissue","Diet","Tissue")
 
-trt <- phenDat.sva[,6:8]
-names(trt) = c("Diet-Tissue","Diet","Tissue")
+trt <- phenDat.sva[,"treat_tissue"]
+
+# Indicators for pairwise treatment contrasts
+trt_prw <- binarizeCategoricalVariable(trt, 
+                                       includePairwise = TRUE,
+                                       includeLevelVsAll = TRUE,
+                                       dropUninformative = TRUE)
+trt_prw <- data.frame(trt, trt_prw)
+trt_prw <- trt_prw[,2:37]
+
+
+# Indicators for each level vs all others
+trt_all <- binarizeCategoricalVariable(trt, 
+                                       includePairwise = FALSE,
+                                       includeLevelVsAll = TRUE)
+trt_all <- data.frame(trt, trt_all)
 
 ```
 
@@ -108,13 +126,14 @@ names(trt) = c("Diet-Tissue","Diet","Tissue")
 #             file="../../processed/DESEQ/vst.wg0.txt",
 #             sep="\t")
 
-rlog.wg0 <- read.table("../../processed/DESEQ/rlog.wg0.txt",
+rlog.wg0 <- read.table("../../processed/DESEQ/Coexpression/rlog.wg0.txt",
             sep="\t", stringsAsFactors = FALSE)
-vst.wg0 <- read.table("../../processed/DESEQ/vst.wg0.txt",
+vst.wg0 <- read.table("../../processed/DESEQ/Coexpression/vst.wg0.txt",
             sep="\t", stringsAsFactors = FALSE)
-rlog.wg1 <- read.table("../../processed/DESEQ/rlog.wg1.txt", 
+rlog.wg1 <- read.table("../../processed/DESEQ/Coexpression/rlog.wg1.txt", 
             sep="\t", stringsAsFactors = FALSE)
 
+# Compare different transformtions
 rlog.wg1[1:2,1:4]
 rlog.wg0[1:2,1:4]
 vst.wg0[1:2,1:4]
@@ -138,22 +157,34 @@ outls$allOK
 sampleTree = hclust(dist(rlogtrt), method = "average");
 
 sizeGrWindow(12,9) # inches
-par(cex = 0.6);
-par(mar = c(0,4,2,0))
-
+par(mfrow=c(2,1))
 plot(sampleTree, 
      main = "Sample clustering to detect outliers", 
-     sub="", xlab="", cex.lab = 1.5,
-     cex.axis = 1.5, cex.main = 2)
+     sub="", xlab="", 
+     cex.axis = 0.6)
 
 # Visualize how traits relate to sample dendrogram
 # (white = low, red = high, grey = missing)
-traitColors = numbers2colors(trt, signed = FALSE);
+#traitColors = numbers2colors(trt_prw, signed = FALSE);
 
-# Plot the sample dendrogram and the colors underneath.
+traitColors = numbers2colors(trt_prw, signed = FALSE)
+
+# Plot the sample dendrogram and the colors underneath
+pdf(file="../../plots/sample_clustering.pdf")
+#par(mfrow=c(2,1))
+#par(mar = c(1,4,2,1))
+#par(cex.lab=1.5, cex.axis=1.5, cex.main=1.5, cex.sub=1.5)
+#par(cex = 1.5)
 plotDendroAndColors(sampleTree, traitColors,
-                  groupLabels = names(trt),
-                  main = "Sample dendrogram and trait heatmap")
+                   groupLabels = names(trt_prw),
+                   main = "Sample dendrogram and diet heatmap",
+                   cex.colorLabels = 0.6,
+                   cex.dendroLabels = 0.6,
+                   cex.rowText = 0.2)
+dev.off()
+
+#save(rlogtrt, trt_prw, file ="../../processed/DESEQ/Coexpression/trt-01-dataInput.RData")
+#load("../../processed/DESEQ/Coexpression/trt-01-dataInput.RData")
 ```
 
 # Select soft power
@@ -167,7 +198,9 @@ sft = pickSoftThreshold(rlogtrt, powerVector=powers,
                         verbose =5)
   
 sizeGrWindow(9,5)
-par(mfrow= c(1,2))
+pdf(file="../../plots/softThreshold.pdf")
+par(mfrow= c(2,1)) # one row, two columns panel
+#par(cex = 0.6)
 cex1=0.9
 
 # Scale-free topology fit index as a function of the sft power
@@ -192,7 +225,7 @@ plot(sft$fitIndices[,1], sft$fitIndices[,5],
 
 text(sft$fitIndices[,1], sft$fitIndices[,5], 
      labels=powers, cex=cex1, col="red")
- 
+dev.off()
 # Choose the lowest power for which the scale free topology index reaches 0.90
 ```
 
@@ -203,9 +236,8 @@ text(sft$fitIndices[,1], sft$fitIndices[,5],
 # Build the adjacency "correlation" matrix
 
 pe <- sft$powerEstimate
-softPower = pe
 adjc = adjacency(rlogtrt, 
-                      power=softPower, 
+                      power=pe, 
                       type="signed")
 #specify signed network type
  
@@ -214,6 +246,9 @@ TOM = TOMsimilarity(adjc, TOMType="signed") # specify network type
 
 # Calculate the corresponding dissimilarity
 dissTOM = 1-TOM
+
+#save(sft, adjc, TOM, dissTOM, file= "../../processed/DESEQ/Coexpression/adjc_TOM.RData")
+#load("../../processed/DESEQ/Coexpression/adjc_TOM.RData")
 
 # Note: dissTOM calc minimizes effects of noise and spurious associations
 ```
@@ -230,14 +265,15 @@ plot(geneTree, xlab="", sub="", cex=0.3,
      labels= FALSE, hang=0.04)
 
 # Set minimum number of genes in a module
-minModuleSize = 10
+minModuleSize = 20
 
 # Module identification using dynamic tree cut algorithm
-dynamicMods = cutreeDynamic(dendro= geneTree, 
-                            distM= dissTOM, deepSplit=2,
+dynamicMods = cutreeDynamic(dendro= geneTree,
+                            distM= dissTOM, 
+                            deepSplit=2,
                             pamRespectsDendro= FALSE, 
                             minClusterSize = minModuleSize,
-                            verbose = 2)
+                            verbose = 4)
 # Modules identified
 table(dynamicMods)
 
@@ -246,56 +282,13 @@ dynamicColors= labels2colors(dynamicMods)
 
 table(dynamicColors)
 
-# MDS plot
-cmd1 <- cmdscale(as.dist(dissTOM), k=2)
-sizeGrWindow(7, 6)
-pdf(file="../../plots/MDSplot_rlog_trt.pdf")
-par(mfrow=c(1,1))
-plot(cmd1, col=as.character(dynamicColors), main="MDS plot, rlog",
-xlab="Scaling Dimension 1", ylab="Scaling Dimension 2")
-dev.off()
-
 # Plot dendrogram of igengenes
 plotDendroAndColors(geneTree, dynamicColors, 'Modules', 
                     dendroLabels = FALSE, hang = 0.03,
                     addGuide = TRUE, guideHang = 0.05, main='')
 
-
-# Discard unassigned genes, and focus on the rest
-# This article discourages removal of grey genes:
-# https://www.researchgate.net/post/Is_there_any_advantage_in_removing_unassigned_grey_genes_when_performing_a_weighted_co-expression_analysis_WGCNA_then_running_analysis_again
-#restGenes = (dynamicColors != "grey")
-# adjc1 = adjacency(rlogtrt[,restGenes], 
-#                       power=softPower, 
-#                       type="signed")
-# 
-# TOM1 <- TOMsimilarity(adjc1, TOMType="signed")
-# 
-# dissTOM1 = 1-TOM1
-# 
-# # Repeat module detection
-# #colnames(dissTOM1) =rownames(diss1)
-# colnames(dissTOM1) =rownames(dissTOM1) =rlogtrt[restGenes]
-# 
-# geneTree1 <- flashClust(as.dist(dissTOM1), method="average" )
-# 
-# plotDendroAndColors(geneTree1, 
-#                     dynamicColors[restGenes], 
-#                     "Dynamic Tree Cut", 
-#                     dendroLabels = FALSE, 
-#                     hang = 0.03, addGuide = TRUE, 
-#                     guideHang = 0.05, 
-#                     main = "Gene dendrogram and module colors")
-
 # Set the diagonal of the dissimilarity to NA 
 diag(dissTOM) = NA;
-
-# Visualize the Tom plot. 
-# Raise the dissimilarity matrix to the power of 4 to bring out the module structure
-# sizeGrWindow(4,4)
-# 
-# TOMplot(dissTOM, geneTree, #intensive!
-#         as.character(dynamicColors))
 
 ```
 
@@ -305,11 +298,13 @@ diag(dissTOM) = NA;
 # Calculate eigengenes
 MEList = moduleEigengenes(rlogtrt, 
                          colors= dynamicColors,
-                         softPower = softPower)
+                         softPower = pe)
                          
 MEs = MEList$eigengenes;
+#MET <- order(cbind(MEs, trt_prw$DR_H.Vs.C_B))
 
 plotEigengeneNetworks(MEs, "", marDendro = c(0,4,1,2), marHeatmap = c(3,4,1,2))
+
 
 # Calculate dissimilarity of module eigengenes
 MEDiss = 1-cor(MEs);
@@ -320,7 +315,14 @@ METree = flashClust(as.dist(MEDiss), method= "average")
 sizeGrWindow(7,6)
 plot(METree, main= "Clustering of module eigengenes", xlab= "", sub= "")
 
-save(dynamicMods, MEList, MEs, MEDiss, METree, file= "../../processed/DESEQ/Network_modules_signed.RData")
+# See detected modules and their sizes
+cat("\n\nNetwork Modules\n")
+moduleColors = dynamicColors
+module.table <- as.data.frame(table(moduleColors))
+module.table <- module.table[match(gsub("ME", "", names(MEs)), module.table[,1]),] # same order of eigengenes as in MEs (needed for heatmap labels) 
+print(module.table)
+write.table(module.table, "../../processed/DESEQ/Coexpression/dynamicModules_Sizes.txt", quote=F, row.names=F, sep="\t")
+
 ```
 
 # Merge at a selected threshold
@@ -329,7 +331,7 @@ save(dynamicMods, MEList, MEs, MEDiss, METree, file= "../../processed/DESEQ/Netw
 # Set threshold for merging modules 
 # Can choose no merge i.e. MEDissThres=0.0)
 # Merge modules that are 85% similar
-MEDissThres = 0.15
+MEDissThres = 0.10 # 0.05 is identical Dynamic Tree Cut
 abline(h=MEDissThres, col ="red")
 
 # Call automatic merging function
@@ -337,49 +339,39 @@ merge = mergeCloseModules(rlogtrt,
                           dynamicColors, 
                           cutHeight= MEDissThres, 
                           verbose =3)
+
 mergedColors = merge$colors;
 mergedMEs = merge$newMEs;
 
+table(mergedColors)
 
 # Plot dendrogram with module colors below it
-#pdf(file="../../plots/cluster.pdf")
+pdf(file="../../plots/dynamic_merged_clusters.pdf")
+par(mfrow=c(2,2))
+par(cex = 0.6)
 plotDendroAndColors(geneTree, 
                     cbind(dynamicColors, mergedColors), 
                     c("Dynamic Tree Cut", "Merged dynamic"),
                     dendroLabels= FALSE, hang=0.03, 
                     addGuide= TRUE, guideHang=0.05)
-#dev.off()
-
-cmd1 <- cmdscale(as.dist(dissTOM), k=4)
-
-par(mfrow=c(2,3))
-plot(cmd1[,c(1,2)],col= as.character(dynamicColors))
-plot(cmd1[,c(1,3)],col= as.character(dynamicColors)) 
-plot(cmd1[,c(1,4)],col= as.character(dynamicColors)) 
-plot(cmd1[,c(2,3)],col= as.character(dynamicColors)) 
-plot(cmd1[,c(2,4)],col= as.character(dynamicColors)) 
-plot(cmd1[,c(3,4)],col= as.character(dynamicColors))
-
-# Select one to save
-#pdf(file="../../plots/MDSplot_rlog_trt_merged.pdf")
-par(mfrow=c(1,1))
-plot(cmd1, col=as.character(mergedColors), main="MDS plot, rlog",
-xlab="Scaling Dimension 1", ylab="Scaling Dimension 2")
-#dev.off()
-
-library(scatterplot3d)
-par(mfrow=c(1,1))
-scatterplot3d(cmd1[,1:3], 
-              color=as.character(dynamicColors), 
-              main="MDS plot",
-              xlab="Scaling Dimension 1", 
-              ylab="Scaling Dimension 2", 
-              zlab="Scaling Dimension 3",
-              cex.axis=1.5,angle=320)
+dev.off()
 
 # Rename to moduleColors
-moduleColors = mergedColors
+table(moduleColors)
 
+# See merged modules and their sizes
+cat("\n\nNetwork Modules\n")
+moduleColors = mergedColors
+module.table_merged <- as.data.frame(table(moduleColors))
+module.table_merged <- module.table_merged[match(gsub("ME", "", names(MEs)), module.table[,1]),] # same order of eigengenes as in MEs (needed for heatmap labels) 
+print(module.table_merged)
+write.table(module.table_merged, "../../processed/DESEQ/Coexpression/mergedModules_Sizes.txt", quote=F, row.names=F, sep="\t")
+
+MEcount <- length(colnames(MEs))
+rownames(MEs) <- rownames(trt_prw)
+write.table(MEs, "../../processed/DESEQ/Coexpression/mergedModuleEigengenes_colorLabel.txt", row.names=F, quote=F, sep="\t")
+modNames = substring(names(MEs), 3)  # remove "ME" at the beginning of module eigengene names
+  
 # Construct numerical labels corresponding to the colors
 colorOrder = c("grey", standardColors(50));
 moduleLabels = match(moduleColors, colorOrder)-1;
@@ -387,106 +379,62 @@ MEs = mergedMEs;
 
 save(MEs, moduleLabels, moduleColors, geneTree, 
      file= "../../processed/DESEQ/Network_modules_signed_merge.RData")
+load("../../processed/DESEQ/Network_modules_signed_merge.RData")
 
-```
-
-# Visualize weighted network after merge via heatmap
-
-```{r}
-# Transform dissTOM with a power to make moderately strong connections more visible in the heatmap
-plotTOM = dissTOM^18;
-
-# Set diagonal to NA for a nicer plot
-diag(plotTOM) = NA;
-
-# Call the plot function
-pdf(file = "../../plots/weighted_heat.pdf", wi = 6, he = 6)
-sizeGrWindow(6,6)
-#TOMplot(plotTOM, geneTree, moduleColors, main = "Network heatmap plot, all genes")
-dev.off()
-
-# For 400 genes
-nSelect = 400
-# For reproducibility, we set the random seed
-set.seed(10);
-nGenes = ncol(rlogtrt)
-nSamples = nrow(rlogtrt)
-
-select = sample(nGenes, size = nSelect);
-selectTOM = dissTOM[select, select];
-
-# There’s no simple way to restrict tree to a subset of genes, so must re-cluster
-selectTree = hclust(as.dist(selectTOM), method = "average")
-selectColors = moduleColors[select];
-
-pdf(file = "../../plots/weighted_heat.pdf", wi = 7, he = 7)
-sizeGrWindow(7,7)
-# Taking the dissimilarity to a power, say 10, makes the plot more informative by effectively changing
-# the color palette; setting the diagonal to NA also improves the clarity of the plot
-plotDiss = selectTOM^20;
-diag(plotDiss) = NA;
-TOMplot(plotDiss, selectTree, selectColors, main = "Network heatmap, 400 genes")
-dev.off()
 ```
 
 # Relate gene expression modules to diet treatment
 # https://peterlangfelder.com/2018/11/25/working-with-categorical-variables/
 
 ```{r}
-# rlog-transformed exprs data
-rlogtrt <- read.table("../../processed/DESEQ/rlog.wg0.txt", 
-                       sep = "\t",
-                       stringsAsFactors = FALSE)
-
-rlogtrt = as.data.frame(t(rlogtrt)) 
-dim(rlogtrt) 
-
-# Correlate traits 
-
 # Define number of genes and samples
 nGenes = ncol(rlogtrt)
 nSamples = nrow(rlogtrt)
 
 # Recalculate module eigengens (use non-merged)
-# MEs0 = moduleEigengenes(rlogtrt, dynamicColors)$eigengenes
-# MEs = orderMEs(MEs0)
+MEs0 = moduleEigengenes(rlogtrt, moduleColors)$eigengenes
+MEs = orderMEs(MEs0)
 
 # Quantify module-trait association
-moduleTraitCor = cor(MEs, trt, use = "p");
+moduleTraitCor = cor(MEs, trt_prw, use = "p");
 moduleTraitPvalue = corPvalueStudent(moduleTraitCor, nSamples);
+#moduleTraitPvalueFish <- corPvalueFisher(moduleTraitCor, nSamples)
 
-# Add the weight to existing module eigengenes
-MET = orderMEs(cbind(MEs, trt))
+sizeGrWindow(8,6)
 
-# Plot the relationships among the eigengenes and the trait
-sizeGrWindow(9,9);
-par(cex = 0.9)
-plotEigengeneNetworks(MET, "", marDendro = c(0,4,1,2), 
-                      marHeatmap = c(3,4,1,2), 
-                      cex.lab = 0.8, 
-                      xLabelsAngle = 90)
-
-sizeGrWindow(10,6)
+pdf(file = "../../plots/module-trait_correlations.pdf", wi = 7, he = 5)
+par(mar=c(5.1,4.1,4.1,2.1))
+#par(mfrow=c(1.5,1.2))
+#par(mar = c(0,4,2,0))
+par(cex = 0.55)
+#sizeGrWindow(12,9)
 
 # Will display correlations and their p-values
 textMatrix = paste(signif(moduleTraitCor, 2), "\n(",
                         signif(moduleTraitPvalue, 1), ")", sep = "");
 dim(textMatrix) = dim(moduleTraitCor)
-par(mar = c(5, 1, 1, 5)+ 0.1) ;
+#par(mar = c(5, 1, 1, 5)+ 0.1) ;
+
 # Display the correlation values within a heatmap plot
 labeledHeatmap(Matrix = moduleTraitCor,
-             xLabels = names(trt),
+             xLabels = names(trt_prw),
              yLabels = names(MEs),
              ySymbols = names(MEs),
-             colorLabels = FALSE,
+             colorLabels = TRUE,
              colors = blueWhiteRed(50),
              textMatrix = textMatrix,
              setStdMargins = FALSE,
-             cex.text = 0.5,
+             cex.text = 0.55,
+             cex.lab = 0.8,
              zlim = c(-1,1),
-             main = paste("Module-trait relationships"))
+             main = paste("Module-diet relationships"))
+dev.off()
+```
 
-# Gene significance and module membership
+# Calculate the module membership values 
+# aka. module eigengene based connectivity kME
+
+```{r}
 # names (colors) of the modules
 modNames = substring(names(MEs), 3)
 
@@ -497,249 +445,216 @@ MMPvalue = as.data.frame(corPvalueStudent(
 names(geneModuleMembership) = paste("MM", modNames, sep="");
 names(MMPvalue) = paste("p.MM", modNames, sep="");
 
-geneTraitSignificance = as.data.frame(cor(rlogtrt, trt, use = "p"));
+geneTraitSignificance = as.data.frame(cor(rlogtrt, trt_prw, use = "p"));
 GSPvalue = as.data.frame(corPvalueStudent(
   as.matrix(geneTraitSignificance), nSamples));
 
-names(geneTraitSignificance) = paste("GS.", names(trt), sep="");
-names(GSPvalue) = paste("p.GS.", names(trt), sep="");
+names(geneTraitSignificance) = paste("GS.", names(trt_prw), sep="");
+names(GSPvalue) = paste("p.GS.", names(trt_prw), sep="");
 
-# Intramodular analysis - 
-# identify genes with high gene significance (GS) and module membership (MM)
-
-module = "greenyellow"
+#module = "green"
+module = "cyan"
 column = match(module, modNames);
-moduleGenes = dynamicColors==module;
+moduleGenes = modColors==module;
 
 sizeGrWindow(7, 7);
 par(mfrow = c(1,1));
-verboseScatterplot(abs(geneModuleMembership[moduleGenes1, column1]),
-                   abs(geneTraitSignificance[moduleGenes1, 1]),
-                   xlab = paste("Module Membership in", module1, "module"),
+verboseScatterplot(abs(geneModuleMembership[moduleGenes, column]),
+                   abs(geneTraitSignificance[moduleGenes, 1]),
+                   xlab = paste("Module Membership in", module, "module"),
                    ylab = "GS",
                    main = paste("Module membership vs. gene significance\n"),
                    cex.main = 1.2, cex.lab = 1.2, cex.axis = 1.2, 
-                   col = module1)
+                   col = module)
 
-names(rlogtrt)[dynamicColors=="greenyellow"]
-
-module1 = "cyan"
-column1 = match(module1, modNames);
-moduleGenes1 = dynamicColors==module1
-
-names(rlogtrt)[moduleColors=="lightcyan"]
-```
-
-# VST data
-
-```{r}
-VSTtrt = as.data.frame(t(vst.wg0)) 
-dim(VSTtrt) 
-outls = goodSamplesGenes(VSTtrt, verbose = 3)
-outls$allOK 
-
-# Cluster samples to check outliers
-sampleTree.vst = hclust(dist(VSTtrt), method = "average");
-
-sizeGrWindow(12,9) # inches
-par(cex = 0.6);
-par(mar = c(0,4,2,0))
-plot(sampleTree.vst, 
-     main = "Sample clustering to detect outliers", 
-     sub="", xlab="", cex.lab = 1.5,
-     cex.axis = 1.5, cex.main = 2)
+# Output greenyellow module genes
+#names(rlogtrt)[dynamicColors=="greenyellow"]
 
 ```
 
-# Find modules
 
 ```{r}
-# Choose a soft threshold power
-powers = c(c(1:10), seq(from =10, to=30, by=1)) 
-vsft = pickSoftThreshold(VSTtrt, powerVector=powers, 
-                        corFnc = cor, # see FAQ point 3
-                        networkType="signed",
-                        verbose =5)
+modColors= moduleColors
+
+datKME <- signedKME(rlogtrt, MEs)  # equals geneModuleMembership
+colnames(datKME) <- sub("kME", "MM.", colnames(datKME))
+MMPval <- as.data.frame(corPvalueStudent(as.matrix(datKME), nSamples));
+colnames(MMPval) <- sub("MM.", "p.MM.", colnames(MMPval))
+```
+
+# Intramodular analysis: Phenotypes
+
+```{r}
+  # Identifying genes with high GS (Gene Significance) and MM (Module Membership)
+  # Using GS and MM measures, identify genes that have a high significance for a diet contrast
+  # as well as high module membership in interesting modules
+
+cat("\nGenerating plots for Intramodular analysis (phenotypes)\n")
+colorOfColumn <- substring(names(datKME),4)
+
+for (trait in colnames(trt_prw)) {
+  modTraitName <- grep(paste0(trait,"$"), names(MMPvalue), value=T) # with prefix "p.cor" or "p.icc"
+  # select 8 top associated modules for each trait given in 'trt_prw': 
+  cat(paste("\ntrait:", trait, "\n"))
+  selectModules <- rownames(MMPvalue[order(MMPvalue[,modTraitName], decreasing=F), , drop=F])[1:min(8, ncol(MEs))]
+  selectModules <- substring(selectModules,3) # remove substring "ME"
   
-sizeGrWindow(9,5)
-par(mfrow= c(1,2))
-cex1=0.9
-plot(vsft$fitIndices[,1], 
-     -sign(vsft$fitIndices[,3])*vsft$fitIndices[,2], 
-     xlab= "Soft Threshold (power)", 
-     ylab="Scale Free Topology Model Fit, signed R^2", 
-     type= "n", main= paste("Scale independence"))
+  # plot 8 scatter plots for each trait
+  figure.res = 300
+  
+  png("../../plots/IntraMod_Analysis/", paste0("Intramodular_", trait, ".png"), width = 210 , height = 297, units ="mm", res=figure.res)
+  par(mfrow=c(length(selectModules)/2,2))
+  par(mar=c(6, 8, 4, 4) + 0.1)
 
-text(vsft$fitIndices[,1], 
-     -sign(vsft$fitIndices[,3])*vsft$fitIndices[,2], 
-     labels=powers, cex=cex1, col="red")
+  for (module in selectModules) {
+    column <- match(module,colorOfColumn)
+    restModule <- modColors==module
+    WGCNA::verboseScatterplot(datKME[restModule,column],geneTraitSignificance[restModule, grep(paste0(trait,"$"),names(geneTraitSignificance), value=T)],
+                              xlab=paste("Module Membership:",module,"module"),ylab=paste("Gene significance:", trait),
+                              main="Module membership vs. gene significance\n", 
+                              cex = cex.labels, cex.axis = cex.labels, cex.lab = cex.labels, cex.main = 1.3 * cex.labels,
+                              pch=21, col="black", bg=module)
+  }
+  dev.off()
+} # end of trait-loop
 
-abline(h=0.90, col="red")
+```
 
-plot(vsft$fitIndices[,1], vsft$fitIndices[,5], 
-     xlab= "Soft Threshold (power)", 
-     ylab="Mean Connectivity", 
-     type="n", main = paste("Mean connectivity"))
+# Output gene lists
 
-text(vsft$fitIndices[,1], vsft$fitIndices[,5], 
-     labels=powers, cex=cex1, col="red")
+```{r}
+annot = read.csv("../../processed/DESEQ/Coexpression/FlyAnnotation.csv")
+dim(annot)
+names(annot)
+colnames(annot)[colnames(annot)=="X"] <- "FBgn"
 
-# Build the adjacency "correlation" matrix
-pw <- vsft$powerEstimate
-vsoftPower = pw
-vadjc = adjacency(VSTtrt, 
-                      power=softPower, 
-                      type="signed")
- 
-# Topological overlap matrix (TOM) of the adjacency matrix
-vTOM = TOMsimilarity(vadjc, TOMType="signed") # specify network type
+FBgenes = names(rlogtrt)
+FBgenes2annot = match(FBgenes, annot$FBgn)
+allIDs = annot$entrez[FBgenes2annot]
 
-# Calculate the corresponding dissimilarity
-vdissTOM = 1-vTOM
+# The following is the number or probes without annotation:
+sum(is.na(FBgenes2annot))
+# Should return 0
 
-# Hierarchical clustering of the genes based on TOM dissimilarity
-vgeneTree = flashClust(as.dist(vdissTOM), method="average")
-plot(vgeneTree, xlab="", sub="", cex=0.3, 
-     main= "Gene Clustering on TOM-based dissimilarity", 
-     labels= FALSE, hang=0.04)
+# Get module genes
+modNames
+getMods <- modNames[1:22]
 
-# Set minimum number of genes in a module
-minModuleSize = 20
-
-# Module identification using dynamic tree cut algorithm
-vdynamicMods = cutreeDynamic(dendro= vgeneTree, 
-                            distM= vdissTOM, deepSplit=2,
-                            pamRespectsDendro= FALSE, 
-                            minClusterSize = minModuleSize,
-                            verbose = 2)
-# Modules identified
-table(vdynamicMods)
-
-# Assign module colours
-vdynamicColors= labels2colors(vdynamicMods)
-
-table(vdynamicColors)
-
-# Plot dendrogram of igengenes
-plotDendroAndColors(vgeneTree, vdynamicColors, 'Modules', 
-                    dendroLabels = FALSE, hang = 0.03,
-                    addGuide = TRUE, guideHang = 0.05, main='')
-
-# Set the diagonal of the dissimilarity to NA 
-diag(vdissTOM) = NA;
-
-# Extract modules
-vmodule_colors= setdiff(unique(vdynamicColors), "grey")
-for (color in vmodule_colors){
-    vmodule=VSTtrt[which(vdynamicColors==color)]
-    write.table(vmodule, paste("module_",color, ".txt",sep=""), sep="\t", row.names=FALSE, col.names=FALSE,quote=FALSE)
+for (module in getMods) {
+  # select module genes
+  modGenes = (modColors==module)
+  # Get their entrez ids
+  modIDs = allIDs[modGenes]
+  # Write file
+  fileName = paste("../../processed/DESEQ/Coexpression/modules/entrez-", 
+                   module,".txt", sep="")
+  write.table(as.data.frame(modIDs), file = fileName,
+              row.names = FALSE, col.names = FALSE)
 }
 
-# Look at expression patterns of these genes as clustered
-vmodule.order <- unlist(tapply(1:ncol(VSTtrt),
-                              as.factor(vdynamicColors),I))
+# Save background list
+fileName = paste("../../processed/DESEQ/Coexpression/modules/backList.txt",
+                 sep="");
+write.table(as.data.frame(allIDs), file = fileName,
+           row.names = FALSE, col.names = FALSE) 
+```
 
-vm<-t(t(VSTtrt[,vmodule.order])/
-       apply(VSTtrt[,vmodule.order],2,max))
+# GO term enrichment
 
-sizeGrWindow(9,5)
-par(mfrow= c(1,2))
-cex1=0.9
-heatmap(t(vm),zlim=c(0,1),col=gray.colors(100),
-        Rowv=NA,Colv=NA,labRow=NA,scale="none",
-        RowSideColors=vdynamicColors[vmodule.order])
+```{r}
+# Enrichment table containing the 10 best terms for each module
+GOenr <- GOenrichmentAnalysis(modColors, allIDs, 
+                              organism = "fly", nBestP = 10)
+tab <- GOenr$bestPTerms[[4]]$enrichment
+names(tab)
+write.table(tab, file = "../../processed/DESEQ/Coexpression/modules/GOEnrichmentTable.csv", 
+              sep = ",", quote = TRUE, row.names = FALSE)
 
-# Calculate eigengenes
-vMEList = moduleEigengenes(VSTtrt, 
-                         colors= vdynamicColors,
-                         softPower = pw)
-                         
-vMEs = vMEList$eigengenes;
+# View table on screen
+keepCols = c(1, 2, 5, 6, 7, 12, 13);
+screenTab = tab[, keepCols];
 
-plotEigengeneNetworks(vMEs, "", marDendro = c(0,4,1,2), marHeatmap = c(3,4,1,2))
+# Round numeric columns to 2 decimal places:
+numCols = c(3, 4);
+screenTab[, numCols] = signif(apply(screenTab[, numCols], 2, as.numeric), 2)
 
-# Calculate dissimilarity of module eigengenes
-vMEDiss = 1-cor(vMEs);
+# Truncate the the term name to at most 40 characters
+screenTab[, 7] = substring(screenTab[, 7], 1, 40)
 
-# Cluster module eigengenes
-vMETree = flashClust(as.dist(vMEDiss), method= "average")
+# Shorten the column names:
+colnames(screenTab) = c("module", "size", "p-val", "Bonf", "nInTerm", "ont", "term name");
+rownames(screenTab) = NULL;
 
-sizeGrWindow(7,6)
-plot(vMETree, main= "Clustering of module eigengenes", xlab= "", sub= "")
+# Set the width of R’s output
+options(width=95)
 
-save(vdynamicMods, vMEList, vMEs, vMEDiss, vMETree, file= "../../processed/DESEQ/VST_modules_signed.RData")
-
-# Merge similar modules
-vMEDissThres = 0.15
-abline(h=vMEDissThres, col ="red")
-
-# Call automatic merging function
-vmerge = mergeCloseModules(VSTtrt, 
-                          vdynamicColors, 
-                          cutHeight= vMEDissThres, 
-                          verbose =3)
-vmergedColors = vmerge$colors;
-vmergedMEs = vmerge$newMEs;
-
-
-# Plot dendrogram with module colors below it
-#pdf(file="../../plots/cluster.pdf")
-plotDendroAndColors(vgeneTree, 
-                    cbind(vdynamicColors, vmergedColors), 
-                    c("Dynamic Tree Cut", "Merged dynamic"),
-                    dendroLabels= FALSE, hang=0.03, 
-                    addGuide= TRUE, guideHang=0.05)
-#dev.off()
-
-
-# Rename to moduleColors
-vmoduleColors = vmergedColors
-
-# Construct numerical labels corresponding to the colors
-vcolorOrder = c("grey", standardColors(50));
-vmoduleLabels = match(vmoduleColors, vcolorOrder)-1;
-vMEs = vmergedMEs;
-
-save(vMEs, vmoduleLabels, vmoduleColors, vgeneTree, 
-     file= "../../processed/DESEQ/VST_modules_signed_merge.RData")
+# Finally, display the enrichment table:
+screenTab
+write.table(screenTab, file = "../../processed/DESEQ/Coexpression/modules/GOEnrichmentTable_simple.csv", 
+              sep = ",", quote = TRUE, row.names = FALSE)
 
 ```
 
-# Relate modules to diet
+# Visualize network eigengenes
 
 ```{r}
-# Sample info
-phenDat1 <- phenDat.sva[,6]
+#  Eigengene correlation
+# For one contrast as example
 
-# rlog-transformed exprs data
-VSTtrt <- read.table("../../processed/DESEQ/vst.wg0.txt", 
-                       sep = "\t",
-                       stringsAsFactors = FALSE)
-
-VSTtrt = as.data.frame(t(VSTtrt)) 
-dim(VSTtrt) 
-
-# Correlate traits 
-# Define number of genes and samples
-vGenes = ncol(VSTtrt)
-vSamples = nrow(VSTtrt)
-
-# Recalculate module eigengens
-vMEs = moduleEigengenes(VSTtrt, vmoduleColors)$eigengenes
-
-# Isolate treatment from sample data
-vtrt <- as.data.frame(phenDat.sva$trt_tis);
-names(vtrt) = "treatment"
+# Recalculate module eigengenes
+MEsDRHO = moduleEigengenes(rlogtrt, modColors)$eigengenes
+# Isolate weight from the clinical traits
+DR_HO = as.data.frame(trt_prw$DR_H.vs.C_O);
+names(DR_HO) = "DR_HO"
 
 # Add the weight to existing module eigengenes
-vMET = orderMEs(cbind(vMEs, vtrt))
+MET_DHRO = orderMEs(cbind(MEsDRHO, trt_prw$DR_H.vs.C_O))
 
 # Plot the relationships among the eigengenes and the trait
-sizeGrWindow(9,9);
+sizeGrWindow(5,7.5);
 par(cex = 0.9)
-plotEigengeneNetworks(vMET, "", marDendro = c(0,4,1,2), 
+plotEigengeneNetworks(MET_DHRO, "", 
+                      marDendro = c(0,4,1,2), 
                       marHeatmap = c(3,4,1,2), 
                       cex.lab = 0.8, 
                       xLabelsAngle = 90)
 
+# Split dendrogram and heatmap
+sizeGrWindow(6,6);
+par(cex = 1.0)
+plotEigengeneNetworks(MET_DHRO, "Eigengene dendrogram", marDendro = c(0,4,2,0),
+plotHeatmaps = FALSE)
+
+# Plot the heatmap matrix (note: this plot will overwrite the dendrogram plot)
+par(cex = 1.0)
+plotEigengeneNetworks(MET_DHRO, "Eigengene adjacency heatmap", marHeatmap = c(3,4,2,2),
+plotDendrograms = FALSE, xLabelsAngle = 90)
 ```
+
+# Exporting to network visualization tools: VisANT
+
+```{r}
+# The green module
+# Recalculate topological overlap
+TOM = TOMsimilarity(adjc, TOMType="signed")
+module = "green"
+
+# Select module probes
+#probes = names(datExpr)
+inModule = (modColors==module);
+modGn = FBgenes[inModule];
+
+# Select the corresponding Topological Overlap
+modTOM = TOM[inModule, inModule];
+dimnames(modTOM) = list(modGn, modGn)
+
+# Export the network into an edge list file VisANT can read
+visGreen = exportNetworkToVisANT(modTOM,
+  file = paste("../../processed/DESEQ/Coexpression/modules/VisANTInput-", 
+               module, ".txt", sep=""),
+  weighted = TRUE,
+  threshold = 0,
+  probeToGene = data.frame(annot$FBgn, annot$symbol) )
+```
+
+
