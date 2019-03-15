@@ -184,7 +184,7 @@ plotDendroAndColors(sampleTree, traitColors,
 dev.off()
 
 #save(rlogtrt, trt_prw, file ="../../processed/DESEQ/Coexpression/trt-01-dataInput.RData")
-#load("../../processed/DESEQ/Coexpression/trt-01-dataInput.RData")
+load("../../processed/DESEQ/Coexpression/trt-01-dataInput.RData")
 ```
 
 # Select soft power
@@ -248,7 +248,7 @@ TOM = TOMsimilarity(adjc, TOMType="signed") # specify network type
 dissTOM = 1-TOM
 
 #save(sft, adjc, TOM, dissTOM, file= "../../processed/DESEQ/Coexpression/adjc_TOM.RData")
-#load("../../processed/DESEQ/Coexpression/adjc_TOM.RData")
+load("../../processed/DESEQ/Coexpression/adjc_TOM.RData")
 
 # Note: dissTOM calc minimizes effects of noise and spurious associations
 ```
@@ -377,8 +377,8 @@ colorOrder = c("grey", standardColors(50));
 moduleLabels = match(moduleColors, colorOrder)-1;
 MEs = mergedMEs;
 
-save(MEs, moduleLabels, moduleColors, geneTree, 
-     file= "../../processed/DESEQ/Network_modules_signed_merge.RData")
+# save(MEs, moduleLabels, moduleColors, geneTree, 
+#      file= "../../processed/DESEQ/Network_modules_signed_merge.RData")
 load("../../processed/DESEQ/Network_modules_signed_merge.RData")
 
 ```
