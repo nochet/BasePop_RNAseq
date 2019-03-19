@@ -2,7 +2,15 @@
 title: "WGCNA clustering"
 author: "Enoch Ng'oma"
 date: "2/5/2019"
-output: html_document
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2 #defaults to 3 if not specified
+    toc_float: true
+    number_sections: true
+    fig_width: 7
+    fig_height: 6
+    fig_caption: true
 editor_options: 
   chunk_output_type: console
 ---
@@ -36,10 +44,10 @@ set.seed(341072)
 # Expression Data
 
 ```{r}
-countdata <- read.csv("../../processed/DESEQ/Expr_countData.csv")
-rownames(countdata) <- countdata[,1]
-countdata[,1] <- NULL
-countdata <- as.matrix(countdata)
+# countdata <- read.csv("../../processed/DESEQ/Expr_countData.csv")
+# rownames(countdata) <- countdata[,1]
+# countdata[,1] <- NULL
+# countdata <- as.matrix(countdata)
 
 ```
 
@@ -191,16 +199,15 @@ load("../../processed/DESEQ/Coexpression/trt-01-dataInput.RData")
 
 ```{r}
 # Choose a soft threshold power
-powers = c(c(1:10), seq(from =10, to=30, by=1)) 
+powers = c(c(1:10), seq(from = 10, to = 30, by=1)) 
 sft = pickSoftThreshold(rlogtrt, powerVector=powers, 
-                        corFnc = cor, # see FAQ point 3
+                        #corFnc = cor, # see FAQ point 3
                         networkType="signed",
-                        verbose =5)
+                        verbose = 5)
   
 sizeGrWindow(9,5)
 pdf(file="../../plots/softThreshold.pdf")
-par(mfrow= c(2,1)) # one row, two columns panel
-#par(cex = 0.6)
+par(mfrow= c(1,2)) # one row, two columns panel
 cex1=0.9
 
 # Scale-free topology fit index as a function of the sft power
@@ -234,13 +241,9 @@ dev.off()
 
 ```{r}
 # Build the adjacency "correlation" matrix
-
 pe <- sft$powerEstimate
-adjc = adjacency(rlogtrt, 
-                      power=pe, 
-                      type="signed")
-#specify signed network type
- 
+adjc = adjacency(rlogtrt, power=pe, type="signed")
+
 # Topological overlap matrix (TOM) of the adjacency matrix
 TOM = TOMsimilarity(adjc, TOMType="signed") # specify network type
 
@@ -257,23 +260,23 @@ load("../../processed/DESEQ/Coexpression/adjc_TOM.RData")
 
 ```{r}
 # Hierarchical clustering of the genes based on TOM dissimilarity
-geneTree = flashClust(as.dist(dissTOM), method="average")
+geneTree = flashClust(as.dist(dissTOM), method = "average")
 
 sizeGrWindow(12,9)
-plot(geneTree, xlab="", sub="", cex=0.3, 
-     main= "Gene Clustering on TOM-based dissimilarity", 
-     labels= FALSE, hang=0.04)
+plot(geneTree, xlab = "", sub = "", cex = 0.3, 
+     main = "Gene Clustering on TOM-based dissimilarity", 
+     labels = FALSE, hang = 0.04)
 
 # Set minimum number of genes in a module
 minModuleSize = 20
 
 # Module identification using dynamic tree cut algorithm
-dynamicMods = cutreeDynamic(dendro= geneTree,
-                            distM= dissTOM, 
-                            deepSplit=2,
-                            pamRespectsDendro= FALSE, 
-                            minClusterSize = minModuleSize,
-                            verbose = 4)
+dynamicMods = cutreeDynamic(dendro = geneTree,
+                            distM = dissTOM, 
+                            deepSplit = 2,
+                            pamRespectsDendro = FALSE, 
+                            minClusterSize = minModuleSize)
+                            
 # Modules identified
 table(dynamicMods)
 
@@ -378,7 +381,7 @@ moduleLabels = match(moduleColors, colorOrder)-1;
 MEs = mergedMEs;
 
 # save(MEs, moduleLabels, moduleColors, geneTree, 
-#      file= "../../processed/DESEQ/Network_modules_signed_merge.RData")
+#       file= "../../processed/DESEQ/Network_modules_signed_merge.RData")
 load("../../processed/DESEQ/Network_modules_signed_merge.RData")
 
 ```
@@ -455,7 +458,7 @@ names(GSPvalue) = paste("p.GS.", names(trt_prw), sep="");
 #module = "green"
 module = "cyan"
 column = match(module, modNames);
-moduleGenes = modColors==module;
+moduleGenes = moduleColors==module;
 
 sizeGrWindow(7, 7);
 par(mfrow = c(1,1));
@@ -468,12 +471,14 @@ verboseScatterplot(abs(geneModuleMembership[moduleGenes, column]),
                    col = module)
 
 # Output greenyellow module genes
-#names(rlogtrt)[dynamicColors=="greenyellow"]
+#names(rlogtrt)[moduleColors=="greenyellow"]
 
 ```
 
+# Module membership - shorter way
 
 ```{r}
+  
 modColors= moduleColors
 
 datKME <- signedKME(rlogtrt, MEs)  # equals geneModuleMembership
@@ -486,25 +491,29 @@ colnames(MMPval) <- sub("MM.", "p.MM.", colnames(MMPval))
 
 ```{r}
   # Identifying genes with high GS (Gene Significance) and MM (Module Membership)
-  # Using GS and MM measures, identify genes that have a high significance for a diet contrast
+  # Using GS and MM measures, identify genes with a high significance for a diet contrast
   # as well as high module membership in interesting modules
 
 cat("\nGenerating plots for Intramodular analysis (phenotypes)\n")
 colorOfColumn <- substring(names(datKME),4)
 
-for (trait in colnames(trt_prw)) {
-  modTraitName <- grep(paste0(trait,"$"), names(MMPvalue), value=T) # with prefix "p.cor" or "p.icc"
+for (trait in names(trt_prw)) {
+  modTraitName <- grep(paste0(trait,"$"), colnames(moduleTraitPvalue), value=T) # with prefix "p.cor" or "p.icc"
   # select 8 top associated modules for each trait given in 'trt_prw': 
   cat(paste("\ntrait:", trait, "\n"))
-  selectModules <- rownames(MMPvalue[order(MMPvalue[,modTraitName], decreasing=F), , drop=F])[1:min(8, ncol(MEs))]
+  selectModules <- rownames(moduleTraitPvalue[order(moduleTraitPvalue[,modTraitName], decreasing=F), , drop=F])[1:min(8, ncol(MEs))]
   selectModules <- substring(selectModules,3) # remove substring "ME"
   
   # plot 8 scatter plots for each trait
   figure.res = 300
+  cex.labels <- 0.8
   
-  png("../../plots/IntraMod_Analysis/", paste0("Intramodular_", trait, ".png"), width = 210 , height = 297, units ="mm", res=figure.res)
-  par(mfrow=c(length(selectModules)/2,2))
-  par(mar=c(6, 8, 4, 4) + 0.1)
+png(file.path("../../plots/IntraMod_Analysis/", 
+    paste0("Intramodular_", trait, ".png")), 
+    width = 210 , height = 297, units ="mm",res = figure.res)
+
+par(mfrow=c(length(selectModules)/2,2));
+par(mar=c(6, 8, 4, 4) + 0.1)
 
   for (module in selectModules) {
     column <- match(module,colorOfColumn)
