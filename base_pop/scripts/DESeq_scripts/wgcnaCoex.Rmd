@@ -18,6 +18,13 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+library(DESeq2)
+library(limma)
+library(tidyverse)
+library(cowplot)
+library(AnnotationDbi)
+library(org.Dm.eg.db)
+
 # Tutorials
 # https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/Tutorials/FemaleLiver-02-networkConstr-man.pdf
 # https://wikis.utexas.edu/display/bioiteam/Clustering+using+WGCNA
@@ -30,13 +37,6 @@ library(ape)
 options(stringsAsFactors = FALSE)
 allowWGCNAThreads()
 #disableWGCNAThreads()
-
-library(DESeq2)
-library(limma)
-library(tidyverse)
-library(cowplot)
-library(AnnotationDbi)
-library(org.Dm.eg.db)
 
 set.seed(341072)
 ```
@@ -99,62 +99,70 @@ trt_all <- data.frame(trt, trt_all)
 
 ```
 
-# DESeq object
+# Transformed DESeq objects
+# Models created in DESeq_DExpr.Rmd
 
 ```{r}
-# dd0 <- DESeqDataSetFromMatrix(countData = countdata,
-#                               colData = phenDat.sva,
-#                               design = ~ SV1 + batch)
-# 
-# dd0.wg <- estimateSizeFactors(dd0)
-# nc <- counts(dd0.wg, normalized=TRUE)
-# filter <- rowSums(nc >= 10) >= 2
-# 
-# # log transform null DESeq model: design ~ SV1 + batch
-# rlog.wg0 <- rlog(dd0.wg[filter,], blind = FALSE, fitType = "parametric")
-# vst.wg0 <- varianceStabilizingTransformation(dd0.wg[filter,], 
-#                                              blind = FALSE, fitType = "parametric")
+# Full additive model
+load("../../processed/DESEQ/dds_deseq01.Rda")
 
-# rlog transformation of full model
-# load("../../processed/DESEQ/dds_deseq01.Rda")
-# 
-# rlog.wg1 <- rlog(dds_deseq.01, blind = FALSE, fitType = "parametric")
-# write.table(assay(rlog.wg1),
-#             file="../../processed/DESEQ/rlog.wg1.txt",
-#             sep="\t")
+# Full interaction model
+load("../../processed/DESEQ/dds_deseq.02.Rda")
 
-# log transform full DESeq model: design ~ SV1 + batch + tissue + treatment
-# rlog.wg1 <- rlog(rlog.wg1, blind = FALSE, fitType = "parametric")
+# log transform null DESeq model: design ~ SV1 + batch
+rlog.wg0 <- rlog(dds_deseq.01, blind = FALSE, fitType = "parametric")
+vst.wg0 <- varianceStabilizingTransformation(dds_deseq.01,
+                                            blind = FALSE, fitType = "parametric")
+# Save transformed data
+save(rlog.wg0, file="../../processed/DESEQ/rlog.wg0.Rda")
+save(vst.wg0, file="../../processed/DESEQ/vst.wg0.Rda")
 
-# save for comparison
-# write.table(assay(vst.w),
-#             file="../../processed/DESEQ/vst.w.txt",
-#             sep="\t")
-# write.table(vst.wg0,
-#             file="../../processed/DESEQ/vst.wg0.txt",
-#             sep="\t")
+load("../../processed/DESEQ/vst.wg0.Rda")
+load("../../processed/DESEQ/rlog.wg0.Rda")
 
 rlog.wg0 <- read.table("../../processed/DESEQ/Coexpression/rlog.wg0.txt",
             sep="\t", stringsAsFactors = FALSE)
 vst.wg0 <- read.table("../../processed/DESEQ/Coexpression/vst.wg0.txt",
             sep="\t", stringsAsFactors = FALSE)
-rlog.wg1 <- read.table("../../processed/DESEQ/Coexpression/rlog.wg1.txt", 
-            sep="\t", stringsAsFactors = FALSE)
-
-# Compare different transformtions
-rlog.wg1[1:2,1:4]
-rlog.wg0[1:2,1:4]
-vst.wg0[1:2,1:4]
 
 boxplot(rlog.wg0)
 boxplot(vst.wg0)
+
+# write.table(assay(rlog.wg0),
+#             file="../../processed/DESEQ/rlog.wg0.txt", sep="\t")
+# 
+# write.table(assay(vst.wg0),
+#             file="../../processed/DESEQ/vst.wg0.txt", sep="\t")
+
+```
+
+# Remove batches
+
+```{r}
+# check variation in size factors
+hist(dds_deseq.01$sizeFactor)
+
+# vst data
+mat <- assay(vst.wg0)
+mat <- limma::removeBatchEffect(mat, batch = phenDat.sva$SV1, batch2 = phenDat.sva$batch)
+assay(vst.wg0) <- mat
+print(plotPCA(vst.wg0, intgroup=c("treatment", "tissue"), returnData=FALSE))
+
+# rlog data
+rmat <- assay(rlog.wg0)
+rmat <- limma::removeBatchEffect(mat, batch = phenDat.sva$SV1, batch2 = phenDat.sva$batch)
+assay(rlog.wg0) <- rmat
+print(plotPCA(rlog.wg0, intgroup=c("treatment", "tissue"), returnData=FALSE))
+
 ```
 
 # WGCNA Preliminaries
 
 ```{r}
+rlogtrt <- read.table("../../processed/DESEQ/rlog.wg0.txt", sep="\t")
+
 # Get data into WGCNA format - genes as columns, samples as rows
-rlogtrt = as.data.frame(t(rlog.wg0)) 
+rlogtrt = as.data.frame(t(rlogtrt)) 
 dim(rlogtrt) 
 
 # Check gene outliers or too many missing values
@@ -316,9 +324,9 @@ MEDiss = 1-cor(MEs);
 METree = flashClust(as.dist(MEDiss), method= "average")
 
 sizeGrWindow(7,6)
-plot(MEs, main= "Clustering of module eigengenes", xlab= "", sub= "")
+plot(METree, main= "Clustering of module eigengenes", xlab= "", sub= "")
 
-datME=moduleEigengenes(rlogtrt,moduleColors)$eigengenes
+datME=moduleEigengenes(rlogtrt,dynamicColors)$eigengenes
 signif(cor(datME, use="p"), 2)
 
 pdf(file="../../plots/pairwise_eigengene_plots.pdf", width = 9, height = 6)
@@ -331,11 +339,22 @@ dev.off()
 # See detected modules and their sizes
 cat("\n\nNetwork Modules\n")
 moduleColors = dynamicColors
-module.table <- as.data.frame(table(moduleColors))
-module.table <- module.table[match(gsub("ME", "", names(MEs)), module.table[,1]),] # same order of eigengenes as in MEs (needed for heatmap labels) 
-print(module.table)
-write.table(module.table, "../../processed/DESEQ/Coexpression/dynamicModules_Sizes.txt", quote=F, row.names=F, sep="\t")
+modtable <- as.data.frame(table(moduleColors))
+modtable <- modtable[match(gsub("ME", "", names(MEs)), modtable[,1]),] # same order of eigengenes as in MEs (needed for heatmap labels) 
+print(modtable)
+write.table(modtable, "../../processed/DESEQ/Coexpression/dynamicModules_Sizes.txt", quote=F, row.names=F, sep="\t")
 
+
+modtable = rename(modtable, Module = moduleColors, Genes = Freq)
+
+modtable$Genes <- as.numeric(modtable$Genes)
+p <- ggplot(modtable, aes(x=Module, y=Genes, fill="Module")) + 
+  geom_bar(stat = "identity") + 
+  geom_text(aes(label=Genes), 
+            vjust=1.6, size=3.5)+
+  
+  coord_flip()
+p + theme(legend.position = "none") 
 ```
 
 # Merge at a selected threshold
