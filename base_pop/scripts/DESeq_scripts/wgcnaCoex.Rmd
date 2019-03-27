@@ -31,8 +31,8 @@ options(stringsAsFactors = FALSE)
 allowWGCNAThreads()
 #disableWGCNAThreads()
 
-# library(DESeq2)
-# library(limma)
+library(DESeq2)
+library(limma)
 library(tidyverse)
 library(cowplot)
 library(AnnotationDbi)
@@ -316,7 +316,17 @@ MEDiss = 1-cor(MEs);
 METree = flashClust(as.dist(MEDiss), method= "average")
 
 sizeGrWindow(7,6)
-plot(METree, main= "Clustering of module eigengenes", xlab= "", sub= "")
+plot(MEs, main= "Clustering of module eigengenes", xlab= "", sub= "")
+
+datME=moduleEigengenes(rlogtrt,moduleColors)$eigengenes
+signif(cor(datME, use="p"), 2)
+
+pdf(file="../../plots/pairwise_eigengene_plots.pdf", width = 9, height = 6)
+par(mfrow=c(1,1))
+par(cex = 0.6)
+mar=c(1,1)
+plotMEpairs(datME)
+dev.off()
 
 # See detected modules and their sizes
 cat("\n\nNetwork Modules\n")
@@ -349,12 +359,13 @@ mergedMEs = merge$newMEs;
 table(mergedColors)
 
 # Plot dendrogram with module colors below it
-pdf(file="../../plots/dynamic_merged_clusters.pdf")
+pdf(file="../../plots/dynamic_merged_clusters.pdf", width = 5, height = 3)
 par(mfrow=c(2,2))
 par(cex = 0.6)
 plotDendroAndColors(geneTree, 
                     cbind(dynamicColors, mergedColors), 
-                    c("Dynamic Tree Cut", "Merged dynamic"),
+                    c("Dynamic colors", "Module colors"),
+                    main = NULL,
                     dendroLabels= FALSE, hang=0.03, 
                     addGuide= TRUE, guideHang=0.05)
 dev.off()
@@ -383,6 +394,9 @@ MEs = mergedMEs;
 # save(MEs, moduleLabels, moduleColors, geneTree, 
 #       file= "../../processed/DESEQ/Network_modules_signed_merge.RData")
 load("../../processed/DESEQ/Network_modules_signed_merge.RData")
+
+module.table_merged <- module.table_merged[1:20,1:2]
+#modTab <- module.table_merged %>% rename(Freq, genes)
 
 ```
 
@@ -473,6 +487,17 @@ verboseScatterplot(abs(geneModuleMembership[moduleGenes, column]),
 # Output greenyellow module genes
 #names(rlogtrt)[moduleColors=="greenyellow"]
 
+GS1=as.numeric(cor(rlogtrt, trt_prw, use = "p"))
+GeneSignificance=abs(GS1)
+# Next module significance is defined as average gene significance.
+ModuleSignificance=tapply(datME,GeneSignificance,  mean, na.rm=T)
+
+plotModuleSignificance(
+  geneTraitSignificance, 
+  colors = mergedMEs, 
+  #boxplot = FALSE, 
+  main = "Gene significance across modules,", 
+  ylab = "Gene Significance")
 ```
 
 # Module membership - shorter way
@@ -487,11 +512,11 @@ MMPval <- as.data.frame(corPvalueStudent(as.matrix(datKME), nSamples));
 colnames(MMPval) <- sub("MM.", "p.MM.", colnames(MMPval))
 ```
 
-# Intramodular analysis: Phenotypes
+# Intramodular analysis wrt diet
 
 ```{r}
-  # Identifying genes with high GS (Gene Significance) and MM (Module Membership)
-  # Using GS and MM measures, identify genes with a high significance for a diet contrast
+# Get genes with high GS (Gene Significance) and MM (Module Membership)
+  # i.e. genes with a high significance for a diet contrast
   # as well as high module membership in interesting modules
 
 cat("\nGenerating plots for Intramodular analysis (phenotypes)\n")
@@ -666,4 +691,55 @@ visGreen = exportNetworkToVisANT(modTOM,
   probeToGene = data.frame(annot$FBgn, annot$symbol) )
 ```
 
+# Output tables
+
+```{r}
+  cat("\nGenerating Network Output Tables\n")
+  networkDatOutput0 <- data.frame(featuredata, moduleColors, GS.datTraits, GSPvalue)
+  
+  if(!is.null(groupsets)) {
+    networkDatOutput0 <- data.frame(networkDatOutput0, geneGroupsetCor, geneGroupsetPvalue, check.names = F)
+  } 
+  
+  # sorting rows and columns if groupColumn exists
+  groupColumn.name <- grep(paste0("^p.*", groupColumn),names(networkDatOutput0), value=T) # get name of pvalue-column from cor with groups
+  if(length(groupColumn.name)==1) {
+    # sort sequence of module-membership-columns with respect to the correlation of modules with groupColumn before adding to networkDatOutput
+    # (if correlation between modules and groupColumn is already done in 'moduleTraitCor')
+       modOrder = order(-abs(moduleTraitPvalue[,groupColumn.name])) 
+        # Add module membership information in 'datKME' and MMPvalue in the chosen order
+       networkDatOutput_MM <- data.frame(networkDatOutput0, datKME[,modOrder], MMPvalue[,modOrder], check.names = F)
+       
+       # Order the genes in the geneInfo variable first by module color, then by geneTraitSignificance (if column with pvalue from cor with groupColumn exists)
+       geneOrder = order(networkDatOutput0$moduleColors, -abs(networkDatOutput0[,groupColumn.name]))
+       networkDatOutput0 = networkDatOutput0[geneOrder, ]
+       networkDatOutput_MM  = networkDatOutput_MM[geneOrder, ]
+       }
+  
+  write.table(networkDatOutput0,file.path(projectfolder, "networkDatOutput.txt"), row.names=F, quote=F, sep="\t")
+  write.table(networkDatOutput_MM,file.path(projectfolder, "networkDatOutput_incl_MM.txt"), row.names=F, quote=F, sep="\t")
+
+  
+  
+  ### saving pruned result tables: the 8 most significant modules for each trait
+  for (trait in phModule) {
+      # select 8 top associated modules for each trait given in 'phModule': 
+      modTraitName <- grep(paste0(trait,"$"), names(moduleTraitPvalue), value=T) # with prefix "p.cor" or "p.icc"
+      selectModules <- rownames(moduleTraitPvalue[order(moduleTraitPvalue[,modTraitName], decreasing=F), , drop=F])[1:min(8, ncol(MEs))]
+      selectModules <- substring(selectModules,3) # remove substring "ME"
+      i <- 0      
+       for (module in selectModules) {
+         i <- i+1
+         restModule <- networkDatOutput_MM$moduleColors==module
+         defColnames <- c(colnames(featuredata), "moduleColors", 
+                          grep(paste0(trait,"$"), names(GS.datTraits), value=T), 
+                          grep(paste0(trait,"$"), names(GSPvalue), value=T))  
+         moduleColnames <- grep(paste0("MM.",module, "$"), names(networkDatOutput_MM), value=T)
+         
+         Output.pruned <- networkDatOutput_MM[restModule, c(defColnames, moduleColnames)]
+         write.table(Output.pruned,file.path(projectfolder, "Intramodular_analysis_Traits", paste0(paste("out",trait,"no",i,"module",module, sep="_"),".txt")), 
+                     row.names=F, quote=F, sep="\t")
+       } # end of module-loop
+  } # end of trait-loop 
+```
 
