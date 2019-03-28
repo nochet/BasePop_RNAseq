@@ -70,7 +70,7 @@ dds.02 <- DESeqDataSetFromMatrix(countData = countdata,
                                    colData = phenDat.sva, 
                                    design = ~ SV1 + batch + tissue*treatment)
 
-save(dds.02, file="../../processed/DESEQ/dds.02.Rda")
+#save(dds.02, file="../../processed/DESEQ/dds.02.Rda")
 
 dds_deseq.02 <- estimateSizeFactors(dds.02)
 nc <- counts(dds_deseq.02, normalized=TRUE)
@@ -84,7 +84,11 @@ colData(dds_deseq.02)
 plotDispEsts(dds_deseq.02)
 save(dds_deseq.02, file="../../processed/DESEQ/dds_deseq.02.Rda")
 load("../../processed/DESEQ/dds_deseq.02.Rda")
+```
 
+# LRT tests for reduced models
+
+```{r}
 # DEGs significant for effect of treatment 
 lrt.treatment <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + tissue)
 lrt.treatment <- lrt.treatment[which(mcols(lrt.treatment)$fullBetaConv),]
