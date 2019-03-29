@@ -131,43 +131,37 @@ ggplot(full_table.bg, aes(x=length, col=length)) +
         text = element_text(size = 12))
 ```
 
-# Global trends with DESeq2
+# Tranform data to visualize global trends
 
 ```{r}
-# PCA using DESeq2
-
+# Models created in DESeq_DExpr.Rmd
 load("../../processed/DESEQ/dds_deseq01.Rda")
 load("../../processed/DESEQ/dds_deseq.02.Rda")
 
-# vsd & rlog transform data on the log2 scale normalized to library size
-# blind set to TRUE prevents re-estimation of size factors
+# log transform null DESeq model: design ~ SV1 + batch + treatment + tissue
+rlog.trt <- rlog(dds_deseq.01, blind = FALSE, fitType = "parametric")
+rlog.int <- rlog(dds_deseq.02, blind = FALSE, fitType = "parametric")
 
-vsd.01 <- varianceStabilizingTransformation(dds_deseq.01,
-                                            blind = TRUE, fitType = "parametric")
-vsd.02 <- varianceStabilizingTransformation(dds_deseq.02, 
-                                            blind = TRUE, fitType = "parametric")
+```
 
-# time intensive; incorporates a prior on the sample differences
-# rlog fits a shrinkage term for each sample and each gene
-# rlog shrinkage is greater for low counts and a much weaker effect for high counts (see ?rlog)
+# Sample info
 
-#rlog.01 <- rlog(dds_deseq.01, blind = TRUE, fitType = "parametric")
-#rlog.02 <- rlog(dds_deseq.02, blind = TRUE, fitType = "parametric")
+```{r}
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+rownames(phenDat.sva) <- phenDat.sva[,1]
+phenDat.sva[,1] <- NULL
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
+phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, sep="")
 
-#save(rlog.01, file = "../../processed/DESEQ/rlog_dds_deseq.01.Rda")
-#save(rlog.02, file = "../../processed/DESEQ/rlog_dds_deseq.02.Rda")
-write.table(assay(rlog.01), 
-            file="../../processed/DESEQ/rlog.01.txt", 
-            sep="\t")
+```
 
-load("../../processed/DESEQ/rlog_dds_deseq.01.Rda")
-load("../../processed/DESEQ/rlog_dds_deseq.02.Rda")
+# PCA plots
 
-
+```{r}
 # PC1/PC2: Choose one variance stabilization (vst) plot 
-pcaVsd <- plotPCA(vsd.02, intgroup=c("treatment", "tissue"), returnData=TRUE)
-percentVar <- round(100 * attr(pcaVsd, "percentVar"))
-ggplot(pcaVsd, aes(PC1, PC2, color=treatment, shape=tissue)) +
+rlog_pca <- plotPCA(rlog.trt, intgroup=c("treatment", "tissue"), returnData=TRUE)
+percentVar <- round(100 * attr(rlog_pca, "percentVar"))
+ggplot(rlog_pca, aes(PC1, PC2, color=treatment, shape=tissue)) +
   geom_point(size=5, alpha = 0.6) +
   theme(axis.title.y = element_text(size = 12),
                 text = element_text(size = 12))+
@@ -176,7 +170,7 @@ ggplot(pcaVsd, aes(PC1, PC2, color=treatment, shape=tissue)) +
   ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
   coord_fixed() +
   my_theme
-ggsave(last_plot(),file = "../../plots/PCAplot_vst_02.pdf",width = 5,height=5)
+ggsave(last_plot(),file = "../../plots/PCAplot_rlog_trt.pdf",width = 5,height=5)
 
 
 # PC1/PC2: Choose one regularized log transformation (rlog) plot
@@ -212,6 +206,23 @@ ggplot(pc34, aes(PC3, PC4, color=treatment, shape=tissue)) +
 
 #ggsave(last_plot(),file = "../../plots/PCAplot_rlog_02_PC3PC4.pdf",width = 5,height=5)
 
+```
+
+# Remove batches
+
+```{r}
+# check variation in size factors
+hist(dds_deseq.01$sizeFactor)
+
+# Treatment effect data
+mat <- assay(rlog.trt)
+mat <- limma::removeBatchEffect(mat, batch = phenDat.sva$batch) 
+                                
+# Interaction effect data
+rmat <- assay(rlog.trt)
+rmat <- limma::removeBatchEffect(rmat, batch = phenDat.sva$SV1, batch2 = phenDat.sva$batch)
+assay(rlog.trt) <- rmat
+print(plotPCA(rlog.trt, intgroup=c("treatment", "tissue"), returnData=TRUE))
 ```
 
 # Significantly DE genes
