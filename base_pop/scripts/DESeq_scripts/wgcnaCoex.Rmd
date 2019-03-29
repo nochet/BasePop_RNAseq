@@ -105,16 +105,18 @@ vst.trt <- varianceStabilizingTransformation(dds_deseq.01,
 # check variation in size factors
 hist(dds_deseq.01$sizeFactor)
 
+d.mat <- model.matrix(~ treatment * tissue, phenDat.sva)
+
 # vst data
 mat <- assay(vst.trt)
 mat <- limma::removeBatchEffect(mat, batch = phenDat.sva$SV1, 
-                                batch2 = phenDat.sva$batch)
+                                batch2 = phenDat.sva$batch, design=d.mat)
 assay(vst.trt) <- mat
 print(plotPCA(vst.trt, intgroup=c("treatment", "tissue"), returnData=FALSE))
 
 # rlog data
 rmat <- assay(rlog.trt)
-rmat <- limma::removeBatchEffect(rmat, batch = phenDat.sva$SV1, batch2 = phenDat.sva$batch)
+rmat <- limma::removeBatchEffect(rmat, batch = phenDat.sva$SV1, batch2 = phenDat.sva$batch, design=d.mat)
 assay(rlog.trt) <- rmat
 print(plotPCA(rlog.trt, intgroup=c("treatment", "tissue"), returnData=TRUE))
 

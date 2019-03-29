@@ -159,6 +159,7 @@ phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, 
 
 ```{r}
 # PC1/PC2: Choose one variance stabilization (vst) plot 
+
 rlog_pca <- plotPCA(rlog.trt, intgroup=c("treatment", "tissue"), returnData=TRUE)
 percentVar <- round(100 * attr(rlog_pca, "percentVar"))
 ggplot(rlog_pca, aes(PC1, PC2, color=treatment, shape=tissue)) +
@@ -174,7 +175,7 @@ ggsave(last_plot(),file = "../../plots/PCAplot_rlog_trt.pdf",width = 5,height=5)
 
 
 # PC1/PC2: Choose one regularized log transformation (rlog) plot
-pcaData <- plotPCA(rlog.02, intgroup=c("treatment", "tissue"), returnData=TRUE)
+pcaData <- plotPCA(rlog.trt, intgroup=c("treatment", "tissue"), returnData=TRUE)
 percentVar <- round(100 * attr(pcaData, "percentVar"))
 ggplot(pcaData, aes(PC1, PC2, color=treatment, shape=tissue)) +
   geom_point(size=5, alpha = 0.6) +
@@ -191,7 +192,7 @@ ggsave(last_plot(),file = "../../plots/PCAplot_rlog_02.pdf",width = 5,height=5)
 
 # PC3/PC4: source code modified
 # ref: http://seqanswers.com/forums/showthread.php?t=66769
-pc34 <- pcaPlot(rlog.02, intgroup=c("treatment", "tissue"), returnData=TRUE)
+pc34 <- pcaPlot(rlog.trt, intgroup=c("treatment", "tissue"), returnData=TRUE)
 percentVar <- round(100 * attr(pc34, "percentVar"))
 
 ggplot(pc34, aes(PC3, PC4, color=treatment, shape=tissue)) + 
@@ -214,15 +215,28 @@ ggplot(pc34, aes(PC3, PC4, color=treatment, shape=tissue)) +
 # check variation in size factors
 hist(dds_deseq.01$sizeFactor)
 
+d.mat <- model.matrix(~ treatment * tissue, phenDat.sva)
+
+rlog.trt.batch <- rlog.trt
 # Treatment effect data
-mat <- assay(rlog.trt)
-mat <- limma::removeBatchEffect(mat, batch = phenDat.sva$batch) 
-                                
-# Interaction effect data
-rmat <- assay(rlog.trt)
-rmat <- limma::removeBatchEffect(rmat, batch = phenDat.sva$SV1, batch2 = phenDat.sva$batch)
-assay(rlog.trt) <- rmat
-print(plotPCA(rlog.trt, intgroup=c("treatment", "tissue"), returnData=TRUE))
+mat <- assay(rlog.trt.batch)
+mat <- limma::removeBatchEffect(mat, batch = phenDat.sva$batch, batch2 = phenDat.sva$SV1, design = d.mat) 
+
+assay(rlog.trt.batch) <- mat
+print(plotPCA(rlog.trt.batch, intgroup=c("treatment", "tissue")))   
+pc34 <- pcaPlot(rlog.trt.batch, intgroup=c("treatment", "tissue"), returnData=TRUE)
+percentVar <- round(100 * attr(pc34, "percentVar"))
+
+ggplot(pc34, aes(PC3, PC4, color=treatment, shape=tissue)) + 
+  geom_point(size=5, alpha = 0.6) + 
+  theme(axis.title.y = element_text(size = 12),
+                text = element_text(size = 12))+
+  scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+  xlab(paste0("PC3: ", percentVar[3],"% variance")) + 
+  ylab(paste0("PC4: ", percentVar[4],"% variance")) + 
+  coord_fixed() +
+  my_theme
+                    
 ```
 
 # Significantly DE genes
