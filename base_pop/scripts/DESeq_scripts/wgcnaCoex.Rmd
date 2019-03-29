@@ -41,15 +41,6 @@ allowWGCNAThreads()
 set.seed(341072)
 ```
 
-# Expression Data
-
-```{r}
-# countdata <- read.csv("../../processed/DESEQ/Expr_countData.csv")
-# rownames(countdata) <- countdata[,1]
-# countdata[,1] <- NULL
-# countdata <- as.matrix(countdata)
-
-```
 
 # Prep sample data for WGCNA
 
@@ -90,13 +81,6 @@ trt_prw <- binarizeCategoricalVariable(trt,
 trt_prw <- data.frame(trt, trt_prw)
 trt_prw <- trt_prw[,2:37]
 
-
-# Indicators for each level vs all others
-trt_all <- binarizeCategoricalVariable(trt, 
-                                       includePairwise = FALSE,
-                                       includeLevelVsAll = TRUE)
-trt_all <- data.frame(trt, trt_all)
-
 ```
 
 # Transformed DESeq objects
@@ -109,30 +93,14 @@ load("../../processed/DESEQ/dds_deseq01.Rda")
 # Full interaction model
 load("../../processed/DESEQ/dds_deseq.02.Rda")
 
-# log transform null DESeq model: design ~ SV1 + batch
-rlog.wg0 <- rlog(dds_deseq.01, blind = FALSE, fitType = "parametric")
-vst.wg0 <- varianceStabilizingTransformation(dds_deseq.01,
+# log transform null DESeq model: design ~ SV1 + batch + treatment + tissue
+rlog.trt <- rlog(dds_deseq.01, blind = FALSE, fitType = "parametric")
+vst.trt <- varianceStabilizingTransformation(dds_deseq.01,
                                             blind = FALSE, fitType = "parametric")
-# Save transformed data
-save(rlog.wg0, file="../../processed/DESEQ/rlog.wg0.Rda")
-save(vst.wg0, file="../../processed/DESEQ/vst.wg0.Rda")
 
-load("../../processed/DESEQ/vst.wg0.Rda")
-load("../../processed/DESEQ/rlog.wg0.Rda")
+boxplot(rlog.trt)
+boxplot(vst.trt)
 
-rlog.wg0 <- read.table("../../processed/DESEQ/Coexpression/rlog.wg0.txt",
-            sep="\t", stringsAsFactors = FALSE)
-vst.wg0 <- read.table("../../processed/DESEQ/Coexpression/vst.wg0.txt",
-            sep="\t", stringsAsFactors = FALSE)
-
-boxplot(rlog.wg0)
-boxplot(vst.wg0)
-
-# write.table(assay(rlog.wg0),
-#             file="../../processed/DESEQ/rlog.wg0.txt", sep="\t")
-# 
-# write.table(assay(vst.wg0),
-#             file="../../processed/DESEQ/vst.wg0.txt", sep="\t")
 
 ```
 
@@ -143,23 +111,24 @@ boxplot(vst.wg0)
 hist(dds_deseq.01$sizeFactor)
 
 # vst data
-mat <- assay(vst.wg0)
+mat <- assay(vst.trt)
 mat <- limma::removeBatchEffect(mat, batch = phenDat.sva$SV1, batch2 = phenDat.sva$batch)
-assay(vst.wg0) <- mat
-print(plotPCA(vst.wg0, intgroup=c("treatment", "tissue"), returnData=FALSE))
+assay(vst.trt) <- mat
+print(plotPCA(vst.trt, intgroup=c("treatment", "tissue"), returnData=FALSE))
 
 # rlog data
-rmat <- assay(rlog.wg0)
+rmat <- assay(rlog.trt)
 rmat <- limma::removeBatchEffect(mat, batch = phenDat.sva$SV1, batch2 = phenDat.sva$batch)
-assay(rlog.wg0) <- rmat
-print(plotPCA(rlog.wg0, intgroup=c("treatment", "tissue"), returnData=FALSE))
+assay(rlog.trt) <- rmat
+print(plotPCA(rlog.trt, intgroup=c("treatment", "tissue"), returnData=FALSE))
 
 ```
 
 # WGCNA Preliminaries
 
 ```{r}
-rlogtrt <- read.table("../../processed/DESEQ/rlog.wg0.txt", sep="\t")
+
+rlogtrt <- rmat
 
 # Get data into WGCNA format - genes as columns, samples as rows
 rlogtrt = as.data.frame(t(rlogtrt)) 
@@ -199,7 +168,7 @@ plotDendroAndColors(sampleTree, traitColors,
                    cex.rowText = 0.2)
 dev.off()
 
-#save(rlogtrt, trt_prw, file ="../../processed/DESEQ/Coexpression/trt-01-dataInput.RData")
+save(rlogtrt, trt_prw, file ="../../processed/DESEQ/Coexpression/trt-01-dataInput.RData")
 load("../../processed/DESEQ/Coexpression/trt-01-dataInput.RData")
 ```
 
@@ -258,7 +227,7 @@ TOM = TOMsimilarity(adjc, TOMType="signed") # specify network type
 # Calculate the corresponding dissimilarity
 dissTOM = 1-TOM
 
-#save(sft, adjc, TOM, dissTOM, file= "../../processed/DESEQ/Coexpression/adjc_TOM.RData")
+save(sft, adjc, TOM, dissTOM, file= "../../processed/DESEQ/Coexpression/adjc_TOM.RData")
 load("../../processed/DESEQ/Coexpression/adjc_TOM.RData")
 
 # Note: dissTOM calc minimizes effects of noise and spurious associations
@@ -276,7 +245,7 @@ plot(geneTree, xlab = "", sub = "", cex = 0.3,
      labels = FALSE, hang = 0.04)
 
 # Set minimum number of genes in a module
-minModuleSize = 20
+minModuleSize = 30
 
 # Module identification using dynamic tree cut algorithm
 dynamicMods = cutreeDynamic(dendro = geneTree,
@@ -351,7 +320,7 @@ modtable$Genes <- as.numeric(modtable$Genes)
 p <- ggplot(modtable, aes(x=Module, y=Genes, fill="Module")) + 
   geom_bar(stat = "identity") + 
   geom_text(aes(label=Genes), 
-            vjust=1.6, size=3.5)+
+            size=3.5)+ annotate("text", label = "right") +
   
   coord_flip()
 p + theme(legend.position = "none") 
@@ -364,7 +333,6 @@ p + theme(legend.position = "none")
 # Can choose no merge i.e. MEDissThres=0.0)
 # Merge modules that are 85% similar
 MEDissThres = 0.10 # 0.05 is identical Dynamic Tree Cut
-abline(h=MEDissThres, col ="red")
 
 # Call automatic merging function
 merge = mergeCloseModules(rlogtrt, 
@@ -396,7 +364,7 @@ table(moduleColors)
 cat("\n\nNetwork Modules\n")
 moduleColors = mergedColors
 module.table_merged <- as.data.frame(table(moduleColors))
-module.table_merged <- module.table_merged[match(gsub("ME", "", names(MEs)), module.table[,1]),] # same order of eigengenes as in MEs (needed for heatmap labels) 
+module.table_merged <- module.table_merged[match(gsub("ME", "", names(MEs)), module.table_merged[,1]),] # same order of eigengenes as in MEs (needed for heatmap labels) 
 print(module.table_merged)
 write.table(module.table_merged, "../../processed/DESEQ/Coexpression/mergedModules_Sizes.txt", quote=F, row.names=F, sep="\t")
 
@@ -410,12 +378,11 @@ colorOrder = c("grey", standardColors(50));
 moduleLabels = match(moduleColors, colorOrder)-1;
 MEs = mergedMEs;
 
-# save(MEs, moduleLabels, moduleColors, geneTree, 
-#       file= "../../processed/DESEQ/Network_modules_signed_merge.RData")
+save(MEs, moduleLabels, moduleColors, geneTree,
+      file= "../../processed/DESEQ/Network_modules_signed_merge.RData")
 load("../../processed/DESEQ/Network_modules_signed_merge.RData")
 
-module.table_merged <- module.table_merged[1:20,1:2]
-#modTab <- module.table_merged %>% rename(Freq, genes)
+module.table_merged <- na.omit(module.table_merged)
 
 ```
 
@@ -427,14 +394,23 @@ module.table_merged <- module.table_merged[1:20,1:2]
 nGenes = ncol(rlogtrt)
 nSamples = nrow(rlogtrt)
 
-# Recalculate module eigengens (use non-merged)
+# Recalculate module eigengens 
 MEs0 = moduleEigengenes(rlogtrt, moduleColors)$eigengenes
 MEs = orderMEs(MEs0)
+write.table(MEs0, file="../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t", row.names = FALSE)
+
 
 # Quantify module-trait association
-moduleTraitCor = cor(MEs, trt_prw, use = "p");
-moduleTraitPvalue = corPvalueStudent(moduleTraitCor, nSamples);
+#moduleTraitCor = cor(MEs, trt_prw, use = "p");
+#moduleTraitPvalue = corPvalueStudent(moduleTraitCor, nSamples);
 #moduleTraitPvalueFish <- corPvalueFisher(moduleTraitCor, nSamples)
+
+aov.mods1 <- aov(as.matrix(MEs) ~ phenDat.sva$treat_tissue) 
+
+aov.mods2 <- aov(as.matrix(MEs) ~ phenDat.sva$treatment* phenDat.sva$tissue)
+
+aov.mod_single <- aov(MEs[,19] ~ phenDat.sva$treat_tissue)
+TukeyHSD(aov.mod_single)
 
 sizeGrWindow(8,6)
 
@@ -486,7 +462,9 @@ GSPvalue = as.data.frame(corPvalueStudent(
   as.matrix(geneTraitSignificance), nSamples));
 
 names(geneTraitSignificance) = paste("GS.", names(trt_prw), sep="");
-names(GSPvalue) = paste("p.GS.", names(trt_prw), sep="");
+
+write.table(geneModuleMembership, "../../processed/DESEQ/Coexpression/MM.txt", sep="\t")
+write.table(geneTraitSignificance, "../../processed/DESEQ/Coexpression/MM.txt", sep="\t")
 
 #module = "green"
 module = "cyan"
@@ -506,20 +484,9 @@ verboseScatterplot(abs(geneModuleMembership[moduleGenes, column]),
 # Output greenyellow module genes
 #names(rlogtrt)[moduleColors=="greenyellow"]
 
-GS1=as.numeric(cor(rlogtrt, trt_prw, use = "p"))
-GeneSignificance=abs(GS1)
-# Next module significance is defined as average gene significance.
-ModuleSignificance=tapply(datME,GeneSignificance,  mean, na.rm=T)
-
-plotModuleSignificance(
-  geneTraitSignificance, 
-  colors = mergedMEs, 
-  #boxplot = FALSE, 
-  main = "Gene significance across modules,", 
-  ylab = "Gene Significance")
 ```
 
-# Module membership - shorter way
+# Module membership - fewer lines
 
 ```{r}
   
@@ -529,6 +496,7 @@ datKME <- signedKME(rlogtrt, MEs)  # equals geneModuleMembership
 colnames(datKME) <- sub("kME", "MM.", colnames(datKME))
 MMPval <- as.data.frame(corPvalueStudent(as.matrix(datKME), nSamples));
 colnames(MMPval) <- sub("MM.", "p.MM.", colnames(MMPval))
+
 ```
 
 # Intramodular analysis wrt diet
@@ -569,7 +537,7 @@ par(mar=c(6, 8, 4, 4) + 0.1)
                               pch=21, col="black", bg=module)
   }
   dev.off()
-} # end of trait-loop
+}
 
 ```
 
@@ -585,13 +553,15 @@ FBgenes = names(rlogtrt)
 FBgenes2annot = match(FBgenes, annot$FBgn)
 allIDs = annot$entrez[FBgenes2annot]
 
-# The following is the number or probes without annotation:
+# Number genes without annotation:
 sum(is.na(FBgenes2annot))
 # Should return 0
 
 # Get module genes
 modNames
-getMods <- modNames[1:22]
+table(moduleColors)
+
+getMods <- modNames[1:20]
 
 for (module in getMods) {
   # select module genes
@@ -599,14 +569,14 @@ for (module in getMods) {
   # Get their entrez ids
   modIDs = allIDs[modGenes]
   # Write file
-  fileName = paste("../../processed/DESEQ/Coexpression/modules/entrez-", 
+  fileName = paste("../../processed/DESEQ/Coexpression/minMod30/entrez-", 
                    module,".txt", sep="")
   write.table(as.data.frame(modIDs), file = fileName,
               row.names = FALSE, col.names = FALSE)
 }
 
 # Save background list
-fileName = paste("../../processed/DESEQ/Coexpression/modules/backList.txt",
+fileName = paste("../../processed/DESEQ/Coexpression/minMod30/backList.txt",
                  sep="");
 write.table(as.data.frame(allIDs), file = fileName,
            row.names = FALSE, col.names = FALSE) 
@@ -620,7 +590,7 @@ GOenr <- GOenrichmentAnalysis(modColors, allIDs,
                               organism = "fly", nBestP = 10)
 tab <- GOenr$bestPTerms[[4]]$enrichment
 names(tab)
-write.table(tab, file = "../../processed/DESEQ/Coexpression/modules/GOEnrichmentTable.csv", 
+write.table(tab, file = "../../processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable.csv", 
               sep = ",", quote = TRUE, row.names = FALSE)
 
 # View table on screen
@@ -643,9 +613,8 @@ options(width=95)
 
 # Finally, display the enrichment table:
 screenTab
-write.table(screenTab, file = "../../processed/DESEQ/Coexpression/modules/GOEnrichmentTable_simple.csv", 
+write.table(screenTab, file = "../../processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable_simple.csv", 
               sep = ",", quote = TRUE, row.names = FALSE)
-
 ```
 
 # Visualize network eigengenes
@@ -703,7 +672,7 @@ dimnames(modTOM) = list(modGn, modGn)
 
 # Export the network into an edge list file VisANT can read
 visGreen = exportNetworkToVisANT(modTOM,
-  file = paste("../../processed/DESEQ/Coexpression/modules/VisANTInput-", 
+  file = paste("../../processed/DESEQ/Coexpression/minMod30/VisANTInput-", 
                module, ".txt", sep=""),
   weighted = TRUE,
   threshold = 0,
