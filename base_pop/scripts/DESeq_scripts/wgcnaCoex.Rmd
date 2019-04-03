@@ -95,8 +95,7 @@ load("../../processed/DESEQ/dds_deseq.02.Rda")
 
 # log transform null DESeq model: design ~ SV1 + batch + treatment + tissue
 rlog.trt <- rlog(dds_deseq.01, blind = FALSE, fitType = "parametric")
-vst.trt <- varianceStabilizingTransformation(dds_deseq.01,
-                                            blind = FALSE, fitType = "parametric")
+
 ```
 
 # Remove batches
@@ -107,16 +106,10 @@ hist(dds_deseq.01$sizeFactor)
 
 d.mat <- model.matrix(~ treatment * tissue, phenDat.sva)
 
-# vst data
-mat <- assay(vst.trt)
-mat <- limma::removeBatchEffect(mat, batch = phenDat.sva$SV1, 
-                                batch2 = phenDat.sva$batch, design=d.mat)
-assay(vst.trt) <- mat
-print(plotPCA(vst.trt, intgroup=c("treatment", "tissue"), returnData=FALSE))
-
 # rlog data
 rmat <- assay(rlog.trt)
-rmat <- limma::removeBatchEffect(rmat, batch = phenDat.sva$SV1, batch2 = phenDat.sva$batch, design=d.mat)
+rmat <- limma::removeBatchEffect(rmat, batch = phenDat.sva$SV1, 
+                                 batch2 = phenDat.sva$batch, design=d.mat)
 assay(rlog.trt) <- rmat
 print(plotPCA(rlog.trt, intgroup=c("treatment", "tissue"), returnData=TRUE))
 
