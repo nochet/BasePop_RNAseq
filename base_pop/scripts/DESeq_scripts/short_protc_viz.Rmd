@@ -17,8 +17,8 @@ library(reshape)
 library(ggthemes)
 library(ggrepel)
 library(data.table)
-library(pheatmap)
 library(limma)
+library(gridExtra)
 library(RColorBrewer)
 
 source("modified_plotPCA_function.R")
@@ -50,6 +50,8 @@ bg_ballG
 # Filter out low-abundance transcripts 
 short_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TRUE)
 short_filt
+#whole_tx_table <- texpr(short_filt, meas = "all")
+#write.csv(whole_tx_table, file = "../../processed/S03_short_ballG/whole_tx_table.csv")
 
 # Get fpkm values
 tfpkm_short<-texpr(short_filt, meas="FPKM")
@@ -142,7 +144,7 @@ load("../../processed/DESEQ/dds_deseq.02.Rda")
 rlog.trt <- rlog(dds_deseq.01, blind = FALSE, fitType = "parametric")
 #rlog.int <- rlog(dds_deseq.02, blind = FALSE, fitType = "parametric")
 
-write.table(assay(rlog.trt), 
+rlog.trt <- read.table(
             file="../../processed/DESEQ/rlog.trt.txt", sep="\t")
 ```
 
@@ -170,11 +172,13 @@ ll <- ggplot(uncor.pca, aes(PC1, PC2, color=treatment, shape=tissue)) +
   scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
   xlab(paste0("PC1: ",percentVar[1],"% variance")) +
   ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
-  coord_fixed() +
-  my_theme
-ll + labs(color="Treatment", shape="Tissue")
+    coord_cartesian(xlim = c(-105, 130)) +
+  coord_cartesian(ylim = c(-105, 100)) +
+  my_theme +
+  labs(color="Treatment", shape="Tissue")
+ll 
 
-ggsave(ll,file = "../../plots/PCAplot_rlog_uncorrected_trt.pdf",width = 5,height=5)
+ggsave(last_plot(),file = "../../plots/PCAplot_rlog_uncorrected_trt.pdf",width = 5,height=5)
 
 ```
 
@@ -198,15 +202,20 @@ percentVar <- round(100 * attr(bcor.pca, "percentVar"))
 
 gg <- ggplot(bcor.pca, aes(PC1, PC2, color=treatment, shape=tissue)) + 
   geom_point(size=5, alpha = 0.6) + 
-  theme(axis.title.y = element_text(size = 12),
+  theme(axis.title = element_text(size = 12),
                 text = element_text(size = 12))+
   scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
   xlab(paste0("PC1: ", percentVar[1],"% variance")) + 
   ylab(paste0("PC2: ", percentVar[2],"% variance")) + 
-  coord_fixed() +
-  my_theme
-gg + labs(color="Treatment", shape="Tissue")    
+  coord_cartesian(xlim = c(-105, 130)) +
+  coord_cartesian(ylim = c(-105, 100)) +
+  my_theme +
+  labs(color="Treatment", shape="Tissue")
+gg    
+ggsave(gg,file = "../../plots/PCAplot_rlog_corrected_trt.pdf",width = 8,height=3)
 
-ggsave(gg,file = "../../plots/PCAplot_rlog_trt_corrected.pdf",width = 5,height=5)
+pcaplot <- plot_grid(ll, gg, nrow = 1)
+pcaplot <- plot_grid(ll,gg, align = 'h',rel_widths = c(1.2,1.5), label_size = 10)
+ggsave(pcaplot,file = "../../plots/PCAplot_rlog_trt.pdf",width = 8,height=3)
 ```
 

@@ -41,7 +41,6 @@ allowWGCNAThreads()
 set.seed(341072)
 ```
 
-
 # Prep sample data for WGCNA
 
 ```{r}
@@ -61,25 +60,6 @@ phenDat.sva$trt_tis <- ifelse(phenDat.sva$treat_tissue == "C_B",1,
                           ifelse(phenDat.sva$treat_tissue=="DR_O",6,
                           ifelse(phenDat.sva$treat_tissue=="HS_B",7,
                           ifelse(phenDat.sva$treat_tissue=="HS_H",8, 9))))))))
-
-# phenDat.sva$trtm <- ifelse(phenDat.sva$treatment == "C",1, 
-#                           ifelse(phenDat.sva$treatment=="DR",2,3))
-# 
-# phenDat.sva$tiss <- ifelse(phenDat.sva$tissue == "B",1, 
-#                           ifelse(phenDat.sva$tissue=="H",2,3))  
-
-#trt <- phenDat.sva[,6:8]
-#names(trt) = c("Diet-Tissue","Diet","Tissue")
-
-trt <- phenDat.sva[,"treat_tissue"]
-
-# Indicators for pairwise treatment contrasts
-trt_prw <- binarizeCategoricalVariable(trt, 
-                                       includePairwise = TRUE,
-                                       includeLevelVsAll = TRUE,
-                                       dropUninformative = TRUE)
-trt_prw <- data.frame(trt, trt_prw)
-trt_prw <- trt_prw[,2:37]
 
 ```
 
@@ -111,14 +91,13 @@ rmat <- assay(rlog.trt)
 rmat <- limma::removeBatchEffect(rmat, batch = phenDat.sva$SV1, 
                                  batch2 = phenDat.sva$batch, design=d.mat)
 assay(rlog.trt) <- rmat
-print(plotPCA(rlog.trt, intgroup=c("treatment", "tissue"), returnData=TRUE))
+print(plotPCA(rlog.trt, intgroup=c("treatment", "tissue"), returnData=FALSE ))
 
 ```
 
 # WGCNA Preliminaries
 
 ```{r}
-
 rlogtrt <- rmat
 
 # Get data into WGCNA format - genes as columns, samples as rows
@@ -133,34 +112,12 @@ outls$allOK
 sampleTree = hclust(dist(rlogtrt), method = "average");
 
 sizeGrWindow(12,9) # inches
-par(mfrow=c(2,1))
+#par(mfrow=c(2,1))
 plot(sampleTree, 
      main = "Sample clustering to detect outliers", 
      sub="", xlab="", 
      cex.axis = 0.6)
 
-# Visualize how traits relate to sample dendrogram
-# (white = low, red = high, grey = missing)
-#traitColors = numbers2colors(trt_prw, signed = FALSE);
-
-traitColors = numbers2colors(trt_prw, signed = FALSE)
-
-# Plot the sample dendrogram and the colors underneath
-pdf(file="../../plots/sample_clustering.pdf")
-#par(mfrow=c(2,1))
-#par(mar = c(1,4,2,1))
-#par(cex.lab=1.5, cex.axis=1.5, cex.main=1.5, cex.sub=1.5)
-#par(cex = 1.5)
-plotDendroAndColors(sampleTree, traitColors,
-                   groupLabels = names(trt_prw),
-                   main = "Sample dendrogram and diet heatmap",
-                   cex.colorLabels = 0.6,
-                   cex.dendroLabels = 0.6,
-                   cex.rowText = 0.2)
-dev.off()
-
-save(rlogtrt, trt_prw, file ="../../processed/DESEQ/Coexpression/trt-01-dataInput.RData")
-load("../../processed/DESEQ/Coexpression/trt-01-dataInput.RData")
 ```
 
 # Select soft power
@@ -175,7 +132,7 @@ sft = pickSoftThreshold(rlogtrt, powerVector=powers,
   
 sizeGrWindow(9,5)
 pdf(file="../../plots/softThreshold.pdf")
-par(mfrow= c(1,2)) # one row, two columns panel
+par(mfrow= c(2,2)) # one row, two columns panel
 cex1=0.9
 
 # Scale-free topology fit index as a function of the sft power
@@ -217,9 +174,6 @@ TOM = TOMsimilarity(adjc, TOMType="signed") # specify network type
 
 # Calculate the corresponding dissimilarity
 dissTOM = 1-TOM
-
-save(sft, adjc, TOM, dissTOM, file= "../../processed/DESEQ/Coexpression/adjc_TOM.RData")
-load("../../processed/DESEQ/Coexpression/adjc_TOM.RData")
 
 # Note: dissTOM calc minimizes effects of noise and spurious associations
 ```
@@ -289,20 +243,14 @@ plot(METree, main= "Clustering of module eigengenes", xlab= "", sub= "")
 datME=moduleEigengenes(rlogtrt,dynamicColors)$eigengenes
 signif(cor(datME, use="p"), 2)
 
-pdf(file="../../plots/pairwise_eigengene_plots.pdf", width = 9, height = 6)
-par(mfrow=c(1,1))
-par(cex = 0.6)
-mar=c(1,1)
-plotMEpairs(datME)
-dev.off()
-
 # See detected modules and their sizes
 cat("\n\nNetwork Modules\n")
 moduleColors = dynamicColors
 modtable <- as.data.frame(table(moduleColors))
 modtable <- modtable[match(gsub("ME", "", names(MEs)), modtable[,1]),] # same order of eigengenes as in MEs (needed for heatmap labels) 
 print(modtable)
-write.table(modtable, "../../processed/DESEQ/Coexpression/dynamicModules_Sizes.txt", quote=F, row.names=F, sep="\t")
+write.table(modtable, "../../processed/DESEQ/Coexpression/dynamicModules_Sizes.txt", 
+            quote=F, row.names=F, sep="\t")
 
 
 modtable = rename(modtable, Module = moduleColors, Genes = Freq)
@@ -357,10 +305,11 @@ moduleColors = mergedColors
 module.table_merged <- as.data.frame(table(moduleColors))
 module.table_merged <- module.table_merged[match(gsub("ME", "", names(MEs)), module.table_merged[,1]),] # same order of eigengenes as in MEs (needed for heatmap labels) 
 print(module.table_merged)
-write.table(module.table_merged, "../../processed/DESEQ/Coexpression/mergedModules_Sizes.txt", quote=F, row.names=F, sep="\t")
+write.table(module.table_merged, "../../processed/DESEQ/Coexpression/mergedModules_Sizes.txt",
+            quote=F, row.names=F, sep="\t")
 
 MEcount <- length(colnames(MEs))
-rownames(MEs) <- rownames(trt_prw)
+rownames(MEs) <- rownames(phenDat.sva)
 write.table(MEs, "../../processed/DESEQ/Coexpression/mergedModuleEigengenes_colorLabel.txt", row.names=F, quote=F, sep="\t")
 modNames = substring(names(MEs), 3)  # remove "ME" at the beginning of module eigengene names
   
@@ -369,10 +318,7 @@ colorOrder = c("grey", standardColors(50));
 moduleLabels = match(moduleColors, colorOrder)-1;
 MEs = mergedMEs;
 
-save(MEs, moduleLabels, moduleColors, geneTree,
-      file= "../../processed/DESEQ/Network_modules_signed_merge.RData")
-load("../../processed/DESEQ/Network_modules_signed_merge.RData")
-
+# Remove modules emptied from merging
 module.table_merged <- na.omit(module.table_merged)
 
 ```
@@ -391,11 +337,7 @@ MEs = orderMEs(MEs0)
 write.table(MEs0, file="../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t", row.names = FALSE)
 
 
-# Quantify module-trait association
-#moduleTraitCor = cor(MEs, trt_prw, use = "p");
-#moduleTraitPvalue = corPvalueStudent(moduleTraitCor, nSamples);
-#moduleTraitPvalueFish <- corPvalueFisher(moduleTraitCor, nSamples)
-
+# Associate module eigengenes with treatment conditions 
 aov.mods1 <- aov(as.matrix(MEs) ~ phenDat.sva$treat_tissue) 
 
 aov.mods2 <- aov(as.matrix(MEs) ~ phenDat.sva$treatment* phenDat.sva$tissue)
@@ -403,35 +345,6 @@ aov.mods2 <- aov(as.matrix(MEs) ~ phenDat.sva$treatment* phenDat.sva$tissue)
 aov.mod_single <- aov(MEs[,19] ~ phenDat.sva$treat_tissue)
 TukeyHSD(aov.mod_single)
 
-sizeGrWindow(8,6)
-
-pdf(file = "../../plots/module-trait_correlations.pdf", wi = 7, he = 5)
-par(mar=c(5.1,4.1,4.1,2.1))
-#par(mfrow=c(1.5,1.2))
-#par(mar = c(0,4,2,0))
-par(cex = 0.55)
-#sizeGrWindow(12,9)
-
-# Will display correlations and their p-values
-textMatrix = paste(signif(moduleTraitCor, 2), "\n(",
-                        signif(moduleTraitPvalue, 1), ")", sep = "");
-dim(textMatrix) = dim(moduleTraitCor)
-#par(mar = c(5, 1, 1, 5)+ 0.1) ;
-
-# Display the correlation values within a heatmap plot
-labeledHeatmap(Matrix = moduleTraitCor,
-             xLabels = names(trt_prw),
-             yLabels = names(MEs),
-             ySymbols = names(MEs),
-             colorLabels = TRUE,
-             colors = blueWhiteRed(50),
-             textMatrix = textMatrix,
-             setStdMargins = FALSE,
-             cex.text = 0.55,
-             cex.lab = 0.8,
-             zlim = c(-1,1),
-             main = paste("Module-diet relationships"))
-dev.off()
 ```
 
 # Calculate the module membership values 
