@@ -1,0 +1,214 @@
+---
+title: "wgcna_ANOVA"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# ANOVA on eigengenes
+
+```{r}
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+rownames(phenDat.sva) <- phenDat.sva[,1]
+phenDat.sva[,1] <- NULL
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
+phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, sep="")
+
+
+eg.genes <- read.table(file="../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t",
+                       header=TRUE, stringsAsFactors = FALSE) 
+
+# ANOVA for treatment
+aov.mods1 <- aov(as.matrix(eg.genes) ~ phenDat.sva$treat_tissue) 
+summary(aov.mods1)
+
+# ANOVA for interaction
+aov.mods2 <- aov(as.matrix(MEs) ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mods2)
+
+```
+
+# Visualization
+
+```{r}
+all.dat <- cbind(phenDat.sva, eg.genes)
+
+ccs <- colnames(all.dat[,6:27])
+all.plots <- vector(mode="list", length=length(ccs))
+names(all.plots) <- ccs
+
+for(cc in ccs)
+{
+
+pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue")) +
+  geom_point(position = position_jitter(width = 0.15)) +
+  stat_summary(fun.y = mean, geom = "point", size = 3, pch=2)
+
+all.plots[[cc]] <- pp
+
+}
+
+all.plots[[1]]
+
+```
+
+# Notes
+
+```{r}
+module.table_merged
+
+# Black module - 2956 genes
+all.plots[[1]]
+aov.mod_black <- aov(MEs[,"MEblack"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_black)
+# Effect of tissue*** (ovaries differ from rest); treatment**; no interaction
+#TukeyHSD(aov.mod_single)
+
+# Blue - 1747 genes
+all.plots[[2]]
+aov.mod_blue <- aov(MEs[,"MEblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_blue)
+# Effect of tissue*** (all tissues differ); treatment***; some interaction* effect
+
+# Brown - 1084 genes
+all.plots[[3]]
+aov.mod_brown <- aov(MEs[,"MEbrown"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_brown)
+# Effect of tissue*** (heads and overies are together); some interaction effect*; no treatment effect
+
+# Cyan - 507 genes
+all.plots[[4]]
+aov.mod_cyan <- aov(MEs[,"MEcyan"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_cyan)
+# Tissue***; treatment***; interaction***
+
+# Darkgreen - 199 genes
+all.plots[[5]]
+aov.mod_darkgreen <- aov(MEs[,"MEdarkgreen"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_darkgreen)
+# Tissue***; treatment***; interaction*
+
+# Darkgrey - 309 genes
+all.plots[[6]]
+aov.mod_darkgrey <- aov(MEs[,"MEdarkgrey"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_darkgrey)
+# Tissue***; treatment***; interaction***
+# Low in DR high in HS in general
+
+# Darkred - 84 genes
+all.plots[[7]]
+aov.mod_darkred <- aov(MEs[,"MEdarkred"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_darkred)
+# Tissue***; treatment***; interaction**
+# Low in C, high in DR and low in HS
+
+# Darkturquoise - 79 genes
+all.plots[[8]]
+aov.mod_darkturquoise <- aov(MEs[,"MEdarkturquoise"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_darkturquoise)
+# Tissue***; treatment**; interaction**
+# Body expression low in C, high in DR & HS
+
+# Greenyellow - 165 genes
+all.plots[[9]]
+aov.mod_greenyellow <- aov(MEs[,"MEgreenyellow"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_greenyellow)
+# Tissue***; treatment***; interaction***
+# B&O low in C, high in DR & low in HS; H higher in C than other diets
+
+# Grey - 45 genes ###### Definition of grey confusing#####
+all.plots[[10]]
+aov.mod_grey <- aov(MEs[,"MEgrey"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_grey)
+# Tissue*; treatment***; interaction***
+# B&H high in C, high intermediate in DR & low in HS; O low in C high in DR & lower in HS
+
+# Lightcyan - 117 genes 
+all.plots[[11]]
+aov.mod_lightcyan <- aov(MEs[,"MElightcyan"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_lightcyan)
+# Tissue***; treatment***; interaction**
+# O high in C and HS, low in DR
+
+# Lightgreen - 107 genes 
+all.plots[[12]]
+aov.mod_lightgreen <- aov(MEs[,"MElightgreen"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_lightgreen)
+# Tissue***; treatment***; interaction***
+# B&O low in C, high in DR, low in HS; H higher in C
+
+# Lightyellow - 107 genes 
+all.plots[[13]]
+aov.mod_lightyellow <- aov(MEs[,"MElightyellow"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_lightyellow)
+# Tissue***; treatment***; interaction***
+# B&O low in C, high in DR, low in HS; H higher in C
+# trend too similar to Lightgreen
+
+# Pink - 382 genes 
+all.plots[[14]]
+aov.mod_pink <- aov(MEs[,"MEpink"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_pink)
+# Tissue***; treatment***; interaction**
+# B&O high in C, low in DR, high in HS; H no pattern
+
+# Red - 787 genes 
+all.plots[[15]]
+aov.mod_red <- aov(MEs[,"MEred"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_red)
+# Tissue***; treatment***; interaction***
+# subtlely increasing in all tissue across C, DR, HS
+
+# Royalblue - 132 genes 
+all.plots[[16]]
+aov.mod_royalblue <- aov(MEs[,"MEroyalblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_royalblue)
+# Tissue***; treatment***; interaction**
+# B&O high in C, low in DR, high in HS; H low, higher, high
+
+# Salmon - 157 genes 
+all.plots[[17]]
+aov.mod_salmon <- aov(MEs[,"MEsalmon"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_salmon)
+# Tissue***; treatment***; interaction***
+# B high, low, high; H&O low, higher, high
+
+# Skyblue - 52 genes 
+all.plots[[18]]
+aov.mod_skyblue <- aov(MEs[,"MEskyblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_skyblue)
+# Tissue*; treatment***; interaction***
+# B&O low, high, low; H high, low, low
+
+# Steelblue - 44 genes 
+all.plots[[19]]
+aov.mod_steelblue <- aov(MEs[,"MEsteelblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_steelblue)
+# Tissue***; treatment***; interaction*
+# high, low, high; larger effect in ovaries
+
+# Tan - 163 genes 
+all.plots[[20]]
+aov.mod_tan <- aov(MEs[,"MEtan"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_tan)
+# Tissue***; treatment***; interaction***
+# low, high, low; larger effect in ovaries
+
+# Turquoise - 3337 genes 
+all.plots[[21]]
+aov.mod_turquoise <- aov(MEs[,"MEturquoise"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_turquoise)
+# Tissue***; treatment***; interaction*
+# All tissues low in C and similar for DR and HS
+
+# White - 54 genes 
+all.plots[[22]]
+aov.mod_white <- aov(MEs[,"MEwhite"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+summary(aov.mod_white)
+# Tissue***; treatment***; interaction***
+# B low in C, high in DR, higher in HS; other tissues no clear trend
+
+```
+

@@ -291,7 +291,7 @@ par(cex = 0.6)
 plotDendroAndColors(geneTree, 
                     cbind(dynamicColors, mergedColors), 
                     c("Dynamic colors", "Module colors"),
-                    main = NULL,
+                    main = NULL,groupLabels = mergedColors,
                     dendroLabels= FALSE, hang=0.03, 
                     addGuide= TRUE, guideHang=0.05)
 dev.off()
@@ -327,10 +327,6 @@ module.table_merged <- na.omit(module.table_merged)
 # https://peterlangfelder.com/2018/11/25/working-with-categorical-variables/
 
 ```{r}
-# Define number of genes and samples
-nGenes = ncol(rlogtrt)
-nSamples = nrow(rlogtrt)
-
 # Recalculate module eigengens 
 MEs0 = moduleEigengenes(rlogtrt, moduleColors)$eigengenes
 MEs = orderMEs(MEs0)
@@ -339,6 +335,8 @@ write.table(MEs0, file="../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt"
 
 # Associate module eigengenes with treatment conditions 
 aov.mods1 <- aov(as.matrix(MEs) ~ phenDat.sva$treat_tissue) 
+summary(aov.mods1)
+#coefficients(aov.mods1)
 
 aov.mods2 <- aov(as.matrix(MEs) ~ phenDat.sva$treatment* phenDat.sva$tissue)
 
