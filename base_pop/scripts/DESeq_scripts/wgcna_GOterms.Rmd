@@ -1,0 +1,95 @@
+---
+title: "wgcna_GOterms"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+eigenGO <- read.table("../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t",
+                       header=TRUE, stringsAsFactors = FALSE) 
+
+load("../../processed/DESEQ/Coexpression/modules.RData")
+
+```
+
+# Output gene lists
+
+```{r}
+# Fbgn annotation file "Genes:fbgn_annotation_ID_fb_2018_04.tsv"
+# see Index of ftp://ftp.flybase.net/releases/FB2018_05/precomputed_files/genes/
+
+annot = read.csv("../../processed/DESEQ/Coexpression/FlyAnnotation.csv")
+dim(annot)
+names(annot)
+colnames(annot)[colnames(annot)=="X"] <- "FBgn"
+
+FBgenes = names(rlogtrt)
+FBgenes2annot = match(FBgenes, annot$FBgn)
+allIDs = annot$entrez[FBgenes2annot]
+
+# Number genes without annotation:
+sum(is.na(FBgenes2annot))
+# Should return 0
+
+# Get module genes
+modNames
+table(moduleColors)
+
+getMods <- modNames[1:22]
+
+for (module in getMods) {
+  # select module genes
+  modGenes = (moduleColors==module)
+  # Get their entrez ids
+  modIDs = allIDs[modGenes]
+  # Write file
+  fileName = paste("../../processed/DESEQ/Coexpression/minMod30/entrez-", 
+                   module,".txt", sep="")
+  write.table(as.data.frame(modIDs), file = fileName,
+              row.names = FALSE, col.names = FALSE)
+}
+
+# Save background list
+fileName = paste("../../processed/DESEQ/Coexpression/minMod30/backList.txt",
+                 sep="");
+write.table(as.data.frame(allIDs), file = fileName,
+           row.names = FALSE, col.names = FALSE) 
+```
+
+# Module GO term enrichment
+
+```{r}
+# Enrichment table containing the 10 best terms for each module
+GOenr <- GOenrichmentAnalysis(moduleColors, allIDs, 
+                              organism = "fly", nBestP = 10)
+tab <- GOenr$bestPTerms[[4]]$enrichment
+names(tab)
+write.table(tab, file = "../../processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable.csv", 
+              sep = ",", quote = TRUE, row.names = FALSE)
+
+# View table on screen
+keepCols = c(1, 2, 5, 6, 7, 12, 13);
+screenTab = tab[, keepCols];
+
+# Round numeric columns to 2 decimal places:
+numCols = c(3, 4);
+screenTab[, numCols] = signif(apply(screenTab[, numCols], 2, as.numeric), 2)
+
+# Truncate the the term name to at most 40 characters
+screenTab[, 7] = substring(screenTab[, 7], 1, 40)
+
+# Shorten the column names:
+colnames(screenTab) = c("module", "size", "p-val", "Bonf", "nInTerm", "ont", "term name");
+rownames(screenTab) = NULL;
+
+# Set the width of R’s output
+options(width=95)
+
+# Finally, display the enrichment table:
+screenTab
+write.table(screenTab, file = "../../processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable_simple.csv", 
+              sep = ",", quote = TRUE, row.names = FALSE)
+```

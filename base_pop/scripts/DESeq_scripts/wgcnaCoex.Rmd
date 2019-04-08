@@ -299,6 +299,9 @@ dev.off()
 # Rename to moduleColors
 table(moduleColors)
 
+# See which modules merged
+table(mergedColors, moduleColors)
+
 # See merged modules and their sizes
 cat("\n\nNetwork Modules\n")
 moduleColors = mergedColors
@@ -312,7 +315,11 @@ MEcount <- length(colnames(MEs))
 rownames(MEs) <- rownames(phenDat.sva)
 write.table(MEs, "../../processed/DESEQ/Coexpression/mergedModuleEigengenes_colorLabel.txt", row.names=F, quote=F, sep="\t")
 modNames = substring(names(MEs), 3)  # remove "ME" at the beginning of module eigengene names
-  
+
+# Write module names for GO analysis later
+save(modNames, moduleColors, file="../../processed/DESEQ/Coexpression/modules.RData")
+
+
 # Construct numerical labels corresponding to the colors
 colorOrder = c("grey", standardColors(50));
 moduleLabels = match(moduleColors, colorOrder)-1;
@@ -323,8 +330,7 @@ module.table_merged <- na.omit(module.table_merged)
 
 ```
 
-# Relate gene expression modules to diet treatment
-# https://peterlangfelder.com/2018/11/25/working-with-categorical-variables/
+# Write out modules eigengenes
 
 ```{r}
 # Recalculate module eigengens 
@@ -332,63 +338,11 @@ MEs0 = moduleEigengenes(rlogtrt, moduleColors)$eigengenes
 MEs = orderMEs(MEs0)
 write.table(MEs0, file="../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t", row.names = FALSE)
 
-
-# Associate module eigengenes with treatment conditions 
-aov.mods1 <- aov(as.matrix(MEs) ~ phenDat.sva$treat_tissue) 
-summary(aov.mods1)
-#coefficients(aov.mods1)
-
-aov.mods2 <- aov(as.matrix(MEs) ~ phenDat.sva$treatment* phenDat.sva$tissue)
-
-aov.mod_single <- aov(MEs[,19] ~ phenDat.sva$treat_tissue)
-TukeyHSD(aov.mod_single)
+write.table(MEs0, file="../../processed/DESEQ/Coexpression/WCGNA_eigenGO.txt", sep="\t", row.names = TRUE)
 
 ```
 
-# Calculate the module membership values 
-# aka. module eigengene based connectivity kME
-
-```{r}
-# names (colors) of the modules
-modNames = substring(names(MEs), 3)
-
-geneModuleMembership = as.data.frame(cor(rlogtrt, MEs, use = "p"));
-MMPvalue = as.data.frame(corPvalueStudent(
-  as.matrix(geneModuleMembership), nSamples));
-
-names(geneModuleMembership) = paste("MM", modNames, sep="");
-names(MMPvalue) = paste("p.MM", modNames, sep="");
-
-geneTraitSignificance = as.data.frame(cor(rlogtrt, trt_prw, use = "p"));
-GSPvalue = as.data.frame(corPvalueStudent(
-  as.matrix(geneTraitSignificance), nSamples));
-
-names(geneTraitSignificance) = paste("GS.", names(trt_prw), sep="");
-
-write.table(geneModuleMembership, "../../processed/DESEQ/Coexpression/MM.txt", sep="\t")
-write.table(geneTraitSignificance, "../../processed/DESEQ/Coexpression/MM.txt", sep="\t")
-
-#module = "green"
-module = "cyan"
-column = match(module, modNames);
-moduleGenes = moduleColors==module;
-
-sizeGrWindow(7, 7);
-par(mfrow = c(1,1));
-verboseScatterplot(abs(geneModuleMembership[moduleGenes, column]),
-                   abs(geneTraitSignificance[moduleGenes, 1]),
-                   xlab = paste("Module Membership in", module, "module"),
-                   ylab = "GS",
-                   main = paste("Module membership vs. gene significance\n"),
-                   cex.main = 1.2, cex.lab = 1.2, cex.axis = 1.2, 
-                   col = module)
-
-# Output greenyellow module genes
-#names(rlogtrt)[moduleColors=="greenyellow"]
-
-```
-
-# Module membership - fewer lines
+# Module membership (aka. module eigengene based connectivity kME)
 
 ```{r}
   
@@ -441,118 +395,6 @@ par(mar=c(6, 8, 4, 4) + 0.1)
   dev.off()
 }
 
-```
-
-# Output gene lists
-
-```{r}
-annot = read.csv("../../processed/DESEQ/Coexpression/FlyAnnotation.csv")
-dim(annot)
-names(annot)
-colnames(annot)[colnames(annot)=="X"] <- "FBgn"
-
-FBgenes = names(rlogtrt)
-FBgenes2annot = match(FBgenes, annot$FBgn)
-allIDs = annot$entrez[FBgenes2annot]
-
-# Number genes without annotation:
-sum(is.na(FBgenes2annot))
-# Should return 0
-
-# Get module genes
-modNames
-table(moduleColors)
-
-getMods <- modNames[1:20]
-
-for (module in getMods) {
-  # select module genes
-  modGenes = (modColors==module)
-  # Get their entrez ids
-  modIDs = allIDs[modGenes]
-  # Write file
-  fileName = paste("../../processed/DESEQ/Coexpression/minMod30/entrez-", 
-                   module,".txt", sep="")
-  write.table(as.data.frame(modIDs), file = fileName,
-              row.names = FALSE, col.names = FALSE)
-}
-
-# Save background list
-fileName = paste("../../processed/DESEQ/Coexpression/minMod30/backList.txt",
-                 sep="");
-write.table(as.data.frame(allIDs), file = fileName,
-           row.names = FALSE, col.names = FALSE) 
-```
-
-# GO term enrichment
-
-```{r}
-# Enrichment table containing the 10 best terms for each module
-GOenr <- GOenrichmentAnalysis(modColors, allIDs, 
-                              organism = "fly", nBestP = 10)
-tab <- GOenr$bestPTerms[[4]]$enrichment
-names(tab)
-write.table(tab, file = "../../processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable.csv", 
-              sep = ",", quote = TRUE, row.names = FALSE)
-
-# View table on screen
-keepCols = c(1, 2, 5, 6, 7, 12, 13);
-screenTab = tab[, keepCols];
-
-# Round numeric columns to 2 decimal places:
-numCols = c(3, 4);
-screenTab[, numCols] = signif(apply(screenTab[, numCols], 2, as.numeric), 2)
-
-# Truncate the the term name to at most 40 characters
-screenTab[, 7] = substring(screenTab[, 7], 1, 40)
-
-# Shorten the column names:
-colnames(screenTab) = c("module", "size", "p-val", "Bonf", "nInTerm", "ont", "term name");
-rownames(screenTab) = NULL;
-
-# Set the width of R’s output
-options(width=95)
-
-# Finally, display the enrichment table:
-screenTab
-write.table(screenTab, file = "../../processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable_simple.csv", 
-              sep = ",", quote = TRUE, row.names = FALSE)
-```
-
-# Visualize network eigengenes
-
-```{r}
-#  Eigengene correlation
-# For one contrast as example
-
-# Recalculate module eigengenes
-MEsDRHO = moduleEigengenes(rlogtrt, modColors)$eigengenes
-# Isolate weight from the clinical traits
-DR_HO = as.data.frame(trt_prw$DR_H.vs.C_O);
-names(DR_HO) = "DR_HO"
-
-# Add the weight to existing module eigengenes
-MET_DHRO = orderMEs(cbind(MEsDRHO, trt_prw$DR_H.vs.C_O))
-
-# Plot the relationships among the eigengenes and the trait
-sizeGrWindow(5,7.5);
-par(cex = 0.9)
-plotEigengeneNetworks(MET_DHRO, "", 
-                      marDendro = c(0,4,1,2), 
-                      marHeatmap = c(3,4,1,2), 
-                      cex.lab = 0.8, 
-                      xLabelsAngle = 90)
-
-# Split dendrogram and heatmap
-sizeGrWindow(6,6);
-par(cex = 1.0)
-plotEigengeneNetworks(MET_DHRO, "Eigengene dendrogram", marDendro = c(0,4,2,0),
-plotHeatmaps = FALSE)
-
-# Plot the heatmap matrix (note: this plot will overwrite the dendrogram plot)
-par(cex = 1.0)
-plotEigengeneNetworks(MET_DHRO, "Eigengene adjacency heatmap", marHeatmap = c(3,4,2,2),
-plotDendrograms = FALSE, xLabelsAngle = 90)
 ```
 
 # Exporting to network visualization tools: VisANT
@@ -608,28 +450,5 @@ visGreen = exportNetworkToVisANT(modTOM,
   
   write.table(networkDatOutput0,file.path(projectfolder, "networkDatOutput.txt"), row.names=F, quote=F, sep="\t")
   write.table(networkDatOutput_MM,file.path(projectfolder, "networkDatOutput_incl_MM.txt"), row.names=F, quote=F, sep="\t")
-
-  
-  
-  ### saving pruned result tables: the 8 most significant modules for each trait
-  for (trait in phModule) {
-      # select 8 top associated modules for each trait given in 'phModule': 
-      modTraitName <- grep(paste0(trait,"$"), names(moduleTraitPvalue), value=T) # with prefix "p.cor" or "p.icc"
-      selectModules <- rownames(moduleTraitPvalue[order(moduleTraitPvalue[,modTraitName], decreasing=F), , drop=F])[1:min(8, ncol(MEs))]
-      selectModules <- substring(selectModules,3) # remove substring "ME"
-      i <- 0      
-       for (module in selectModules) {
-         i <- i+1
-         restModule <- networkDatOutput_MM$moduleColors==module
-         defColnames <- c(colnames(featuredata), "moduleColors", 
-                          grep(paste0(trait,"$"), names(GS.datTraits), value=T), 
-                          grep(paste0(trait,"$"), names(GSPvalue), value=T))  
-         moduleColnames <- grep(paste0("MM.",module, "$"), names(networkDatOutput_MM), value=T)
-         
-         Output.pruned <- networkDatOutput_MM[restModule, c(defColnames, moduleColnames)]
-         write.table(Output.pruned,file.path(projectfolder, "Intramodular_analysis_Traits", paste0(paste("out",trait,"no",i,"module",module, sep="_"),".txt")), 
-                     row.names=F, quote=F, sep="\t")
-       } # end of module-loop
-  } # end of trait-loop 
 ```
 

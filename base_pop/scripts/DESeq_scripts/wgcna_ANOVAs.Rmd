@@ -28,6 +28,9 @@ summary(aov.mods1)
 aov.mods2 <- aov(as.matrix(MEs) ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mods2)
 
+# Intra-module analysis
+#aov.mod_single <- aov(MEs[,19] ~ phenDat.sva$treat_tissue)
+#TukeyHSD(aov.mod_single)
 ```
 
 # Visualization
@@ -64,7 +67,6 @@ all.plots[[1]]
 aov.mod_black <- aov(MEs[,"MEblack"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_black)
 # Effect of tissue*** (ovaries differ from rest); treatment**; no interaction
-#TukeyHSD(aov.mod_single)
 
 # Blue - 1747 genes
 all.plots[[2]]
@@ -83,6 +85,7 @@ all.plots[[4]]
 aov.mod_cyan <- aov(MEs[,"MEcyan"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_cyan)
 # Tissue***; treatment***; interaction***
+cyan_ph <- TukeyHSD(aov.mod_cyan)
 
 # Darkgreen - 199 genes
 all.plots[[5]]
