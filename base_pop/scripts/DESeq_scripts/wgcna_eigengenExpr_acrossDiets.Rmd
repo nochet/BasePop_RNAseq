@@ -1,0 +1,69 @@
+---
+title: "Module eigengene expression across diets"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(cowplot)
+library(AnnotationDbi)
+library(org.Dm.eg.db)
+
+```
+
+# Plot gene expression for each module
+This script subsets and plots gene expression for each WGCNA module. Use data corrected for batches with removeBatchEffects() i.e. "../../processed/DESEQ/rlogtrt.csv" created in wgcnaCoex.Rmd
+
+# Data
+
+```{r}
+# Modules from wgcnaCoex.Rmd
+mods <- read.table("../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t",
+                       header=TRUE, stringsAsFactors = FALSE) 
+
+# Modules & module names
+load("../../processed/DESEQ/Coexpression/modules.RData")
+
+annot = read.csv("../../processed/DESEQ/Coexpression/FlyAnnotation.csv")
+dim(annot)
+names(annot)
+colnames(annot)[colnames(annot)=="X"] <- "FBgn"
+
+eigexpr <- read.csv("../../processed/DESEQ/rlogtrt.csv")
+rownames(eigexpr) <- eigexpr[,1]
+FBgenes = rownames(eigexpr)
+FBgenes2annot = match(FBgenes, annot$FBgn)
+allIDs = annot$FBgn[FBgenes2annot]
+
+# Number genes without annotation:
+sum(is.na(FBgenes2annot))
+# Should return 0
+
+# Get module genes
+modNames
+table(moduleColors)
+
+getMods <- modNames[1:22]
+
+for (module in getMods) {
+  # select module genes
+  modGenes = (moduleColors==module)
+  # Get their FBgn ids
+  modIDs = allIDs[modGenes]
+  # Write file
+  fileName = paste("../../processed/DESEQ/Coexpression/Mods/FBgn-", 
+                   module,".txt", sep="")
+  write.table(as.data.frame(modIDs), file = fileName,
+              row.names = FALSE, col.names = FALSE)
+}
+
+```
+
+# Subset expression data using module genes
+
+```{r}
+
+```
+

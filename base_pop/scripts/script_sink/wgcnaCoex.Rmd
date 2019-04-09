@@ -1,0 +1,456 @@
+---
+title: "WGCNA clustering"
+author: "Enoch Ng'oma"
+date: "2/5/2019"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2 #defaults to 3 if not specified
+    toc_float: true
+    number_sections: true
+    fig_width: 7
+    fig_height: 6
+    fig_caption: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(DESeq2)
+library(limma)
+library(tidyverse)
+library(cowplot)
+library(AnnotationDbi)
+library(org.Dm.eg.db)
+
+# Tutorials
+# https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/Tutorials/FemaleLiver-02-networkConstr-man.pdf
+# https://wikis.utexas.edu/display/bioiteam/Clustering+using+WGCNA
+# https://bioconductor.org/packages/release/bioc/vignettes/CVE/inst/doc/WGCNA_from_TCGA_RNAseq.html
+
+library(flashClust)
+library(WGCNA)
+library(ape)
+
+options(stringsAsFactors = FALSE)
+allowWGCNAThreads()
+#disableWGCNAThreads()
+
+set.seed(341072)
+```
+
+# Prep sample data for WGCNA
+
+```{r}
+# Sample info
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+rownames(phenDat.sva) <- phenDat.sva[,1]
+phenDat.sva[,1] <- NULL
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
+phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, sep="")
+
+# Sample data to numerical format
+phenDat.sva$trt_tis <- ifelse(phenDat.sva$treat_tissue == "C_B",1, 
+                          ifelse(phenDat.sva$treat_tissue=="C_H",2,
+                          ifelse(phenDat.sva$treat_tissue=="C_O",3,
+                          ifelse(phenDat.sva$treat_tissue=="DR_B",4,
+                          ifelse(phenDat.sva$treat_tissue=="DR_H",5,
+                          ifelse(phenDat.sva$treat_tissue=="DR_O",6,
+                          ifelse(phenDat.sva$treat_tissue=="HS_B",7,
+                          ifelse(phenDat.sva$treat_tissue=="HS_H",8, 9))))))))
+
+```
+
+# Transformed DESeq objects
+# Models created in DESeq_DExpr.Rmd
+
+```{r}
+# Full additive model
+load("../../processed/DESEQ/dds_deseq01.Rda")
+
+# Full interaction model
+load("../../processed/DESEQ/dds_deseq.02.Rda")
+
+# log transform null DESeq model: design ~ SV1 + batch + treatment + tissue
+rlog.trt <- rlog(dds_deseq.01, blind = FALSE, fitType = "parametric")
+
+```
+
+# Remove batches
+
+```{r}
+# check variation in size factors
+hist(dds_deseq.01$sizeFactor)
+
+d.mat <- model.matrix(~ treatment * tissue, phenDat.sva)
+
+# rlog data
+rmat <- assay(rlog.trt)
+rmat <- limma::removeBatchEffect(rmat, batch = phenDat.sva$SV1, 
+                                 batch2 = phenDat.sva$batch, design=d.mat)
+assay(rlog.trt) <- rmat
+print(plotPCA(rlog.trt, intgroup=c("treatment", "tissue"), returnData=FALSE ))
+
+# Needed for GO
+write.csv(rmat, file = "../../processed/DESEQ/rlogtrt.csv", row.names = TRUE)
+```
+
+# WGCNA Preliminaries
+
+```{r}
+rlogtrt <- rmat
+
+# Get data into WGCNA format - genes as columns, samples as rows
+rlogtrt = as.data.frame(t(rlogtrt)) 
+dim(rlogtrt) 
+
+# Check gene outliers or too many missing values
+outls = goodSamplesGenes(rlogtrt, verbose = 3)
+outls$allOK 
+
+# Cluster samples to check outliers
+sampleTree = hclust(dist(rlogtrt), method = "average");
+
+sizeGrWindow(12,9) # inches
+#par(mfrow=c(2,1))
+plot(sampleTree, 
+     main = "Sample clustering to detect outliers", 
+     sub="", xlab="", 
+     cex.axis = 0.6)
+
+```
+
+# Select soft power
+
+```{r}
+# Choose a soft threshold power
+powers = c(c(1:10), seq(from = 10, to = 30, by=1)) 
+sft = pickSoftThreshold(rlogtrt, powerVector=powers, 
+                        #corFnc = cor, # see FAQ point 3
+                        networkType="signed",
+                        verbose = 5)
+  
+sizeGrWindow(9,5)
+pdf(file="../../plots/softThreshold.pdf")
+par(mfrow= c(2,2)) # one row, two columns panel
+cex1=0.9
+
+# Scale-free topology fit index as a function of the sft power
+plot(sft$fitIndices[,1], 
+     -sign(sft$fitIndices[,3])*sft$fitIndices[,2], 
+     xlab= "Soft Threshold (power)", 
+     ylab="Scale Free Topology Model Fit, signed R^2", 
+     type= "n", main= paste("Scale independence"))
+
+text(sft$fitIndices[,1], 
+     -sign(sft$fitIndices[,3])*sft$fitIndices[,2], 
+     labels=powers, cex=cex1, col="red")
+
+# line corresponding to R^2 cut-off of h
+abline(h=0.90, col="red")
+
+# Mean connectivity as a function of the sft power
+plot(sft$fitIndices[,1], sft$fitIndices[,5], 
+     xlab= "Soft Threshold (power)", 
+     ylab="Mean Connectivity", 
+     type="n", main = paste("Mean connectivity"))
+
+text(sft$fitIndices[,1], sft$fitIndices[,5], 
+     labels=powers, cex=cex1, col="red")
+dev.off()
+# Choose the lowest power for which the scale free topology index reaches 0.90
+```
+
+# Construct a gene co-expression matrix and generate modules
+# softPower threshold explained here: https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/faq.html
+
+```{r}
+# Build the adjacency "correlation" matrix
+pe <- sft$powerEstimate
+adjc = adjacency(rlogtrt, power=pe, type="signed")
+
+# Topological overlap matrix (TOM) of the adjacency matrix
+TOM = TOMsimilarity(adjc, TOMType="signed") # specify network type
+
+# Calculate the corresponding dissimilarity
+dissTOM = 1-TOM
+
+# Note: dissTOM calc minimizes effects of noise and spurious associations
+```
+
+# Detect modules
+
+```{r}
+# Hierarchical clustering of the genes based on TOM dissimilarity
+geneTree = flashClust(as.dist(dissTOM), method = "average")
+
+sizeGrWindow(12,9)
+plot(geneTree, xlab = "", sub = "", cex = 0.3, 
+     main = "Gene Clustering on TOM-based dissimilarity", 
+     labels = FALSE, hang = 0.04)
+
+# Set minimum number of genes in a module
+minModuleSize = 30
+
+# Module identification using dynamic tree cut algorithm
+dynamicMods = cutreeDynamic(dendro = geneTree,
+                            distM = dissTOM, 
+                            deepSplit = 2,
+                            pamRespectsDendro = FALSE, 
+                            minClusterSize = minModuleSize)
+                            
+# Modules identified
+table(dynamicMods)
+
+# Assign module colours
+dynamicColors= labels2colors(dynamicMods)
+
+table(dynamicColors)
+
+# Plot dendrogram of igengenes
+plotDendroAndColors(geneTree, dynamicColors, 'Modules', 
+                    dendroLabels = FALSE, hang = 0.03,
+                    addGuide = TRUE, guideHang = 0.05, main='')
+
+# Set the diagonal of the dissimilarity to NA 
+diag(dissTOM) = NA;
+
+```
+
+# Quantify module similarity by eigengene correlation
+
+```{r}
+# Calculate eigengenes
+MEList = moduleEigengenes(rlogtrt, 
+                         colors= dynamicColors,
+                         softPower = pe)
+                         
+MEs = MEList$eigengenes;
+#MET <- order(cbind(MEs, trt_prw$DR_H.Vs.C_B))
+
+plotEigengeneNetworks(MEs, "", marDendro = c(0,4,1,2), marHeatmap = c(3,4,1,2))
+
+
+# Calculate dissimilarity of module eigengenes
+MEDiss = 1-cor(MEs);
+
+# Cluster module eigengenes
+METree = flashClust(as.dist(MEDiss), method= "average")
+
+sizeGrWindow(7,6)
+plot(METree, main= "Clustering of module eigengenes", xlab= "", sub= "")
+
+datME=moduleEigengenes(rlogtrt,dynamicColors)$eigengenes
+signif(cor(datME, use="p"), 2)
+
+# See detected modules and their sizes
+cat("\n\nNetwork Modules\n")
+moduleColors = dynamicColors
+modtable <- as.data.frame(table(moduleColors))
+modtable <- modtable[match(gsub("ME", "", names(MEs)), modtable[,1]),] # same order of eigengenes as in MEs (needed for heatmap labels) 
+print(modtable)
+write.table(modtable, "../../processed/DESEQ/Coexpression/dynamicModules_Sizes.txt", 
+            quote=F, row.names=F, sep="\t")
+
+
+modtable = rename(modtable, Module = moduleColors, Genes = Freq)
+
+modtable$Genes <- as.numeric(modtable$Genes)
+p <- ggplot(modtable, aes(x=Module, y=Genes, fill="Module")) + 
+  geom_bar(stat = "identity") + 
+  geom_text(aes(label=Genes), 
+            size=3.5)+ annotate("text", label = "right") +
+  
+  coord_flip()
+p + theme(legend.position = "none") 
+```
+
+# Merge at a selected threshold
+
+```{r}
+# Set threshold for merging modules 
+# Can choose no merge i.e. MEDissThres=0.0)
+# Merge modules that are 85% similar
+MEDissThres = 0.10 # 0.05 is identical Dynamic Tree Cut
+
+# Call automatic merging function
+merge = mergeCloseModules(rlogtrt, 
+                          dynamicColors, 
+                          cutHeight= MEDissThres, 
+                          verbose =3)
+
+mergedColors = merge$colors;
+mergedMEs = merge$newMEs;
+
+table(mergedColors)
+
+# Plot dendrogram with module colors below it
+pdf(file="../../plots/dynamic_merged_clusters.pdf", width = 5, height = 3)
+par(mfrow=c(2,2))
+par(cex = 0.6)
+plotDendroAndColors(geneTree, 
+                    cbind(dynamicColors, mergedColors), 
+                    c("Dynamic colors", "Module colors"),
+                    main = NULL,groupLabels = mergedColors,
+                    dendroLabels= FALSE, hang=0.03, 
+                    addGuide= TRUE, guideHang=0.05)
+dev.off()
+
+# Rename to moduleColors
+table(moduleColors)
+
+# See which modules merged
+table(mergedColors, moduleColors)
+
+# See merged modules and their sizes
+cat("\n\nNetwork Modules\n")
+moduleColors = mergedColors
+module.table_merged <- as.data.frame(table(moduleColors))
+module.table_merged <- module.table_merged[match(gsub("ME", "", names(MEs)), module.table_merged[,1]),] # same order of eigengenes as in MEs (needed for heatmap labels) 
+print(module.table_merged)
+write.table(module.table_merged, "../../processed/DESEQ/Coexpression/mergedModules_Sizes.txt",
+            quote=F, row.names=F, sep="\t")
+
+MEcount <- length(colnames(MEs))
+rownames(MEs) <- rownames(phenDat.sva)
+write.table(MEs, "../../processed/DESEQ/Coexpression/mergedModuleEigengenes_colorLabel.txt", row.names=F, quote=F, sep="\t")
+modNames = substring(names(MEs), 3)  # remove "ME" at the beginning of module eigengene names
+
+# Modules & names needed in subsequent scripts
+save(modNames, moduleColors, file="../../processed/DESEQ/Coexpression/modules.RData")
+
+
+# Construct numerical labels corresponding to the colors
+colorOrder = c("grey", standardColors(50));
+moduleLabels = match(moduleColors, colorOrder)-1;
+MEs = mergedMEs;
+
+# Remove modules emptied from merging
+module.table_merged <- na.omit(module.table_merged)
+
+```
+
+# Write out modules eigengenes
+
+```{r}
+# Recalculate module eigengens 
+MEs0 = moduleEigengenes(rlogtrt, moduleColors)$eigengenes
+MEs = orderMEs(MEs0)
+write.table(MEs0, file="../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t", row.names = FALSE)
+
+write.table(MEs0, file="../../processed/DESEQ/Coexpression/WCGNA_eigenGO.txt", sep="\t", row.names = TRUE)
+
+```
+
+# Module membership (aka. module eigengene based connectivity kME)
+
+```{r}
+  
+modColors= moduleColors
+
+datKME <- signedKME(rlogtrt, MEs)  # equals geneModuleMembership
+colnames(datKME) <- sub("kME", "MM.", colnames(datKME))
+MMPval <- as.data.frame(corPvalueStudent(as.matrix(datKME), nSamples));
+colnames(MMPval) <- sub("MM.", "p.MM.", colnames(MMPval))
+
+```
+
+# Intramodular analysis wrt diet
+
+```{r}
+# Get genes with high GS (Gene Significance) and MM (Module Membership)
+  # i.e. genes with a high significance for a diet contrast
+  # as well as high module membership in interesting modules
+
+cat("\nGenerating plots for Intramodular analysis (phenotypes)\n")
+colorOfColumn <- substring(names(datKME),4)
+
+for (trait in names(trt_prw)) {
+  modTraitName <- grep(paste0(trait,"$"), colnames(moduleTraitPvalue), value=T) # with prefix "p.cor" or "p.icc"
+  # select 8 top associated modules for each trait given in 'trt_prw': 
+  cat(paste("\ntrait:", trait, "\n"))
+  selectModules <- rownames(moduleTraitPvalue[order(moduleTraitPvalue[,modTraitName], decreasing=F), , drop=F])[1:min(8, ncol(MEs))]
+  selectModules <- substring(selectModules,3) # remove substring "ME"
+  
+  # plot 8 scatter plots for each trait
+  figure.res = 300
+  cex.labels <- 0.8
+  
+png(file.path("../../plots/IntraMod_Analysis/", 
+    paste0("Intramodular_", trait, ".png")), 
+    width = 210 , height = 297, units ="mm",res = figure.res)
+
+par(mfrow=c(length(selectModules)/2,2));
+par(mar=c(6, 8, 4, 4) + 0.1)
+
+  for (module in selectModules) {
+    column <- match(module,colorOfColumn)
+    restModule <- modColors==module
+    WGCNA::verboseScatterplot(datKME[restModule,column],geneTraitSignificance[restModule, grep(paste0(trait,"$"),names(geneTraitSignificance), value=T)],
+                              xlab=paste("Module Membership:",module,"module"),ylab=paste("Gene significance:", trait),
+                              main="Module membership vs. gene significance\n", 
+                              cex = cex.labels, cex.axis = cex.labels, cex.lab = cex.labels, cex.main = 1.3 * cex.labels,
+                              pch=21, col="black", bg=module)
+  }
+  dev.off()
+}
+
+```
+
+# Exporting to network visualization tools: VisANT
+
+```{r}
+# The green module
+# Recalculate topological overlap
+TOM = TOMsimilarity(adjc, TOMType="signed")
+module = "green"
+
+# Select module probes
+#probes = names(datExpr)
+inModule = (modColors==module);
+modGn = FBgenes[inModule];
+
+# Select the corresponding Topological Overlap
+modTOM = TOM[inModule, inModule];
+dimnames(modTOM) = list(modGn, modGn)
+
+# Export the network into an edge list file VisANT can read
+visGreen = exportNetworkToVisANT(modTOM,
+  file = paste("../../processed/DESEQ/Coexpression/minMod30/VisANTInput-", 
+               module, ".txt", sep=""),
+  weighted = TRUE,
+  threshold = 0,
+  probeToGene = data.frame(annot$FBgn, annot$symbol) )
+```
+
+# Output tables
+
+```{r}
+  cat("\nGenerating Network Output Tables\n")
+  networkDatOutput0 <- data.frame(featuredata, moduleColors, GS.datTraits, GSPvalue)
+  
+  if(!is.null(groupsets)) {
+    networkDatOutput0 <- data.frame(networkDatOutput0, geneGroupsetCor, geneGroupsetPvalue, check.names = F)
+  } 
+  
+  # sorting rows and columns if groupColumn exists
+  groupColumn.name <- grep(paste0("^p.*", groupColumn),names(networkDatOutput0), value=T) # get name of pvalue-column from cor with groups
+  if(length(groupColumn.name)==1) {
+    # sort sequence of module-membership-columns with respect to the correlation of modules with groupColumn before adding to networkDatOutput
+    # (if correlation between modules and groupColumn is already done in 'moduleTraitCor')
+       modOrder = order(-abs(moduleTraitPvalue[,groupColumn.name])) 
+        # Add module membership information in 'datKME' and MMPvalue in the chosen order
+       networkDatOutput_MM <- data.frame(networkDatOutput0, datKME[,modOrder], MMPvalue[,modOrder], check.names = F)
+       
+       # Order the genes in the geneInfo variable first by module color, then by geneTraitSignificance (if column with pvalue from cor with groupColumn exists)
+       geneOrder = order(networkDatOutput0$moduleColors, -abs(networkDatOutput0[,groupColumn.name]))
+       networkDatOutput0 = networkDatOutput0[geneOrder, ]
+       networkDatOutput_MM  = networkDatOutput_MM[geneOrder, ]
+       }
+  
+  write.table(networkDatOutput0,file.path(projectfolder, "networkDatOutput.txt"), row.names=F, quote=F, sep="\t")
+  write.table(networkDatOutput_MM,file.path(projectfolder, "networkDatOutput_incl_MM.txt"), row.names=F, quote=F, sep="\t")
+```
+

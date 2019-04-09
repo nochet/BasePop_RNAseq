@@ -1,6 +1,14 @@
 ---
 title: "WGCNA_ANOVA and GO analysis"
-output: html_document
+author: "Enoch Ng'oma"
+date: "4/8/2019"
+output:
+  html_document:
+    theme: flatly
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
 ---
 
 ```{r setup, include=FALSE}
@@ -21,7 +29,7 @@ library(org.Dm.eg.db)
 eigenGO <- read.table("../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t",
                        header=TRUE, stringsAsFactors = FALSE) 
 
-# Module names for GO analysis
+# Modules & module names
 load("../../processed/DESEQ/Coexpression/modules.RData")
 
 
@@ -75,7 +83,6 @@ write.table(as.data.frame(allIDs), file = fileName,
 GOenr <- GOenrichmentAnalysis(moduleColors, allIDs, 
                               organism = "fly", nBestP = 10)
 tab <- GOenr$bestPTerms[[4]]$enrichment
-#save(tab, "../../processed/DESEQ/Coexpression/tab.RData")
 names(tab)
 write.table(tab, file = "../../processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable.csv", 
               sep = ",", quote = TRUE, row.names = FALSE)
