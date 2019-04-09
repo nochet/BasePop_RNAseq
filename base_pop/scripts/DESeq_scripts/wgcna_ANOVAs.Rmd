@@ -1,15 +1,113 @@
 ---
-title: "wgcna_ANOVA"
+title: "WGCNA_ANOVA and GO analysis"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(WGCNA)
+library(ggplot2)
+library(cowplot)
+library(AnnotationDbi)
+library(org.Dm.eg.db)
+
 ```
 
-# ANOVA on eigengenes
+# Gene Ontology on WGCNA modules
 
 ```{r}
+# Eigengenes from wgcnaCoex.Rmd
+eigenGO <- read.table("../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t",
+                       header=TRUE, stringsAsFactors = FALSE) 
+
+# Module names for GO analysis
+load("../../processed/DESEQ/Coexpression/modules.RData")
+
+
+# Output gene lists
+# Fbgn annotation file "Genes:fbgn_annotation_ID_fb_2018_04.tsv"
+# see Index of ftp://ftp.flybase.net/releases/FB2018_05/precomputed_files/genes/
+
+annot = read.csv("../../processed/DESEQ/Coexpression/FlyAnnotation.csv")
+dim(annot)
+names(annot)
+colnames(annot)[colnames(annot)=="X"] <- "FBgn"
+
+rlogtrt <- read.csv("../../processed/DESEQ/rlogtrt.csv")
+rownames(rlogtrt) <- rlogtrt[,1]
+FBgenes = rownames(rlogtrt)
+FBgenes2annot = match(FBgenes, annot$FBgn)
+allIDs = annot$entrez[FBgenes2annot]
+
+# Number genes without annotation:
+sum(is.na(FBgenes2annot))
+# Should return 0
+
+# Get module genes
+modNames
+table(moduleColors)
+
+getMods <- modNames[1:22]
+
+for (module in getMods) {
+  # select module genes
+  modGenes = (moduleColors==module)
+  # Get their entrez ids
+  modIDs = allIDs[modGenes]
+  # Write file
+  fileName = paste("../../processed/DESEQ/Coexpression/minMod30/entrez-", 
+                   module,".txt", sep="")
+  write.table(as.data.frame(modIDs), file = fileName,
+              row.names = FALSE, col.names = FALSE)
+}
+
+# Save background list
+fileName = paste("../../processed/DESEQ/Coexpression/minMod30/backList.txt",
+                 sep="");
+write.table(as.data.frame(allIDs), file = fileName,
+           row.names = FALSE, col.names = FALSE) 
+
+
+# Module GO term enrichment
+
+# Enrichment table containing the 10 best terms for each module
+GOenr <- GOenrichmentAnalysis(moduleColors, allIDs, 
+                              organism = "fly", nBestP = 10)
+tab <- GOenr$bestPTerms[[4]]$enrichment
+#save(tab, "../../processed/DESEQ/Coexpression/tab.RData")
+names(tab)
+write.table(tab, file = "../../processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable.csv", 
+              sep = ",", quote = TRUE, row.names = FALSE)
+
+# View table on screen
+keepCols = c(1, 2, 5, 6, 7, 12, 13);
+screenTab = tab[, keepCols];
+
+# Round numeric columns to 2 decimal places:
+numCols = c(3, 4);
+screenTab[, numCols] = signif(apply(screenTab[, numCols], 2, as.numeric), 2)
+
+# Truncate the the term name to at most 40 characters
+screenTab[, 7] = substring(screenTab[, 7], 1, 40)
+
+# Shorten the column names:
+colnames(screenTab) = c("module", "size", "p-val", "Bonf", "nInTerm", "ont", "term name");
+rownames(screenTab) = NULL;
+
+# Set the width of R’s output
+options(width=95)
+
+# Enrichment table
+#screenTab
+# write.table(screenTab, file = "../../processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable_simple.csv", 
+#               sep = ",", quote = TRUE, row.names = FALSE)
+```
+
+# ANOVA on module eigengenes to test for interaction effect
+
+```{r}
+# Read and prep sample data
 phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
 rownames(phenDat.sva) <- phenDat.sva[,1]
 phenDat.sva[,1] <- NULL
@@ -25,15 +123,12 @@ aov.mods1 <- aov(as.matrix(eg.genes) ~ phenDat.sva$treat_tissue)
 summary(aov.mods1)
 
 # ANOVA for interaction
-aov.mods2 <- aov(as.matrix(MEs) ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mods2 <- aov(as.matrix(eg.genes) ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mods2)
 
-# Intra-module analysis
-#aov.mod_single <- aov(MEs[,19] ~ phenDat.sva$treat_tissue)
-#TukeyHSD(aov.mod_single)
 ```
 
-# Visualization
+# Visualize modules across diets
 
 ```{r}
 all.dat <- cbind(phenDat.sva, eg.genes)
@@ -53,165 +148,438 @@ all.plots[[cc]] <- pp
 
 }
 
-all.plots[[1]]
-
 ```
 
-# Notes
+# Notes for each module
 
 ```{r}
-module.table_merged
+# Table of modules
+#module.table_merged
+```
 
-# Black module - 2956 genes
+## Black module
+
+```{r}
 all.plots[[1]]
 aov.mod_black <- aov(MEs[,"MEblack"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_black)
-# Effect of tissue*** (ovaries differ from rest); treatment**; no interaction
+blue_ph <- TukeyHSD(aov.mod_blue)
+blue_ph
+subset(screenTab,screenTab$module=="black")
+```
 
-# Blue - 1747 genes
+2956 genes
+Effect of tissue*** (ovaries differ from rest); treatment**; no interaction. 
+Top 10 GO terms: gene expression (RNA metabolism, DNA binding and organellar activiity
+
+
+## Blue module
+
+```{r}
 all.plots[[2]]
 aov.mod_blue <- aov(MEs[,"MEblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_blue)
-# Effect of tissue*** (all tissues differ); treatment***; some interaction* effect
+blue_ph <- TukeyHSD(aov.mod_blue)
+blue_ph
+subset(screenTab,screenTab$module=="blue")
+```
 
-# Brown - 1084 genes
+1747 genes
+Effect of tissue*** (all tissues differ); treatment*** some interaction* effect
+Treatment highly sig for HS-C and HS-DR, insig for DR-C
+Tissue highly sig for all pairwise comparisons
+Interaction highly sig for 30 diet-tissue comparisons
+(The three tissues all different in expression, with slight increase of B&O in HS)
+GO: nervous system process, signalling and neuronal activity
+
+
+## Brown module
+
+```{r}
 all.plots[[3]]
 aov.mod_brown <- aov(MEs[,"MEbrown"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_brown)
-# Effect of tissue*** (heads and overies are together); some interaction effect*; no treatment effect
+brown_ph <- TukeyHSD(aov.mod_brown)
+brown_ph
+subset(screenTab,screenTab$module=="brown")
+```
 
-# Cyan - 507 genes
+1084 genes
+Effect of tissue*** (heads and overies are together); some interaction effect* 
+No treatment effect
+Tissue highly sig for H-B and OB, insig for O-H
+Interaction sig for 18 diet-tissue contrasts
+GO: proteolysis and chitin metabolic process
+
+
+## Cyan module
+
+```{r}
 all.plots[[4]]
 aov.mod_cyan <- aov(MEs[,"MEcyan"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_cyan)
-# Tissue***; treatment***; interaction***
 cyan_ph <- TukeyHSD(aov.mod_cyan)
+cyan_ph
+subset(screenTab,screenTab$module=="cyan")
+```
 
-# Darkgreen - 199 genes
+507 genes
+Tissue*** treatment*** interaction***
+30 out of 36 interaction contrasts highly significant padj
+Treatment highly significant in DR-C and HS-DR comparisons, mildly in HS-C
+Tissue highly significant in all 3 comparisons
+Interaction highly significant in 30 of 36 comparisons
+GO: Redox process, transmembrane ion transport
+
+
+## Darkgreen module
+
+```{r}
 all.plots[[5]]
 aov.mod_darkgreen <- aov(MEs[,"MEdarkgreen"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_darkgreen)
-# Tissue***; treatment***; interaction*
+darkgreen_ph <- TukeyHSD(aov.mod_darkgreen)
+subset(screenTab,screenTab$module=="darkgreen")
+```
 
-# Darkgrey - 309 genes
+199 genes
+Tissue*** treatment*** interaction*
+O is high in C and HS but low in DR
+Strong treatment effects in HS-DR, mild effect for DR-C, no effect for HS-C 
+Strong tissue effect in H-B and O-H, no tissue effect for O-B
+Interaction is significant in 17 of 36 diet contrasts
+GO: several BPs including signaling
+
+## Darkgrey
+
+```{r}
 all.plots[[6]]
 aov.mod_darkgrey <- aov(MEs[,"MEdarkgrey"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_darkgrey)
-# Tissue***; treatment***; interaction***
-# Low in DR high in HS in general
+darkgrey_ph <- TukeyHSD(aov.mod_darkgrey)
+darkgrey_ph
+subset(screenTab,screenTab$module=="darkgrey")
+```
 
-# Darkred - 84 genes
+309 genes
+Tissue*** treatment*** interaction***
+Treatment highly sig for HS-C and HS-DR, insig for DR-C
+Tissue higly sig for 3 comparisons: H-B, O-B, O-H
+Interaction sig for 31 of 36 diet-tissue comparisons
+(Low in DR high in HS in general)
+GO: Ras signaling and binding
+
+
+## Darkred 
+
+```{r}
 all.plots[[7]]
 aov.mod_darkred <- aov(MEs[,"MEdarkred"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_darkred)
-# Tissue***; treatment***; interaction**
-# Low in C, high in DR and low in HS
+darkred_ph <- TukeyHSD(aov.mod_darkred)
+darkred_ph
+subset(screenTab,screenTab$module=="darkred")
+```
 
-# Darkturquoise - 79 genes
+84 genes
+Tissue*** treatment*** interaction**
+Low in C, high in DR and low in HS
+Treatment highly sig for HS-DR and DR-C, insig for HS-C
+Tissue higly sig for 2 comparisons: O-B, O-H; mildly for H-B
+Interaction sig for 21 of 36 diet-tissue comparisons
+(Low in C, high in DR and low in HS)
+GO: peptide metabolism, cytosolic ribosome activity
+
+## Darkturquoise 
+
+```{r}
 all.plots[[8]]
 aov.mod_darkturquoise <- aov(MEs[,"MEdarkturquoise"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_darkturquoise)
-# Tissue***; treatment**; interaction**
-# Body expression low in C, high in DR & HS
+darkturquoise_ph <- TukeyHSD(aov.mod_darkturquoise)
+darkturquoise_ph
+subset(screenTab,screenTab$module=="darkturquoise")
 
-# Greenyellow - 165 genes
+```
+
+79 genes
+Tissue*** treatment** interaction**
+Treatment mildly sig in DR-C and HS-C, insig in HS-DR
+Tissue higly sig in all pairwise comparisons
+Interaction highly sig in 30 diet-tissue combinations
+(Body expression low in C, high in DR & HS)
+GO: amino acid transport, proteasome binding
+
+
+## Greenyellow
+
+```{r}
 all.plots[[9]]
 aov.mod_greenyellow <- aov(MEs[,"MEgreenyellow"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_greenyellow)
-# Tissue***; treatment***; interaction***
-# B&O low in C, high in DR & low in HS; H higher in C than other diets
+greenyellow_ph <- TukeyHSD(aov.mod_greenyellow)
+greenyellow_ph
+subset(screenTab,screenTab$module=="greenyellow")
 
-# Grey - 45 genes ###### Definition of grey confusing#####
+```
+
+165 genes
+Tissue*** treatment*** interaction***
+Treatment highly sig in HS-DR, DR-C, mildly in HS-C
+Tissue higly sig in all comparisons
+Interaction highly sig in 29 diet-tissue contrasts
+(B&O low in C, high in DR & low in HS; H higher in C than other diets)
+GO: proteasome catabolic, ubiquitin processes
+
+
+## Grey module - unassigned genes 
+
+```{r}
 all.plots[[10]]
 aov.mod_grey <- aov(MEs[,"MEgrey"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_grey)
-# Tissue*; treatment***; interaction***
-# B&H high in C, high intermediate in DR & low in HS; O low in C high in DR & lower in HS
+subset(screenTab,screenTab$module=="grey")
+```
 
-# Lightcyan - 117 genes 
+45 genes
+Tissue* treatment*** interaction***
+B&H high in C, high intermediate in DR & low in HS; O low in C high in DR & lower in HS
+See p-values!!
+
+
+## Lightcyan module
+
+```{r}
 all.plots[[11]]
 aov.mod_lightcyan <- aov(MEs[,"MElightcyan"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_lightcyan)
-# Tissue***; treatment***; interaction**
-# O high in C and HS, low in DR
+lightcyan_ph <- TukeyHSD(aov.mod_lightcyan)
+lightcyan_ph
+subset(screenTab,screenTab$module=="lightcyan")
 
-# Lightgreen - 107 genes 
+```
+
+117 genes
+Tissue*** treatment*** interaction**
+Treatment highly sig for DR-C and HS-DR, insig for HS-C
+Tissue insig for H-B, highly sig for O-B and O-H
+(O high in C and HS, low in DR)
+
+
+## Lightgreen module
+
+```{r}
 all.plots[[12]]
 aov.mod_lightgreen <- aov(MEs[,"MElightgreen"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_lightgreen)
-# Tissue***; treatment***; interaction***
-# B&O low in C, high in DR, low in HS; H higher in C
+lightgreen_ph <- TukeyHSD(aov.mod_lightgreen)
+lightgreen_ph
+subset(screenTab,screenTab$module=="lightgreen")
+```
 
-# Lightyellow - 107 genes 
+107 genes 
+Tissue*** treatment*** interaction***
+Treatment highly sig DR-C and HS-DR, insig in HS-C
+Tissue highly sig in all comparisons
+Interaction sig in 26 diet-tissue comparisons
+(B&O low in C, high in DR, low in HS; H higher in C)
+GO: peptide metabolism, mitochondrial translation
+
+
+## Lightyellow module
+
+```{r}
 all.plots[[13]]
 aov.mod_lightyellow <- aov(MEs[,"MElightyellow"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_lightyellow)
-# Tissue***; treatment***; interaction***
-# B&O low in C, high in DR, low in HS; H higher in C
-# trend too similar to Lightgreen
+lightyellow_ph <- TukeyHSD(aov.mod_lightyellow)
+lightyellow_ph
+subset(screenTab,screenTab$module=="lightyellow")
+```
 
-# Pink - 382 genes 
+107 genes 
+Tissue*** treatment*** interaction***
+Treatment highly sig for DR-C and HS-DR, insig for HS-C
+Tissue highly sig for H-B and O-H, insig for O-B
+Interaction sig for 17 diet-tissue contrasts
+(B&O low in C, high in DR, low in HS; H higher in C)
+(trend too similar to Lightgreen)
+GO: Golgi vesicle transport
+
+
+## Pink module  
+
+```{r}
 all.plots[[14]]
 aov.mod_pink <- aov(MEs[,"MEpink"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_pink)
-# Tissue***; treatment***; interaction**
-# B&O high in C, low in DR, high in HS; H no pattern
+pink_ph <- TukeyHSD(aov.mod_pink)
+pink_ph
+subset(screenTab,screenTab$module=="pink")
+```
 
-# Red - 787 genes 
+382 genes
+Tissue*** treatment*** interaction**
+Treatment highly sig for DR-C and HS-DR, insig for HS-C
+Tissue highly highly sig for all comparisons
+Interaction highly sig for 24 diet-tissue comparisons
+(B&O high in C, low in DR, high in HS; H no pattern)
+GO: regulation metabolic process, gene expression, transcription
+
+
+## Red module  
+
+```{r}
 all.plots[[15]]
 aov.mod_red <- aov(MEs[,"MEred"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_red)
-# Tissue***; treatment***; interaction***
-# subtlely increasing in all tissue across C, DR, HS
+red_ph <- TukeyHSD(aov.mod_red)
+red_ph
+subset(screenTab,screenTab$module=="red")
+```
 
-# Royalblue - 132 genes 
+787 genes
+Tissue*** treatment*** interaction***
+Treatment highly sig for HS-C and DR-C, mildly for HS-DR
+Tissue highly sig for all 3 comparisons
+(subtlely increasing in all tissue across C, DR, HS)
+GO: olfactory and sensory perception of smell or chemical stimulus
+
+
+## Royalblue  
+
+```{r}
 all.plots[[16]]
 aov.mod_royalblue <- aov(MEs[,"MEroyalblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_royalblue)
-# Tissue***; treatment***; interaction**
-# B&O high in C, low in DR, high in HS; H low, higher, high
+royalblue_ph <- TukeyHSD(aov.mod_royalblue)
+royalblue_ph
+subset(screenTab,screenTab$module=="royalblue")
+```
 
-# Salmon - 157 genes 
+132 genes
+Tissue*** treatment*** interaction**
+Treatment highly sig for DR-C and HS-DR, insig for HS-C
+Tissue highly sig for H-B and O-B, insig for O-H
+(B&O high in C, low in DR, high in HS; H low, higher, high)
+GO: regulation of metabolic process, regulation of gene expression
+
+
+## Salmon module
+
+```{r}
 all.plots[[17]]
 aov.mod_salmon <- aov(MEs[,"MEsalmon"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_salmon)
-# Tissue***; treatment***; interaction***
-# B high, low, high; H&O low, higher, high
+salmon_ph <- TukeyHSD(aov.mod_salmon)
+salmon_ph
+subset(screenTab,screenTab$module=="salmon")
+```
 
-# Skyblue - 52 genes 
+157 genes
+Tissue*** treatment*** interaction***
+(B high, low, high; H&O low, higher, high)
+Treatment highly sig in HS-C and HS-DR, insig in DR-C
+Tissue highly sig in all 3 comparisons
+Interaction highly sig in 27 diet-tissue comparisons
+
+
+## Skyblue module
+
+```{r}
 all.plots[[18]]
 aov.mod_skyblue <- aov(MEs[,"MEskyblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_skyblue)
-# Tissue*; treatment***; interaction***
-# B&O low, high, low; H high, low, low
+skyblue_ph <- TukeyHSD(aov.mod_skyblue)
+skyblue_ph
+subset(screenTab,screenTab$module=="skyblue")
+```
 
-# Steelblue - 44 genes 
+52 genes
+Tissue* treatment*** interaction***
+Treatment highly sig in DR-C and HS-DR, insig in HS-C
+Tissue marginally sig for O-B
+Interaction highly sig in 13 diet-tissue comparisons
+(B&O low, high, low; H high, low, low)
+GO: peptide metabolic process, ribosome
+
+
+## Steelblue module 
+
+```{r}
 all.plots[[19]]
 aov.mod_steelblue <- aov(MEs[,"MEsteelblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_steelblue)
-# Tissue***; treatment***; interaction*
-# high, low, high; larger effect in ovaries
+steelblue_ph <- TukeyHSD(aov.mod_steelblue)
+steelblue_ph
+subset(screenTab,screenTab$module=="steelblue")
+```
+44 genes
+Tissue*** treatment*** interaction*
+high, low, high; larger effect in ovaries
+Treatment highly sig in DR-C and HS-DR, insig in HS-C
+Tissue sig for O-B and O-H only
+Interaction highly sig in 8 diet-tissue comparisons
+GO: protein localization and binding
 
-# Tan - 163 genes 
+
+## Tan module 
+
+```{r}
 all.plots[[20]]
 aov.mod_tan <- aov(MEs[,"MEtan"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_tan)
-# Tissue***; treatment***; interaction***
-# low, high, low; larger effect in ovaries
+tan_ph <- TukeyHSD(aov.mod_tan)
+tan_ph
+subset(screenTab,screenTab$module=="tan")
+```
 
-# Turquoise - 3337 genes 
+163 genes
+Tissue*** treatment*** interaction***
+Treatment highly sig in DR-C and HS-DR, insig in HS-C
+Tissue highly sig for all comparisons
+Interaction highly sig in 29 diet-tissue comparisons
+(O low, high, low; larger effect in ovaries)
+GO: pigment biosynthesis
+
+
+## Turquoise module 
+
+```{r}
 all.plots[[21]]
 aov.mod_turquoise <- aov(MEs[,"MEturquoise"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_turquoise)
-# Tissue***; treatment***; interaction*
-# All tissues low in C and similar for DR and HS
+turquoise_ph <- TukeyHSD(aov.mod_turquoise)
+turquoise_ph
+subset(screenTab,screenTab$module=="turquoise")
+```
 
-# White - 54 genes 
+3337 genes
+Tissue*** treatment*** interaction*
+All tissues low in C and similar for DR and HS
+Treatment highly sig in DR-C and HS-C, insig in HS-DR
+Tissue highly sig for O-B and O-H comparisons, insig for H-B
+Interaction highly sig in 22 diet-tissue comparisons
+GO: Redox process, bacterial/defence respnse, iron ion binding
+
+
+## White module
+
+```{r}
 all.plots[[22]]
 aov.mod_white <- aov(MEs[,"MEwhite"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_white)
-# Tissue***; treatment***; interaction***
-# B low in C, high in DR, higher in HS; other tissues no clear trend
-
+white_ph <- TukeyHSD(aov.mod_white)
+white_ph
+subset(screenTab,screenTab$module=="white")
 ```
+54 genes
+Tissue*** treatment*** interaction***
+Treatment highly sig in HS-C, mildly in DR-C, insig in HS-DR
+Tissue highly sig for H-B and O-B comparisons, insig for O-H
+Interaction highly sig in 15 diet-tissue comparisons
+(B low in C, high in DR, higher in HS; other tissues no clear trend)
+GO: chitin, cuticle development, body morphogenesis
+
+
 

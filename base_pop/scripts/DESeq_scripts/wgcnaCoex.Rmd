@@ -93,6 +93,8 @@ rmat <- limma::removeBatchEffect(rmat, batch = phenDat.sva$SV1,
 assay(rlog.trt) <- rmat
 print(plotPCA(rlog.trt, intgroup=c("treatment", "tissue"), returnData=FALSE ))
 
+# Needed for GO
+write.csv(rmat, file = "../../processed/DESEQ/rlogtrt.csv", row.names = TRUE)
 ```
 
 # WGCNA Preliminaries

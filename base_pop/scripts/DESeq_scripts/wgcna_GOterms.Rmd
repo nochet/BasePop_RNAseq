@@ -7,6 +7,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Eigengenes from WGCNA clustering
+
 ```{r}
 eigenGO <- read.table("../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t",
                        header=TRUE, stringsAsFactors = FALSE) 
