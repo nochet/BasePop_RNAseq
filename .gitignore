@@ -7,7 +7,6 @@
 *.out
 *.err
 *.md5sum
-*.html
 *.fastq.gz.md5sum
 *.ctab
 
