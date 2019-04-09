@@ -161,10 +161,10 @@ all.plots[[cc]] <- pp
 
 ```{r}
 all.plots[[1]]
-aov.mod_black <- aov(MEs[,"MEblack"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_black <- aov(eg.genes[,"MEblack"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_black)
-blue_ph <- TukeyHSD(aov.mod_blue)
-blue_ph
+black_ph <- TukeyHSD(aov.mod_black)
+black_ph
 subset(screenTab,screenTab$module=="black")
 ```
 
@@ -177,7 +177,7 @@ Top 10 GO terms: gene expression (RNA metabolism, DNA binding and organellar act
 
 ```{r}
 all.plots[[2]]
-aov.mod_blue <- aov(MEs[,"MEblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_blue <- aov(eg.genes[,"MEblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_blue)
 blue_ph <- TukeyHSD(aov.mod_blue)
 blue_ph
@@ -197,7 +197,7 @@ GO: nervous system process, signalling and neuronal activity
 
 ```{r}
 all.plots[[3]]
-aov.mod_brown <- aov(MEs[,"MEbrown"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_brown <- aov(eg.genes[,"MEbrown"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_brown)
 brown_ph <- TukeyHSD(aov.mod_brown)
 brown_ph
@@ -216,7 +216,7 @@ GO: proteolysis and chitin metabolic process
 
 ```{r}
 all.plots[[4]]
-aov.mod_cyan <- aov(MEs[,"MEcyan"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_cyan <- aov(eg.genes[,"MEcyan"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_cyan)
 cyan_ph <- TukeyHSD(aov.mod_cyan)
 cyan_ph
@@ -236,7 +236,7 @@ GO: Redox process, transmembrane ion transport
 
 ```{r}
 all.plots[[5]]
-aov.mod_darkgreen <- aov(MEs[,"MEdarkgreen"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_darkgreen <- aov(eg.genes[,"MEdarkgreen"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_darkgreen)
 darkgreen_ph <- TukeyHSD(aov.mod_darkgreen)
 subset(screenTab,screenTab$module=="darkgreen")
@@ -254,7 +254,7 @@ GO: several BPs including signaling
 
 ```{r}
 all.plots[[6]]
-aov.mod_darkgrey <- aov(MEs[,"MEdarkgrey"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_darkgrey <- aov(eg.genes[,"MEdarkgrey"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_darkgrey)
 darkgrey_ph <- TukeyHSD(aov.mod_darkgrey)
 darkgrey_ph
@@ -274,7 +274,7 @@ GO: Ras signaling and binding
 
 ```{r}
 all.plots[[7]]
-aov.mod_darkred <- aov(MEs[,"MEdarkred"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_darkred <- aov(eg.genes[,"MEdarkred"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_darkred)
 darkred_ph <- TukeyHSD(aov.mod_darkred)
 darkred_ph
@@ -294,7 +294,7 @@ GO: peptide metabolism, cytosolic ribosome activity
 
 ```{r}
 all.plots[[8]]
-aov.mod_darkturquoise <- aov(MEs[,"MEdarkturquoise"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_darkturquoise <- aov(eg.genes[,"MEdarkturquoise"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_darkturquoise)
 darkturquoise_ph <- TukeyHSD(aov.mod_darkturquoise)
 darkturquoise_ph
@@ -315,7 +315,7 @@ GO: amino acid transport, proteasome binding
 
 ```{r}
 all.plots[[9]]
-aov.mod_greenyellow <- aov(MEs[,"MEgreenyellow"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_greenyellow <- aov(eg.genes[,"MEgreenyellow"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_greenyellow)
 greenyellow_ph <- TukeyHSD(aov.mod_greenyellow)
 greenyellow_ph
@@ -336,7 +336,7 @@ GO: proteasome catabolic, ubiquitin processes
 
 ```{r}
 all.plots[[10]]
-aov.mod_grey <- aov(MEs[,"MEgrey"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_grey <- aov(eg.genes[,"MEgrey"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_grey)
 subset(screenTab,screenTab$module=="grey")
 ```
@@ -351,7 +351,7 @@ See p-values!!
 
 ```{r}
 all.plots[[11]]
-aov.mod_lightcyan <- aov(MEs[,"MElightcyan"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_lightcyan <- aov(eg.genes[,"MElightcyan"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_lightcyan)
 lightcyan_ph <- TukeyHSD(aov.mod_lightcyan)
 lightcyan_ph
@@ -370,7 +370,7 @@ Tissue insig for H-B, highly sig for O-B and O-H
 
 ```{r}
 all.plots[[12]]
-aov.mod_lightgreen <- aov(MEs[,"MElightgreen"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_lightgreen <- aov(eg.genes[,"MElightgreen"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_lightgreen)
 lightgreen_ph <- TukeyHSD(aov.mod_lightgreen)
 lightgreen_ph
@@ -390,7 +390,7 @@ GO: peptide metabolism, mitochondrial translation
 
 ```{r}
 all.plots[[13]]
-aov.mod_lightyellow <- aov(MEs[,"MElightyellow"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_lightyellow <- aov(eg.genes[,"MElightyellow"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_lightyellow)
 lightyellow_ph <- TukeyHSD(aov.mod_lightyellow)
 lightyellow_ph
@@ -411,7 +411,7 @@ GO: Golgi vesicle transport
 
 ```{r}
 all.plots[[14]]
-aov.mod_pink <- aov(MEs[,"MEpink"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_pink <- aov(eg.genes[,"MEpink"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_pink)
 pink_ph <- TukeyHSD(aov.mod_pink)
 pink_ph
@@ -431,7 +431,7 @@ GO: regulation metabolic process, gene expression, transcription
 
 ```{r}
 all.plots[[15]]
-aov.mod_red <- aov(MEs[,"MEred"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_red <- aov(eg.genes[,"MEred"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_red)
 red_ph <- TukeyHSD(aov.mod_red)
 red_ph
@@ -450,7 +450,7 @@ GO: olfactory and sensory perception of smell or chemical stimulus
 
 ```{r}
 all.plots[[16]]
-aov.mod_royalblue <- aov(MEs[,"MEroyalblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_royalblue <- aov(eg.genes[,"MEroyalblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_royalblue)
 royalblue_ph <- TukeyHSD(aov.mod_royalblue)
 royalblue_ph
@@ -469,7 +469,7 @@ GO: regulation of metabolic process, regulation of gene expression
 
 ```{r}
 all.plots[[17]]
-aov.mod_salmon <- aov(MEs[,"MEsalmon"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_salmon <- aov(eg.genes[,"MEsalmon"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_salmon)
 salmon_ph <- TukeyHSD(aov.mod_salmon)
 salmon_ph
@@ -488,7 +488,7 @@ Interaction highly sig in 27 diet-tissue comparisons
 
 ```{r}
 all.plots[[18]]
-aov.mod_skyblue <- aov(MEs[,"MEskyblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_skyblue <- aov(eg.genes[,"MEskyblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_skyblue)
 skyblue_ph <- TukeyHSD(aov.mod_skyblue)
 skyblue_ph
@@ -508,7 +508,7 @@ GO: peptide metabolic process, ribosome
 
 ```{r}
 all.plots[[19]]
-aov.mod_steelblue <- aov(MEs[,"MEsteelblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_steelblue <- aov(eg.genes[,"MEsteelblue"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_steelblue)
 steelblue_ph <- TukeyHSD(aov.mod_steelblue)
 steelblue_ph
@@ -527,7 +527,7 @@ GO: protein localization and binding
 
 ```{r}
 all.plots[[20]]
-aov.mod_tan <- aov(MEs[,"MEtan"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_tan <- aov(eg.genes[,"MEtan"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_tan)
 tan_ph <- TukeyHSD(aov.mod_tan)
 tan_ph
@@ -547,7 +547,7 @@ GO: pigment biosynthesis
 
 ```{r}
 all.plots[[21]]
-aov.mod_turquoise <- aov(MEs[,"MEturquoise"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_turquoise <- aov(eg.genes[,"MEturquoise"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_turquoise)
 turquoise_ph <- TukeyHSD(aov.mod_turquoise)
 turquoise_ph
@@ -567,7 +567,7 @@ GO: Redox process, bacterial/defence respnse, iron ion binding
 
 ```{r}
 all.plots[[22]]
-aov.mod_white <- aov(MEs[,"MEwhite"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
+aov.mod_white <- aov(eg.genes[,"MEwhite"] ~ phenDat.sva$treatment* phenDat.sva$tissue)
 summary(aov.mod_white)
 white_ph <- TukeyHSD(aov.mod_white)
 white_ph
