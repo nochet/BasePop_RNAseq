@@ -27,7 +27,7 @@ set.seed(3176133)
 
 ```{r}
 # Expression data
-load("../../processed/results/ballG_all_results/nolog_gfpkm_all.Rda")
+gfpkm_all <- read.csv("../../processed/results/ballG_all_results/nolog_gfpkm_all.csv")
 
 nolog_gfpkm_all <- as.matrix(gfpkm_all)
 

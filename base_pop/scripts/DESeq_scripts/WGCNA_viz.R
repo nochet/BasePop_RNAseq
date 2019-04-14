@@ -1,4 +1,7 @@
 
+library(ggplot2)
+library(cowplot)
+
 phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
 eg.genes <- read.table(file="../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t", header=TRUE, stringsAsFactors = FALSE) 
 
@@ -19,4 +22,4 @@ all.plots[[cc]] <- pp
 
 }
 
-all.plots[[5]]
+all.plots[["MEcyan"]]
