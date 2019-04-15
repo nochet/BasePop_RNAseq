@@ -16,30 +16,31 @@ library(org.Dm.eg.db)
 # Plot gene expression for each module
 This script subsets and plots gene expression for each WGCNA module. Use data corrected for batches with removeBatchEffects() i.e. "../../processed/DESEQ/rlogtrt.csv" created in wgcnaCoex.Rmd
 
-# Data
+# Expression data
 
 ```{r}
-# Modules from wgcnaCoex.Rmd
-mods <- read.table("../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t",
-                       header=TRUE, stringsAsFactors = FALSE) 
+# Eigengenes from wgcnaCoex.Rmd
+temp_wide <- read.csv("../../processed/DESEQ/rlogtrt_batchCor.csv")
+names(temp_wide)[1] <- "FBgn"           
 
-# Modules & module names
+# Reformat to long form
+temp.long <-gather(temp_wide, Diet, Expression, C1_B:HS6_O, factor_key=FALSE)
+                    
+# Split Diet column
+temp.long <- separate(temp.long, col = Diet, into = c("Diet", "Tissue"), sep = "_") 
+
+# Remove replicate numbers from Diet column
+#temp.long$Diet <- gsub('[0-9]+', '', temp.long$Diet)
+temp.long$FBgn <- as.character(temp.long$FBgn)
+#temp <- dplyr::select(temp, starts_with("FC_"))
+#temp <- rownames_to_column(temp, var = "FBgn") 
+```
+
+# Get module genes
+
+```{r}
+# Modules & module names from WGCNA
 load("../../processed/DESEQ/Coexpression/modules.RData")
-
-annot = read.csv("../../processed/DESEQ/Coexpression/FlyAnnotation.csv")
-dim(annot)
-names(annot)
-colnames(annot)[colnames(annot)=="X"] <- "FBgn"
-
-eigexpr <- read.csv("../../processed/DESEQ/rlogtrt.csv")
-rownames(eigexpr) <- eigexpr[,1]
-FBgenes = rownames(eigexpr)
-FBgenes2annot = match(FBgenes, annot$FBgn)
-allIDs = annot$FBgn[FBgenes2annot]
-
-# Number genes without annotation:
-sum(is.na(FBgenes2annot))
-# Should return 0
 
 # Get module genes
 modNames
@@ -51,9 +52,9 @@ for (module in getMods) {
   # select module genes
   modGenes = (moduleColors==module)
   # Get their FBgn ids
-  modIDs = allIDs[modGenes]
+  modIDs = temp.long$FBgn[modGenes]
   # Write file
-  fileName = paste("../../processed/DESEQ/Coexpression/Mods/FBgn-", 
+  fileName = paste("../../processed/DESEQ/Coexpression/Mods/", 
                    module,".txt", sep="")
   write.table(as.data.frame(modIDs), file = fileName,
               row.names = FALSE, col.names = FALSE)
@@ -62,8 +63,98 @@ for (module in getMods) {
 ```
 
 # Subset expression data using module genes
+# For one module
 
 ```{r}
+# Read module
+cyan <- read.table("../../processed/DESEQ/Coexpression/Mods/cyan.txt",
+                   header = FALSE, stringsAsFactors = FALSE) 
+names(cyan)[1] <- "FBgn"
+
+cyan <- inner_join(cyan, temp.long, by="FBgn")
+
+cy_mean <- cyan %>%
+  group_by(Diet, Tissue) %>%
+  summarize(mean_expr = mean(Expression, na.rm=TRUE))
+cy_mean$Diet1 <- gsub('[0-9]+', '', cy_mean$Diet)
+
+ggplot(cy_mean,aes(Diet1, mean_expr, group=1, color=Tissue)) +
+  geom_point(position = position_jitter(width = 0.15)) +
+  geom_point(stat = "summary", fun.y=mean) +
+  stat_summary(fun.y=mean, geom ="line")
+
+```
+
+# Put modules gene lists in one table
+
+```{r}
+getMods <- lapply(Sys.glob(
+  "../../processed/DESEQ/Coexpression/Mods/*.txt"),read.table)
+
+# Rename column
+ss <- "FBgn"
+for (i in 1:length(getMods)) {
+ colnames(getMods[[i]]) <- ss 
+}
+
+
+# Add column for module name to each module
+getMods <- mapply(cbind, getMods, "mod"=sort(modNames), 
+                  SIMPLIFY=FALSE)
+head(getMods[[10]])
+str(getMods[[10]])
+
+#hh <- inner_join(temp.long,getMods[[i]], by="FBgn")
+ 
+# Merge modules in list into one table
+ll <- bind_rows(getMods)
+
+
+# Merge module lists with expression data
+lk <- left_join(temp.long,ll, by="FBgn")
+
+# Test on one module
+mm <- subset(lk, lk$mod=="cyan")
+i.mm_mean <- mm %>%
+  group_by(Diet, Tissue) %>%
+  summarize(mean_expr = mean(Expression, na.rm=TRUE))
+i.mm_mean$Diet1 <- gsub('[0-9]+', '', i.mm_mean$Diet)
+
+i.mm_plot <- ggplot(i.mm_mean,aes(Diet1, mean_expr, group=1, color=Tissue)) +
+  geom_point(position = position_jitter(width = 0.15)) +
+  geom_point(stat = "summary", fun.y=mean) +
+  stat_summary(fun.y=mean, geom ="line")
+i.mm_plot
+```
+
+# Summarize and plot
+
+```{r}
+lk_mean <- lk %>%
+  group_by(mod,Diet, Tissue) %>%
+  summarize(mean_expr = mean(Expression, na.rm=TRUE))
+lk_mean$Diet1 <- gsub('[0-9]+', '', lk_mean$Diet)
+
+yf <- unique(lk_mean$mod)
+
+mod.plots <- vector(mode="list", length=length(yf))
+names(mod.plots) <- yf
+
+for(yy in yf)
+{
+  
+ff <- ggplot(lk_mean,aes(Diet1, mean_expr, group=1, color=Tissue)) +
+ # geom_point(position = position_jitter(width = 0.15)) +
+  geom_point(stat = "summary", fun.y=mean) +
+  stat_summary(fun.y=mean, geom ="line")
+
+mod.plots[[yy]] <- ff
+
+}
+
+mod.plots[["darkgreen"]]
+
+
 
 ```
 
