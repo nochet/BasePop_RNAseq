@@ -8,13 +8,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(cowplot)
-library(AnnotationDbi)
-library(org.Dm.eg.db)
 
 ```
 
 # Plot gene expression for each module
 This script subsets and plots gene expression for each WGCNA module. Use data corrected for batches with removeBatchEffects() i.e. "../../processed/DESEQ/rlogtrt.csv" created in wgcnaCoex.Rmd
+
 
 # Expression data
 
@@ -27,13 +26,13 @@ names(temp_wide)[1] <- "FBgn"
 temp.long <-gather(temp_wide, Diet, Expression, C1_B:HS6_O, factor_key=FALSE)
                     
 # Split Diet column
-temp.long <- separate(temp.long, col = Diet, into = c("Diet", "Tissue"), sep = "_") 
+temp.long <- separate(temp.long, 
+                      col = Diet, 
+                      into = c("Diet", "Tissue"), 
+                      sep = "_") 
 
-# Remove replicate numbers from Diet column
-#temp.long$Diet <- gsub('[0-9]+', '', temp.long$Diet)
 temp.long$FBgn <- as.character(temp.long$FBgn)
-#temp <- dplyr::select(temp, starts_with("FC_"))
-#temp <- rownames_to_column(temp, var = "FBgn") 
+
 ```
 
 # Get module genes
@@ -101,10 +100,6 @@ for (i in 1:length(getMods)) {
 # Add column for module name to each module
 getMods <- mapply(cbind, getMods, "mod"=sort(modNames), 
                   SIMPLIFY=FALSE)
-head(getMods[[10]])
-str(getMods[[10]])
-
-#hh <- inner_join(temp.long,getMods[[i]], by="FBgn")
  
 # Merge modules in list into one table
 ll <- bind_rows(getMods)
@@ -130,10 +125,12 @@ i.mm_plot
 # Summarize and plot
 
 ```{r}
+# New grouping column
+lk$Diet1 <- gsub('[0-9]+', '', lk$Diet)
+
 lk_mean <- lk %>%
-  group_by(mod,Diet, Tissue) %>%
+  group_by(mod,Tissue,Diet1) %>%
   summarize(mean_expr = mean(Expression, na.rm=TRUE))
-lk_mean$Diet1 <- gsub('[0-9]+', '', lk_mean$Diet)
 
 yf <- unique(lk_mean$mod)
 
@@ -144,17 +141,26 @@ for(yy in yf)
 {
   
 ff <- ggplot(lk_mean,aes(Diet1, mean_expr, group=1, color=Tissue)) +
- # geom_point(position = position_jitter(width = 0.15)) +
+  #geom_point(position = position_jitter(width = 0.15)) +
   geom_point(stat = "summary", fun.y=mean) +
-  stat_summary(fun.y=mean, geom ="line")
+  stat_summary(fun.y=mean, geom ="line") +
+  #stat_summary(fun.data = mean_se, geom = "errorbar") +
+  theme(legend.position="none") +
+  labs(x = "Diet", y = "Mean expression")
 
+ff 
+  
 mod.plots[[yy]] <- ff
 
 }
 
-mod.plots[["darkgreen"]]
+#mod.plots[["darkgreen"]]
 
+modplot <- plot_grid(plotlist=mod.plots,nrow=5,rel_widths = c(1.3,1.1,1.8),rel_heights = c(1,1,1.2), label_size = 9) 
 
+modplot
+#legend <- get_legend(modplot)
 
+modplot1 <- plot_grid(modplot, legend, rel_widths = c(3,3))
 ```
 
