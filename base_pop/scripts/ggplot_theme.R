@@ -1,5 +1,5 @@
 
-font_size <- 10
+font_size <- 9
 my_theme <- theme(
   axis.text = element_text(size = font_size),
   axis.title = element_text(size = font_size),
