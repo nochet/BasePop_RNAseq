@@ -15,152 +15,113 @@ library(cowplot)
 This script subsets and plots gene expression for each WGCNA module. Use data corrected for batches with removeBatchEffects() i.e. "../../processed/DESEQ/rlogtrt.csv" created in wgcnaCoex.Rmd
 
 
-# Expression data
+
+# Set formatting
 
 ```{r}
-# Eigengenes from wgcnaCoex.Rmd
-temp_wide <- read.csv("../../processed/DESEQ/rlogtrt_batchCor.csv")
-names(temp_wide)[1] <- "FBgn"           
+source("../ggplot_theme.R")
 
-# Reformat to long form
-temp.long <-gather(temp_wide, Diet, Expression, C1_B:HS6_O, factor_key=FALSE)
-                    
-# Split Diet column
-temp.long <- separate(temp.long, 
-                      col = Diet, 
-                      into = c("Diet", "Tissue"), 
-                      sep = "_") 
-
-temp.long$FBgn <- as.character(temp.long$FBgn)
-
-```
-
-# Get module genes
-
-```{r}
-# Modules & module names from WGCNA
-load("../../processed/DESEQ/Coexpression/modules.RData")
-
-# Get module genes
-modNames
-table(moduleColors)
-
-getMods <- modNames[1:22]
-
-for (module in getMods) {
-  # select module genes
-  modGenes = (moduleColors==module)
-  # Get their FBgn ids
-  modIDs = temp.long$FBgn[modGenes]
-  # Write file
-  fileName = paste("../../processed/DESEQ/Coexpression/Mods/", 
-                   module,".txt", sep="")
-  write.table(as.data.frame(modIDs), file = fileName,
-              row.names = FALSE, col.names = FALSE)
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  legend
 }
-
 ```
 
-# Subset expression data using module genes
-# For one module
+# Plotting
 
 ```{r}
-# Read module
-cyan <- read.table("../../processed/DESEQ/Coexpression/Mods/cyan.txt",
-                   header = FALSE, stringsAsFactors = FALSE) 
-names(cyan)[1] <- "FBgn"
 
-cyan <- inner_join(cyan, temp.long, by="FBgn")
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+eg.genes <- read.table(file="../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t", header=TRUE, stringsAsFactors = FALSE) 
 
-cy_mean <- cyan %>%
-  group_by(Diet, Tissue) %>%
-  summarize(mean_expr = mean(Expression, na.rm=TRUE))
-cy_mean$Diet1 <- gsub('[0-9]+', '', cy_mean$Diet)
+all.dat <- cbind(phenDat.sva, eg.genes)
 
-ggplot(cy_mean,aes(Diet1, mean_expr, group=1, color=Tissue)) +
-  geom_point(position = position_jitter(width = 0.15)) +
-  geom_point(stat = "summary", fun.y=mean) +
-  stat_summary(fun.y=mean, geom ="line")
+ccs <- colnames(all.dat[,6:27])
+all.plots <- vector(mode="list", length=length(ccs))
+names(all.plots) <- ccs
 
-```
-
-# Put modules gene lists in one table
-
-```{r}
-getMods <- lapply(Sys.glob(
-  "../../processed/DESEQ/Coexpression/Mods/*.txt"),read.table)
-
-# Rename column
-ss <- "FBgn"
-for (i in 1:length(getMods)) {
- colnames(getMods[[i]]) <- ss 
-}
-
-
-# Add column for module name to each module
-getMods <- mapply(cbind, getMods, "mod"=sort(modNames), 
-                  SIMPLIFY=FALSE)
- 
-# Merge modules in list into one table
-ll <- bind_rows(getMods)
-
-
-# Merge module lists with expression data
-lk <- left_join(temp.long,ll, by="FBgn")
-
-# Test on one module
-mm <- subset(lk, lk$mod=="cyan")
-i.mm_mean <- mm %>%
-  group_by(Diet, Tissue) %>%
-  summarize(mean_expr = mean(Expression, na.rm=TRUE))
-i.mm_mean$Diet1 <- gsub('[0-9]+', '', i.mm_mean$Diet)
-
-i.mm_plot <- ggplot(i.mm_mean,aes(Diet1, mean_expr, group=1, color=Tissue)) +
-  geom_point(position = position_jitter(width = 0.15)) +
-  geom_point(stat = "summary", fun.y=mean) +
-  stat_summary(fun.y=mean, geom ="line")
-i.mm_plot
-```
-
-# Summarize and plot
-
-```{r}
-# New grouping column
-lk$Diet1 <- gsub('[0-9]+', '', lk$Diet)
-
-lk_mean <- lk %>%
-  group_by(mod,Tissue,Diet1) %>%
-  summarize(mean_expr = mean(Expression, na.rm=TRUE))
-
-yf <- unique(lk_mean$mod)
-
-mod.plots <- vector(mode="list", length=length(yf))
-names(mod.plots) <- yf
-
-for(yy in yf)
+jj <- 1
+for(cc in ccs)
 {
-  
-ff <- ggplot(lk_mean,aes(Diet1, mean_expr, group=1, color=Tissue)) +
-  #geom_point(position = position_jitter(width = 0.15)) +
-  geom_point(stat = "summary", fun.y=mean) +
+     if(jj %in% c(1,5,9,13,17,21))
+     {
+pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tissue")) +
+  geom_point(position = position_jitter(width = 0.15)) +
+  stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
   stat_summary(fun.y=mean, geom ="line") +
-  #stat_summary(fun.data = mean_se, geom = "errorbar") +
-  theme(legend.position="none") +
-  labs(x = "Diet", y = "Mean expression")
+  theme(legend.position="none", axis.title.x = element_blank()) +
+      my_theme +
+  ylab("Eigengene expression")
 
-ff 
   
-mod.plots[[yy]] <- ff
+all.plots[[cc]] <- pp
+     }else{
+  
+  if(jj %in% c(22,19,20))
+     {
+pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tissue")) +
+  geom_point(position = position_jitter(width = 0.15)) +
+  stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
+  stat_summary(fun.y=mean, geom ="line") +
+  theme(legend.position="none", axis.title.y = element_blank()) +
+      my_theme +
+  xlab("Diet")
 
+  
+all.plots[[cc]] <- pp
+  }else{
+
+    if(jj %in% c(21))
+     {
+pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tissue")) +
+  geom_point(position = position_jitter(width = 0.15)) +
+  stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
+  stat_summary(fun.y=mean, geom ="line") +
+  theme(legend.position="none") +
+      my_theme +
+  xlab("Diet") +
+  ylab("Eigengene expression")
+
+  
+all.plots[[cc]] <- pp
+    }else{
+    pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tissue")) +
+  geom_point(position = position_jitter(width = 0.15)) +
+  stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
+  stat_summary(fun.y=mean, geom ="line") +
+  theme(legend.position="none", axis.title.x = element_blank(), 
+        axis.title.y = element_blank()) +
+      my_theme 
+  
+
+all.plots[[cc]] <- pp
+
+    }
+  }
+}
+  
+jj <- jj+1
 }
 
-#mod.plots[["darkgreen"]]
+all.plots[[1]]
 
-modplot <- plot_grid(plotlist=mod.plots,nrow=5,rel_widths = c(1.3,1.1,1.8),rel_heights = c(1,1,1.2), label_size = 9) 
+#get legend
+p1 <- ggplot(all.dat, aes("treatment", cc, color = tissue)) +
+  geom_point() +
+  theme(legend.margin=margin(t=0,r=0,b=0,l=4, unit = 'cm')) +
+  my_theme
 
-modplot
-#legend <- get_legend(modplot)
+#get legend - add to list
+pp[[23]] <- g_legend(p1)
 
-modplot1 <- plot_grid(modplot, legend, rel_widths = c(3,3))
+plot_grid(plotlist=all.plots,nrow=6, ncol=4,
+          rel_widths = c(1, 1), rel_heights = c(1,1), 
+          labels=c('a.','b.','c.','d.','e.','f.','g.','h.','i.','j.',
+                   'k.','l.','m.','n.','o.','p.','q.','r.', 's.','t.',
+                   'u.','v.','w.'), label_size=10, hjust=c(-1,2,-1))
+
+
 ```
 
