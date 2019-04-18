@@ -216,6 +216,6 @@ ggsave(gg,file = "../../plots/PCAplot_rlog_corrected_trt.pdf",width = 8,height=3
 
 #pcaplot <- plot_grid(ll, gg, nrow = 1)
 pcaplot <- plot_grid(ll,gg, align = 'h',rel_widths = c(1.2,1.5), label_size = 10)
-ggsave(pcaplot,file = "../../plots/PCAplot_rlog_trt.pdf",width = 8,height=3)
+ggsave(pcaplot,file = "../../plots/PCAplot_rlog_trt.pdf",width = 3,height=3)
 ```
 
