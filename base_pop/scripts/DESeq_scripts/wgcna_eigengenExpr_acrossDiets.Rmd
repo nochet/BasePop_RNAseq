@@ -113,7 +113,7 @@ jj <- jj+1
 
 #get legend
 p1 <- ggplot(all.dat, aes("treatment", cc, color = tissue)) +
-  geom_point() +
+  geom_point(alpha=0.5) +
   theme(legend.margin=margin(t=0,r=0,b=0,l=4, unit = 'cm')) +
   labs(color = "Tissue") +
   my_theme
