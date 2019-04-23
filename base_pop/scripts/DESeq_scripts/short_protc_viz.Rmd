@@ -82,12 +82,12 @@ b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
   scale_colour_brewer(palette = "Dark2") +
   my_theme
   #tx_color_map() 
-b1 + theme(legend.position="none")
-ggsave(filename = "../../plots/Expression_by_sample1.pdf",width = 5,height=5)
+b1 <- b1 + theme(legend.position="none")
+ggsave(plot=b1,filename = "../../plots/Expression_54_barplot.pdf",width = 5,height=5)
 
 
 b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
-  geom_boxplot(alpha=0.8) +
+  geom_boxplot(alpha=0.4) +
   theme(axis.title.x=element_blank(),
         axis.text.x  = element_text(angle=90, vjust=0.5))+
   scale_color_manual(values=c("indianred4", "olivedrab", "turquoise4")) +
@@ -98,9 +98,9 @@ b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
   #scale_colour_tableau() +
   facet_grid(treatment~.) +
   my_theme
-b2 + theme(legend.position="none")
+b2 <- b2 + theme(legend.position="none")
 
-ggsave(filename = "../../plots/Expression_by_sample2.pdf",width = 5,height=5)
+ggsave(plot=b2,filename = "../../plots/Expression_54_barplot_b2.pdf",width = 3.5,height=3)
 ```
 
 # Number of transcripts per gene
@@ -131,6 +131,9 @@ ggplot(full_table.bg, aes(x=length, col=length)) +
   labs(x = "Transcript length (bp)", y = "Count") +
   theme(axis.title.y = element_text(size = 12),
         text = element_text(size = 12))
+
+min(full_table.bg$length)
+max(full_table.bg$length)
 ```
 
 # Tranform data to visualize global trends
