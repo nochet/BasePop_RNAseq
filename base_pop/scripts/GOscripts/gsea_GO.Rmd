@@ -60,10 +60,10 @@ lrt.treatment[1:4]
 load(file="../../processed/DESEQ/all_fc_dat.rda")
 str(all.fc.dat)
 
-lrt.treat <- subset(all.fc.dat,rownames(all.fc.dat) %in% lrt.treatment$Gene)
+lrt.treat <- subset(all.fc.dat,rownames(all.fc.dat) %in% lrt.treatment)
 ```
 
-# need libraries: gage, pathview and org.Dm.eg.db
+# Need libraries: gage, pathview and org.Dm.eg.db
 # Used this tutorial together with all 3 vignettes: http://www.gettinggeneticsdone.com/2015/12/tutorial-rna-seq-differential.html
 
 ```{r}
@@ -120,7 +120,9 @@ for (ii in 1:length(cc.sets))
   fc.i <- lrt.treat[,ii]
   names(fc.i) <- e.names
 
-  fc.kegg = gage(fc.i, gsets = kegg_sets.dm, use.stouffer=TRUE, same.dir = TRUE)
+  fc.kegg = gage(fc.i, gsets = kegg_sets.dm, 
+                 use.stouffer = TRUE, same.dir = TRUE) 
+  # Do both TRUE and FALSE for same.dir
   
 out.list[[ii]] <- fc.kegg
 }
@@ -236,7 +238,6 @@ ggpairs(p.statmean[,2:9])
 # Gene Ontology (GO)
 
 ```{r}
-# takes a while 
 go.list <- vector(mode='list', length=length(cc.sets))
 
 names(go.list)  <- cc.sets
@@ -252,6 +253,8 @@ go.list[[kk]] <- gobpres
 }
 
 lapply(go.list[[kk]], head)
+
+
 ```
 
 # Get enriched GO terms
@@ -277,8 +280,8 @@ head(go.smean, 10)
 
 subset(go.smean,c(go.smean$FC_DR_B & go.smean$goterm ==
                      "GO:0017144 drug metabolic process"))
-
-ggpairs(go.smean[,2:9]) 
+library(GGally)
+#ggpairs(go.smean[,2:9]) 
 ```
 
 # Filter GO terms
@@ -293,45 +296,19 @@ enrich.goterm$diet <- gsub('DRHS', 'DH', enrich.goterm$diet)
 #dup <- enrich.goterm[duplicated(enrich.goterm), ]
 
 # qval < 0.05
-gqval05 <- subset(enrich.goterm,enrich.goterm$q.val<0.05) #& enrich.goterm$q.val<0.1)
+gqval05 <- subset(enrich.goterm,enrich.goterm$q.val<0.05) 
 gqval05 <- gqval05[order(gqval05$contrast),]
 ung05 <- unique(gqval05$goterm)
 
-# view one G term
-
 ```
 
 
 ```{r}
-# Get pre-built gene sets for Dmel from http://www.go2msig.org/cgi-bin/prebuilt.cgi
-#gsets=readList("../../processed/DESEQ/GO/Drosophila_melanogaster_GSEA_GO_sets_all_symbols_highquality_April_2015.gmt")
-#gsets[1:3]
-
-#gsets=readList("../../processed/DESEQ/GO/GeneSets_Dmel.gmt")
-#gsets[1:3]
-
-# Convert gsets gene symbols to Entrez IDs
-#data(egSymb)
-#gsets.sym <- lapply(gsets, sym2eg)
-#gsets.sym[1:3] # few associations - see Powell (2014)
-```
-
-# Filter
-
-```{r}
-# # Pathways that differ by diet globally
-#  qval < 0.05
-# pqval05 <- subset(enrich.path,enrich.path$q.val<0.05)
-# pqval05 <- pqval05[order(pqval05$contrast),]
-# unq05 <- unique(pqval05$pathway)
-# 
-# # view one pathway
-# x <- subset(enrich.path,c(enrich.path$diet=="dn.HS" & 
-#                             enrich.path$pathway=="dme01200 Carbon metabolism"))
-# x <- x[order(x$pathway),]
-# 
-# y <- subset(enrich.path, diet == "up.HS_B"|q.val <=0.05)
-# xy <- which(x$pathway %in% y$pathway)
-# glob_up.DR_HS <- subset(enrich.path, glob_up.DR_HS>0)
+write.table(go.list, file = "golist.txt",sep = "\t")
+ write.table(rbind(gse16873.kegg.p$greater, gse16873.kegg.p$less),
++     file = "gse16873.kegg.p.txt", sep = "\t")
+ 
+#Sort and count signficant gene sets based on q- or p-value cutoffs:
+golist.sig<-sigGeneSet(go.list, outname="golist.go")
 ```
 
