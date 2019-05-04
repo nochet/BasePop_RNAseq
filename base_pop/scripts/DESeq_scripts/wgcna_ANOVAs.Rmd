@@ -42,11 +42,15 @@ dim(annot)
 names(annot)
 colnames(annot)[colnames(annot)=="X"] <- "FBgn"
 
-rlogtrt <- read.csv("../../processed/DESEQ/rlogtrt.csv")
+rlogtrt <- read.csv("../../processed/DESEQ/rlogtrt_batchCor.csv")
 rownames(rlogtrt) <- rlogtrt[,1]
 FBgenes = rownames(rlogtrt)
 FBgenes2annot = match(FBgenes, annot$FBgn)
 allIDs = annot$entrez[FBgenes2annot]
+
+# allIDs = cbind(as.data.frame(annot$FBgn[FBgenes2annot]), as.data.frame(annot$symbol[FBgenes2annot]))
+# colnames(allIDs) <- NULL
+# colnames(allIDs) <- c("FBgn", "Symbol")
 
 # Number genes without annotation:
 sum(is.na(FBgenes2annot))
@@ -64,7 +68,7 @@ for (module in getMods) {
   # Get their entrez ids
   modIDs = allIDs[modGenes]
   # Write file
-  fileName = paste("../../processed/DESEQ/Coexpression/minMod30/entrez-", 
+  fileName = paste("../../processed/DESEQ/Coexpression/minMod30/", 
                    module,".txt", sep="")
   write.table(as.data.frame(modIDs), file = fileName,
               row.names = FALSE, col.names = FALSE)
@@ -86,6 +90,9 @@ tab <- GOenr$bestPTerms[[4]]$enrichment
 names(tab)
 write.table(tab, file = "../../processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable.csv", 
               sep = ",", quote = TRUE, row.names = FALSE)
+### Note message: GOenrichmentAnalysis: loading annotation data...
+###  ..of the 12614  Entrez identifiers submitted, 10334 are mapped ###in current GO categories.
+###  ..will use 10334 background genes for enrichment calculations.
 
 # View table on screen
 keepCols = c(1, 2, 5, 6, 7, 12, 13);
@@ -106,9 +113,9 @@ rownames(screenTab) = NULL;
 options(width=95)
 
 # Enrichment table
-#screenTab
-# write.table(screenTab, file = "../../processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable_simple.csv", 
-#               sep = ",", quote = TRUE, row.names = FALSE)
+screenTab
+write.table(screenTab, file = "../../processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable_simple.csv",
+              sep = ",", quote = TRUE, row.names = FALSE)
 ```
 
 # ANOVA on module eigengenes to test for interaction effect
@@ -158,11 +165,6 @@ all.plots[[cc]] <- pp
 ```
 
 # Notes for each module
-
-```{r}
-# Table of modules
-#module.table_merged
-```
 
 ## Black module
 

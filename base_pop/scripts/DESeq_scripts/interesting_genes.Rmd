@@ -1,0 +1,28 @@
+---
+title: "Identify interesting genes in different analyses"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+```
+
+## The purpose of this script is to see which of the genes in modules, DGE, and GSEA analyses could be candidates for the effect of diet (i.e. diet-tissue interaction)
+
+# Are known pathway genes present in modules?
+
+# Map modules to table of gene summaries
+
+```{r}
+
+
+qtgs <- read_csv(file = "../../processed/DESEQ/DEG_QTL/unique_nearGenes.csv") %>%
+  as.data.frame() %>%
+  select(2)
+
+colnames(qtgs)[colnames(qtgs)=="x"] <- "gene_symbol"
+
+```
+

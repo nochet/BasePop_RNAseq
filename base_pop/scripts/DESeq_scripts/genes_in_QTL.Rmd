@@ -114,7 +114,7 @@ MedLifeDR_3L$QTL <- "MedLife"
 
 qtl_degs <- rbind(step_2L,Ilp5_3L,
                   LinDiscrDR_2R,LinDiscrDRC_2R,MedLifeDR_3L)
-
+write.csv(qtl_degs, file = "../../processed/DESEQ/DEG_QTL/diffExpr_trt_underQTL.csv")
 ```
 
 # DEGs in iis QTL peaks for the interaction
@@ -153,6 +153,8 @@ qtl_degs_int <- rbind(step_2L.int,
 
 qtl_degs_int <- qtl_degs_int[order(qtl_degs_int$QTL), ]
 
+write.csv(qtl_degs_int, file = "../../processed/DESEQ/DEG_QTL/diffExpr_int_underQTL.csv")
+
 ```
 
 # Interaction and treatment tables together
@@ -165,9 +167,12 @@ qtl_degs$effect <- "treat"
 qtl_degs_int$effect <- "int"
 all_qtl_degs <- rbind(qtl_degs,qtl_degs_int)
 all.qtl.degs <- select(all_qtl_degs,-c(lfcSE,v3,cyt,stat,pvalue,spp))
+
+write.csv(all_qtl_degs, file = "../../processed/DESEQ/DEG_QTL/all_diffExpr_underQTL.csv")
+
 ```
 
-
+# Calculate gene distance to center of peak
 
 ```{r}
 #R6pos = peak position in v6
@@ -190,6 +195,8 @@ distt <- inner_join(all_qtl_degs,addQTL, by="QTL")
 
 distt$qdist <- abs(distt$startp-distt$R6pos)
 
+# Save for next script
+write.csv(distt, file = "../../processed/DESEQ/DEG_QTL/distt.csv")
 ```
 
 # Gene summaries
@@ -198,7 +205,7 @@ distt$qdist <- abs(distt$startp-distt$R6pos)
 # view few lines in the terminal: head -n 3 automated_gene_summaries.tsv | tail -n 3
 
 
-gsum <- read_lines(file = "../../processed/automated_gene_summaries.tsv",
+gsum <- read_lines(file = "../../../../automated_gene_summaries.tsv",
                    skip = 1)%>%
   str_split(pattern = "\t", simplify = TRUE) %>% 
   as_tibble() 
@@ -227,12 +234,20 @@ pull(gsum[Cda4[1],'summary'])
 
 # Get DEGs <100 KB to QTL peak
 near_genes <- subset(fullset, fullset$qdist <= 1e5)
+unique(near_genes$gname)
+
+write.csv(unique(near_genes$gname), 
+          file = "../../processed/DESEQ/DEG_QTL/unique_nearGenes.csv")
 
 # Some descriptives
 max(fullset[,"log2FC"])
 min(fullset[,"log2FC"])
 fullset$gname
 unique(fullset$gname)
+
+write.csv(unique(fullset$gname), 
+          file = "../../processed/DESEQ/DEG_QTL/unique_geneList.csv")
+
 ```
 
 

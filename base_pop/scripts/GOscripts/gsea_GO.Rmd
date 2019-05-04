@@ -47,41 +47,51 @@ go_sets <- go.gsets(species = "Fly",
 gobpsets = go_sets$go.sets[go_sets$go.subs$BP]
 ```
 
-# Get Expression Data
-# DESeq2-GAGE workflow
+# List of DEGs for treatment
+
+```{r}
+# List of genes significant for treatment
+lrt.treatment <- read.csv(file="../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv")
+# rownames(lrt.treatment) <- lrt.treatment[,1]
+# lrt.treatment[,1] <- NULL
+lrt.treatment <- lrt.treatment[,1]
+lrt.treatment[1:4]
+
+load(file="../../processed/DESEQ/all_fc_dat.rda")
+str(all.fc.dat)
+
+lrt.treat <- subset(all.fc.dat,rownames(all.fc.dat) %in% lrt.treatment$Gene)
+```
+
 # need libraries: gage, pathview and org.Dm.eg.db
 # Used this tutorial together with all 3 vignettes: http://www.gettinggeneticsdone.com/2015/12/tutorial-rna-seq-differential.html
 
 ```{r}
-
-load(file="../../processed/DESEQ/all_fc_dat.rda")
-head(rownames(all.fc.dat))
-
 # Add annotation maps to results object
 
 # gene symbol
-all.fc.dat$symbol = mapIds(org.Dm.eg.db,
-                     keys=row.names(all.fc.dat), 
+lrt.treat$symbol = mapIds(org.Dm.eg.db,
+                     keys=row.names(lrt.treat), 
                      column="SYMBOL",
                      keytype="FLYBASE",
                      multiVals="first")
 
 # entrez id
-all.fc.dat$entrez = mapIds(org.Dm.eg.db,
-                     keys=row.names(all.fc.dat), 
+lrt.treat$entrez = mapIds(org.Dm.eg.db,
+                     keys=row.names(lrt.treat), 
                      column="ENTREZID",
                      keytype="FLYBASE",
                      multiVals="first")
 
 # full gene name
-all.fc.dat$name =   mapIds(org.Dm.eg.db,
-                     keys=row.names(all.fc.dat), 
+lrt.treat$name =   mapIds(org.Dm.eg.db,
+                     keys=row.names(lrt.treat), 
                      column="GENENAME",
                      keytype="FLYBASE",
                      multiVals="first")
 
-head(all.fc.dat, 10)
-head(all.fc.dat$symbol)
+#head(lrt.treat)
+head(lrt.treat$symbol)
 
 ```
 
@@ -93,9 +103,13 @@ cc.sets <- c("FC_DR_B","FC_DR_O","FC_DR_H",
              "FC_HS_B","FC_HS_O","FC_HS_H",
              "FC_DRHS_B","FC_DRHS_O","FC_DRHS_H")
 
-e.names <- all.fc.dat$entrez
+# cc.sets <- c("DR_B","DR_O","DR_H",
+#              "HS_B","HS_O","HS_H",
+#              "DRHS_B","DRHS_O","DRHS_H")
 
-all.fc.dat <- all.fc.dat[,cc.sets]
+e.names <- lrt.treat$entrez
+
+lrt.treat <- lrt.treat[,cc.sets]
 
 out.list <- vector(mode='list', length=length(cc.sets))
 names(out.list)  <- cc.sets
@@ -103,17 +117,17 @@ names(out.list)  <- cc.sets
 for (ii in 1:length(cc.sets)) 
   {
 
-  fc.i <- all.fc.dat[,ii]
+  fc.i <- lrt.treat[,ii]
   names(fc.i) <- e.names
 
-  fc.kegg = gage(fc.i, gsets = kegg_sets.dm, same.dir = TRUE)
+  fc.kegg = gage(fc.i, gsets = kegg_sets.dm, use.stouffer=TRUE, same.dir = TRUE)
   
 out.list[[ii]] <- fc.kegg
 }
 
 lapply(out.list[[ii]], head)
 
-# sigGeneSet(out.list[[ii]], cutoff = 0.1,heatmap = TRUE,
+# sigGeneSet(out.list[[ii]], cutoff = 0.1,heatmap = FALSE,
 #            qpval = c("q.val","p.val")[1],
 #            outname="array", pdf.size = c(7,7),
 #            p.limit=c(0.5, 5.5), stat.limit=5)
@@ -138,26 +152,71 @@ sub.fc <- rownames_to_column(sub.fc, "pathway") %>%
 enrich.path <- rbind(enrich.path, sub.fc)
   
 }
+
 ```
 
 # Significant pathways
 
 ```{r}
 # Pathways that differ by diet globally
-pqval01 <- subset(enrich.path,enrich.path$q.val<0.1)
-pqval01 <- pqval01[order(pqval01$stat.mean, decreasing = TRUE),]
-unq01 <- unique(pqval01$pathway)
+pqval1 <- subset(enrich.path,enrich.path$q.val<0.05)
+pqval1 <- pqval1[order(pqval1$stat.mean, decreasing = TRUE),]
+unq11 <- unique(pqval1$pathway)
 
-ggplot(pqval01, aes(x=contrast, y=stat.mean, col=q.val)) +
-  geom_point(stat = "identity") + ylab("Magnitude of gene-set level changes") +
-  xlab("Diet contrast relative C diet") 
+ggplot(pqval1, aes(x=contrast, y=stat.mean, col=q.val)) +
+  geom_point(stat = "identity") + ylab("Gene-set level change") +
+  xlab("Diet contrast") 
 
-ggplot(pqval01, aes(x=pathway, y=stat.mean, col=q.val, label = contrast)) +
-  geom_point() + ylab("Magnitude of geneset level changes") +
-  xlab("Diet contrast relative C except DRHS") + 
-  geom_text(aes(label = contrast), check_overlap = TRUE) +
-  theme(axis.text.x = element_text(angle = 80, hjust=1))
+ggplot(pqval1, aes(x=pathway, y=stat.mean, col=q.val, label = contrast)) +
+  geom_bar(stat = "identity") + ylab("Geneset level change") +
+  xlab("Enriched pathways") + 
+  geom_text(
+    aes(label = contrast),
+    position = position_dodge((width = 1)),
+    vjust = -0.5, hjust = -2, size = 3) +
+  theme(axis.text.x = element_text(hjust=1)) +
+  coord_flip()
  
+```
+
+# Get genes for enriched pathways
+
+```{r}
+paths <- kegg_sets[[1]]
+paths1 <- paths[c("dme04141 Protein processing in endoplasmic reticulum", "dme01200 Carbon metabolism","dme01100 Metabolic pathways","dme00190 Oxidative phosphorylation")]
+
+dme_protpER <- as.data.frame(paths1[[1]])
+dme_protpER$pathway <- "dme04141"
+names(dme_protpER)[1]<-"entrZ"
+
+dme_carbMet <- as.data.frame(paths1[[2]])
+dme_carbMet$pathway <- "dme01200"
+names(dme_carbMet)[1]<-"entrZ"
+
+dme_metPath <- as.data.frame(paths1[[3]])
+dme_metPath$pathway <- "dme01100"
+names(dme_metPath)[1]<-"entrZ"
+
+dme_oxiPhos <- as.data.frame(paths1[[4]])
+dme_oxiPhos$pathway <- "dme00190"
+names(dme_oxiPhos)[1]<-"entrZ"
+
+path_genes <- rbind(dme_protpER,dme_carbMet,dme_metPath,dme_oxiPhos)
+path_genes$entrZ <- as.character(path_genes$entrZ)
+
+# Map back to FBgn and symbol
+# FBgn id
+path_genes$FBgn = mapIds(org.Dm.eg.db,
+                     keys=path_genes$entrZ, 
+                     column="FLYBASE",
+                     keytype="ENTREZID",
+                     multiVals="first")
+# Gene symbols
+path_genes$symbol = mapIds(org.Dm.eg.db,
+                     keys=path_genes$entrZ, 
+                     column="SYMBOL",
+                     keytype="ENTREZID",
+                     multiVals="first")
 ```
 
 # Correlate pathways for pair-contrasts
@@ -166,8 +225,7 @@ ggplot(pqval01, aes(x=pathway, y=stat.mean, col=q.val, label = contrast)) +
 p.statmean <- enrich.path %>% spread(contrast,stat.mean)
 head(p.statmean, 10)
 
-subset(p.statmean,c(p.statmean$FC_HS_H & p.statmean$pathway ==
-                     "dme00010 Glycolysis / Gluconeogenesis"))
+subset(p.statmean, p.statmean$q.val<0.1)
 
 library(GGally)
 
@@ -180,12 +238,13 @@ ggpairs(p.statmean[,2:9])
 ```{r}
 # takes a while 
 go.list <- vector(mode='list', length=length(cc.sets))
+
 names(go.list)  <- cc.sets
 
 for (kk in 1:length(cc.sets)) 
   {
 
-  fc.k <- all.fc.dat[,kk]
+  fc.k <- lrt.treat[,kk]
   names(fc.k) <- e.names
 
   gobpres = gage(fc.k, gsets=gobpsets, same.dir=TRUE)
@@ -200,6 +259,7 @@ lapply(go.list[[kk]], head)
 ```{r}
 enrich.goterm <- data.frame("goterm"=character(length=0),
                           "stat.mean"=numeric(length=0),
+                          "q.val"=numeric(length = 0),
                           "contrast"=character(length=0), stringsAsFactors = FALSE)
 
 for(fc.set in cc.sets)
@@ -207,7 +267,7 @@ for(fc.set in cc.sets)
   sub.fc <- go.list[[fc.set]][[1]]%>%as.data.frame()%>%add_column(contrast = fc.set)
   
 sub.fc <- rownames_to_column(sub.fc, "goterm") %>%
-  dplyr::select(goterm,stat.mean,contrast)
+  dplyr::select(goterm,stat.mean,q.val,contrast)
 
 enrich.goterm <- rbind(enrich.goterm, sub.fc)
 }
@@ -233,21 +293,12 @@ enrich.goterm$diet <- gsub('DRHS', 'DH', enrich.goterm$diet)
 #dup <- enrich.goterm[duplicated(enrich.goterm), ]
 
 # qval < 0.05
-gqval05 <- subset(enrich.goterm,enrich.goterm$q.val>0.05 & enrich.goterm$q.val<0.1)
+gqval05 <- subset(enrich.goterm,enrich.goterm$q.val<0.05) #& enrich.goterm$q.val<0.1)
 gqval05 <- gqval05[order(gqval05$contrast),]
 ung05 <- unique(gqval05$goterm)
 
-# view one pathway
-z <- subset(enrich.goterm,c(enrich.goterm$diet=="dn.HS" & 
-                            enrich.goterm$goterm=="GO:0005975 carbohydrate metabolic process"))
-z <- z[order(x$goterm),]
+# view one G term
 
-
-
-#y <- subset(enrich.path, diet == "up.HS_B"|q.val <=0.05)
-#xy <- which(x$pathway %in% y$pathway)
-
-#glob_up.DR_HS <- subset(enrich.path, glob_up.DR_HS>0)
 ```
 
 

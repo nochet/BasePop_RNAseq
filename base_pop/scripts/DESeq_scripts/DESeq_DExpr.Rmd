@@ -62,6 +62,9 @@ plotDispEsts(dds_deseq.01)
 cc <- results(dds_deseq.01)
 cc%>%data.frame()%>% View()
 
+cc[which.max(cc$log2FoldChange),]
+cc[which.min(cc$log2FoldChange),]
+
 save(dds_deseq.01, file="../../processed/DESEQ/dds_deseq01.Rda")
 load("../../processed/DESEQ/dds_deseq01.Rda")
 
@@ -117,6 +120,7 @@ load(file="../../processed/DESEQ/lrt.int.Rda")
 # Get lists of DEGs
 resSig_lrt.int <- subset(lrt.int, padj < 0.05)
 summary(resSig_lrt.int)
+
 sum(resSig_lrt.int$padj < 0.05, na.rm = TRUE)
 resSig_lrt.int$Gene <- rownames(resSig_lrt.int)
 resSig_lrt.int <- resSig_lrt.int[, c(7,1:6)]

@@ -215,7 +215,7 @@ plotDendroAndColors(geneTree, dynamicColors, 'Modules',
                     addGuide = TRUE, guideHang = 0.05, main='')
 
 # Set the diagonal of the dissimilarity to NA 
-diag(dissTOM) = NA;
+diag(dissTOM) = NA
 
 ```
 
@@ -287,22 +287,23 @@ mergedMEs = merge$newMEs;
 table(mergedColors)
 
 # Plot dendrogram with module colors below it
-pdf(file="../../plots/dynamic_merged_clusters.pdf", width = 5, height = 3)
-par(mfrow=c(2,2))
+pdf(file="../../plots/dynamic_merged_clusters.pdf", width = 4, height = 2.5)
+par(mfrow=c(1,1))
 par(cex = 0.6)
 plotDendroAndColors(geneTree, 
                     cbind(dynamicColors, mergedColors), 
-                    c("Dynamic colors", "Module colors"),
-                    main = NULL,groupLabels = mergedColors,
+                    c("Dynamic mods", "Merged mods"),
+                    main = NULL,cex.lab = 0.8, cex.axis = 0.8,
                     dendroLabels= FALSE, hang=0.03, 
-                    addGuide= TRUE, guideHang=0.05)
+                    addGuide= TRUE, guideHang=0.05,
+                    cex.colorLabels = 0.7)
 dev.off()
 
 # Rename to moduleColors
 table(moduleColors)
 
 # See which modules merged
-table(mergedColors, moduleColors)
+table(dynamicColors, moduleColors)
 
 # See merged modules and their sizes
 cat("\n\nNetwork Modules\n")
