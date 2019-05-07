@@ -1,7 +1,4 @@
-## FlyBase FBgn-Annotation ID Correspondence Table
-## Generated: Fri Mar 22 19:39:04 2019
-## Using datasource: dbi:Pg:dbname=fb_2019_02_reporting;host=flysql20;port=5432...
-##gene_symbol	organism_abbreviation	primary_FBgn#	secondary_FBgn#(s)	annotation_ID	secondary_annotation_ID(s)
+gene_symbol	organism_abbreviation	primary_FBgn	secondary_FBgn(s)	annotation_ID	secondary_annotation_ID
 Ilp1	Dmel	FBgn0044051	FBgn0036045	CG14173	
 hep	Dmel	FBgn0010303	FBgn0013490,FBgn0029076,FBgn0030446,FBgn0040188	CG4353	CG2190
 Cdc5	Dmel	FBgn0265574	FBgn0035136,FBgn0025183	CG6905	
@@ -112,4 +109,3 @@ Sirt2	Dmel	FBgn0038788		CG5085
 Sirt7	Dmel	FBgn0039631		CG11305	
 Sirt6	Dmel	FBgn0037802		CG6284	
 Sirt1	Dmel	FBgn0024291	FBgn0046250	CG5216	
-
