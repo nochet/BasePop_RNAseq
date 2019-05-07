@@ -166,7 +166,7 @@ colnames(qtl_degs_int)
 qtl_degs$effect <- "treat"
 qtl_degs_int$effect <- "int"
 all_qtl_degs <- rbind(qtl_degs,qtl_degs_int)
-all.qtl.degs <- select(all_qtl_degs,-c(lfcSE,v3,cyt,stat,pvalue,spp))
+all.qtl.degs <- dplyr::select(all_qtl_degs,-c(lfcSE,v3,cyt,stat,pvalue,spp))
 
 write.csv(all_qtl_degs, file = "../../processed/DESEQ/DEG_QTL/all_diffExpr_underQTL.csv")
 

@@ -167,13 +167,13 @@ if(oo=='H')
 
 if(oo=='O')
 {
-  pp<-ggplot(plot.dat, aes(FoldChangeDR,FoldChangeHS, color=log10(BaseMean))) +
+  pp<-ggplot(plot.dat, aes(FoldChangeDR,FoldChangeHS,      color=log10(BaseMean))) +
   geom_hline(yintercept=0,col='grey80')+
   geom_vline(xintercept=0,col='grey80')+
   geom_abline(intercept=0,slope=1,col='grey80',lty=2)+
   geom_point(alpha=1/2)+
   #geom_point(data=pp.dat, aes(FoldChangeDR,FoldChangeHS,color=-log10(Padj+1e-16)), alpha=1/2) +
-    ylim(c(-ax.top,ax.top))+
+  ylim(c(-ax.top,ax.top))+
   xlim(c(-ax.top,ax.top))+
   ylab("Fold Change (HS)")+
   xlab("Fold Change (DR)")+

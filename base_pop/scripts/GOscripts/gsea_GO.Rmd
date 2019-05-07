@@ -122,6 +122,7 @@ for (ii in 1:length(cc.sets))
 
   fc.kegg = gage(fc.i, gsets = kegg_sets.dm, 
                  use.stouffer = TRUE, same.dir = TRUE) 
+  #kegg.sig<-sigGeneSet(fc.kegg)
   # Do both TRUE and FALSE for same.dir
   
 out.list[[ii]] <- fc.kegg
@@ -155,6 +156,13 @@ enrich.path <- rbind(enrich.path, sub.fc)
   
 }
 
+write.csv(fc.kegg, "../../processed/DESEQ/pathway_enrich.csv")
+
+write.csv(rbind(fc.kegg$greater, fc.kegg$less),
+     "../../processed/DESEQ/pathway_enrich.csv")
+
+# outlist.sig <-read.csv("../../processed/DESEQ/pathway_enrich.csv")
+# outlist.sig<-sigGeneSet(fc.kegg, outname="outlist.kegg")
 ```
 
 # Significant pathways
@@ -188,19 +196,19 @@ paths <- kegg_sets[[1]]
 paths1 <- paths[c("dme04141 Protein processing in endoplasmic reticulum", "dme01200 Carbon metabolism","dme01100 Metabolic pathways","dme00190 Oxidative phosphorylation")]
 
 dme_protpER <- as.data.frame(paths1[[1]])
-dme_protpER$pathway <- "dme04141"
+dme_protpER$go_path <- "dme04141"
 names(dme_protpER)[1]<-"entrZ"
 
 dme_carbMet <- as.data.frame(paths1[[2]])
-dme_carbMet$pathway <- "dme01200"
+dme_carbMet$go_path <- "dme01200"
 names(dme_carbMet)[1]<-"entrZ"
 
 dme_metPath <- as.data.frame(paths1[[3]])
-dme_metPath$pathway <- "dme01100"
+dme_metPath$go_path <- "dme01100"
 names(dme_metPath)[1]<-"entrZ"
 
 dme_oxiPhos <- as.data.frame(paths1[[4]])
-dme_oxiPhos$pathway <- "dme00190"
+dme_oxiPhos$go_path <- "dme00190"
 names(dme_oxiPhos)[1]<-"entrZ"
 
 path_genes <- rbind(dme_protpER,dme_carbMet,dme_metPath,dme_oxiPhos)
@@ -219,6 +227,7 @@ path_genes$symbol = mapIds(org.Dm.eg.db,
                      column="SYMBOL",
                      keytype="ENTREZID",
                      multiVals="first")
+
 ```
 
 # Correlate pathways for pair-contrasts
@@ -229,9 +238,9 @@ head(p.statmean, 10)
 
 subset(p.statmean, p.statmean$q.val<0.1)
 
-library(GGally)
-
-ggpairs(p.statmean[,2:9]) 
+# library(GGally)
+# 
+# ggpairs(p.statmean[,2:9]) 
 
 ```
 
@@ -280,7 +289,7 @@ head(go.smean, 10)
 
 subset(go.smean,c(go.smean$FC_DR_B & go.smean$goterm ==
                      "GO:0017144 drug metabolic process"))
-library(GGally)
+#library(GGally)
 #ggpairs(go.smean[,2:9]) 
 ```
 
@@ -300,15 +309,67 @@ gqval05 <- subset(enrich.goterm,enrich.goterm$q.val<0.05)
 gqval05 <- gqval05[order(gqval05$contrast),]
 ung05 <- unique(gqval05$goterm)
 
+# qval < 0.01
+gqval01 <- subset(enrich.goterm,enrich.goterm$q.val<0.01) 
+gqval01 <- gqval01[order(gqval01$contrast),]
+ung01 <- unique(gqval01$goterm)
+
+# gots <- go_sets[[1]]
+# gqval05_gots <- gqval05[,"goterm"]
+# gqval05_goterms <- gots[gqval05_gots]
+# 
+# gqval05_goterms <- do.call(rbind.data.frame, gqval05_goterms)
+# gqval05_goterms <- data.frame(sapply(gqval05_goterms,c))
+# gqval05_goterms <- data.frame(Reduce(rbind, gqval05_goterms))
+
+
 ```
 
+# Get term genes
 
 ```{r}
-write.table(go.list, file = "golist.txt",sep = "\t")
- write.table(rbind(gse16873.kegg.p$greater, gse16873.kegg.p$less),
-+     file = "gse16873.kegg.p.txt", sep = "\t")
- 
-#Sort and count signficant gene sets based on q- or p-value cutoffs:
-golist.sig<-sigGeneSet(go.list, outname="golist.go")
+gots <- go_sets[[1]]
+gots1 <- gots[c("GO:0044281 small molecule metabolic process", "GO:0007154 cell communication","GO:0023052 signaling","GO:0007165 signal transduction")]
+
+go_smMP <- as.data.frame(gots1[[1]])
+go_smMP$go_path <- "GO_0044281"
+names(go_smMP)[1]<-"entrZ"
+
+go_cellCom <- as.data.frame(gots1[[2]])
+go_cellCom$go_path <- "GO_0007154"
+names(go_cellCom)[1]<-"entrZ"
+
+signalL <- as.data.frame(gots1[[3]])
+signalL$go_path <- "GO_0023052"
+names(signalL)[1]<-"entrZ"
+
+go_sigTransd <- as.data.frame(gots1[[4]])
+go_sigTransd$go_path <- "GO_0007165"
+names(go_sigTransd)[1]<-"entrZ"
+
+go_genes <- rbind(go_smMP,go_cellCom,signalL,go_sigTransd)
+go_genes$entrZ <- as.character(go_genes$entrZ)
+
+# Map back to FBgn and symbol
+# FBgn id
+go_genes$FBgn = mapIds(org.Dm.eg.db,
+                     keys=go_genes$entrZ, 
+                     column="FLYBASE",
+                     keytype="ENTREZID",
+                     multiVals="first")
+# Gene symbols
+go_genes$symbol = mapIds(org.Dm.eg.db,
+                     keys=go_genes$entrZ, 
+                     column="SYMBOL",
+                     keytype="ENTREZID",
+                     multiVals="first")
+
+gopath_genes <- rbind(path_genes,go_genes)
+unq_gopath <- unique(gopath_genes$FBgn)
+write.csv(gopath_genes, file = "../../processed/DESEQ/gopath_genes.csv")
+```
+
+```{r}
+
 ```
 

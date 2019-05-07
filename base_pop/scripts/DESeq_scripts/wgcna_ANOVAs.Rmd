@@ -114,7 +114,7 @@ options(width=95)
 
 # Enrichment table
 screenTab
-write.table(screenTab, file = "../../processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable_simple.csv",
+write.table(screenTab, file = "../../processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable_simple.txt",
               sep = ",", quote = TRUE, row.names = FALSE)
 ```
 

@@ -7,6 +7,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+library(AnnotationDbi)
 ```
 
 ## The purpose of this script is to see which of the genes in modules, DGE, and GSEA analyses could be candidates for the effect of diet (i.e. diet-tissue interaction)
@@ -17,12 +18,174 @@ library(tidyverse)
 
 ```{r}
 
-
+# Genes from QTL
 qtgs <- read_csv(file = "../../processed/DESEQ/DEG_QTL/unique_nearGenes.csv") %>%
   as.data.frame() %>%
-  select(2)
+  dplyr::select(2)
 
 colnames(qtgs)[colnames(qtgs)=="x"] <- "gene_symbol"
 
+
+
+
+# Genes from WGCNA
+
+# Load module names
+load("../../processed/DESEQ/Coexpression/modules.RData")
+
+# Read in multiple files by wildcard expansion on file paths
+getMods <- lapply(Sys.glob(
+  "../../processed/DESEQ/Coexpression/Mods/gene_symbols/*.txt"),read.table)
+
+# Rename column
+ss <- "gene_symbol"
+for (i in 1:length(getMods)) {
+ colnames(getMods[[i]]) <- ss 
+}
+
+# Add column for module name to each module
+getMods <- mapply(cbind, getMods, "mod"=sort(modNames), 
+                  SIMPLIFY=FALSE)
+ 
+# Merge modules in list into one table
+ll <- bind_rows(getMods)
+ll$FBgn = mapIds(org.Dm.eg.db,
+                     keys=as.character(ll$gene_symbol), 
+                     column="FLYBASE",
+                     keytype="SYMBOL",
+                     multiVals="first")
+
+
+
+sigDEGs <- read.csv("../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv")
+head(sigDEGs)
+
+# gene symbol
+sigDEGs$symbol = mapIds(org.Dm.eg.db,
+                     keys=as.character(sigDEGs$Gene), 
+                     column="SYMBOL",
+                     keytype="FLYBASE",
+                     multiVals="first")
+
+# Pathway and GO term genes
+pgo <- read.csv("../../processed/DESEQ/gopath_genes.csv")                     
+```
+
+# Intersection between QTL and module analysis
+
+```{r}
+# Common between QTL interval genes and DEGs for treatment
+common <- as.data.frame(intersect(qtgs$gene_symbol, ll$gene_symbol))
+colnames(common) <- "symbol"
+
+common$FBgn = mapIds(org.Dm.eg.db,
+                     keys=as.character(common$symbol), 
+                     column="FLYBASE",
+                     keytype="SYMBOL",
+                     multiVals="first")
+
+# In which modules are these?
+common_mod <- subset(ll,ll$gene_symbol %in% common)
+
+
+# Look at FC and significance
+comm_mod_exprs <- subset(sigDEGs,sigDEGs$symbol %in% common)
+
+# Associated GO and pathway terms
+comm_mod_gopath <- subset(gopath_genes,gopath_genes$symbol %in% common)
+
+xx <- read.csv("../../processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable.csv")
+ colnames(xx)[colnames(xx)=="module"] <- "mod"
+
+# Combine into table
+colnames(common_mod)[colnames(common_mod)=="gene_symbol"] <- "symbol"
+joint <- inner_join(common_mod,comm_mod_exprs, by="symbol")
+joint <- inner_join(joint, comm_mod_gopath, by="symbol")
+# joint <- inner_join(joint, xx, by="mod")
+
+# This list has all genes under QTL - not limiting to 100 Mb
+qtall <- read.csv("../../processed/DESEQ/DEG_QTL/all_diffExpr_underQTL.csv")
+str(qtall)
+# gene symbol
+
+qtmod <- subset(ll,ll$gene_symbol %in% qtall$gname)
+colnames(qtmod)[colnames(qtmod)=="gene_symbol"] <- "symbol"
+qtmod_gopath <- subset(gopath_genes,gopath_genes$symbol %in% qtall$gname)
+qtmod_sigDEGs <- subset(sigDEGs,sigDEGs$symbol %in% qtall$gname)
+
+joint1 <- inner_join(qtmod, qtmod_gopath, by="symbol")
+joint2 <- inner_join(joint1, qtmod_sigDEGs, by="symbol")
+
+
+
+# Common between QTL interval genes and DEGs for treatment
+common1 <- intersect(sigDEGs$symbol, qtgs$gene_symbol)
+
+# Common between WGCNA and DEGs for treatment - useless
+common2 <- intersect(ll$gene_symbol, sigDEGs$symbol)
+```
+
+# Sirtuins and FOXO pathway genes
+
+```{r}
+# Ref: https://flybase.org/lists/FBgg/pathways
+
+# FOXO signaling pathway (i.e. including sirtuins)
+foxo_sirts <- read.csv("../../processed/DESEQ/DEG_QTL/FOXO_sigPath.csv")
+fox <- foxo_sirts[,c(1,3,4)]
+#colnames(foxo_sirts)[1]<-"FBgn"
+fox <- subset(ll,ll$FBgn %in% foxo_sirts$primary_FBgn)
+fox1 <- subset(foxo_sirts,foxo_sirts$primary_FBgn %in% common$FBgn)
+fox2 <- subset(sigDEGs, sigDEGs$Gene %in% foxo_sirts$primary_FBgn)
+fox2$pathway <- "foxoSirt"
+```
+
+1. Out of 105 FOXO genes plus 5 sirtuins, modules hold 109 of these
+2. Zero QTL genes and zero sigDEgs map to this list
+3. 16 FOXO and sirtuins were DE, including Sirt2 and Ilp5
+
+CG5059 turquoise
+FlyBase Automatically Generated Summary
+This gene is referred to in FlyBase by the symbol Dmel\CG5059 (FBgn0037007). It is a SO0000010:protein_coding_gene from Drosophila melanogaster. It has 5 annotated transcripts and 5 polypeptides (3 unique). Gene sequence location is 3L:20514598..20519393. It has the cytological map location 77C6. Protein features are: BNIP3. Its molecular function is unknown. It is involved in the biological process described with: positive regulation of apoptotic process; mitochondrial outer membrane permeabilization. 10 alleles are reported. No phenotypic data is available. The phenotypic class of alleles includes: viable. Summary of modENCODE Temporal Expression Profile: Temporal profile ranges from a peak of very high expression to a trough of moderate expression. Peak expression observed within 00-06 hour embryonic stages, during late larval stages, during early pupal stages.
+
+```{r}
+# Toll pathway genes
+toll <- read.csv("../../processed/DESEQ/DEG_QTL/tollPath_precomp.csv")
+toll <- toll[,c(1,3,4)]
+
+toll1 <- subset(ll,ll$FBgn %in% toll$primary_FBgn)
+toll2 <- subset(toll,toll$primary_FBgn %in% common$FBgn)
+toll3 <- subset(sigDEGs, sigDEGs$Gene %in% toll$primary_FBgn)
+toll3$pathway <- "Toll"
+```
+
+1. 52 Toll genes recovered in modules
+2. 
+
+```{r}
+# IIS pathway genes
+iis <- read.csv("../../processed/DESEQ/DEG_QTL/iisPath_precomp.csv")
+iis <- iis[,c(1,3,4)]
+
+iis1 <- subset(ll,ll$gene_symbol %in% iis$annotation_ID)
+iis2 <- subset(iis,iis$primary_FBgn %in% common$FBgn)
+iis3 <- subset(sigDEGs, sigDEGs$Gene %in% iis$primary_FBgn)
+iis3$pathway <- "IIS"
+```
+
+# Indy
+
+```{r}
+indy <- read.csv("../../processed/DESEQ/DEG_QTL/indy.csv")
+indy <- indy[c(1,3,4)]
+
+indy1 <- subset(ll,ll$gene_symbol %in% indy$annotation_ID)
+indy2 <- subset(common, common$FBgn %in% indy$primary_FBgn)
+indy3 <- subset(sigDEGs, sigDEGs$Gene %in% indy$primary_FBgn)
+indy1 <- subset(ll, ll$Gene=="FBgn0052027")
+indy3$pathway <- "Indy"
+
+candids <- rbind(fox2,toll3,iis3,indy1,indy3)
+candidates <- subset(sigDEGs, sigDEGs$Gene %in% candids$Gene)
 ```
 
