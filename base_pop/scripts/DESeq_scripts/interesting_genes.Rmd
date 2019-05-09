@@ -201,9 +201,7 @@ indy1 <- subset(ll, ll$Gene=="FBgn0052027")
 indy3$pathway <- "Indy"
 ```
 
-1. 1 gene related to Indy: hairy (h). Note, a separate gene Hairless (H) also exists
 
-I'm not dead yet (Indy) encodes a plasma membrane transporter of Krebs cycle intermediates (citrate, succinate, fumarate, alpha-ketoglutarate) of the SLC13A family that is important in organismal intermediary metabolism. Mutations in Indy create a favorable metabolic state, similar to calorie restriction, and extend life span.
 
 ```{r}
 candids <- rbind(fox2,tor3,iis3)
@@ -216,7 +214,19 @@ candidates <- inner_join(candids,sigs)
 candidates <- inner_join(candidates,lll)
 candidates$Gene <- as.character(candidates$Gene)
 
-write.csv(candidates, file = "../../processed/DESEQ/cand_genes.csv" )
+# Merge with shrinked FC data
+cgs <- dplyr::select(candidates, Gene,symbol,pathway,mod)
+fc <- as.data.frame(all.fc.dat) %>%
+  rownames_to_column(var="Gene")
+cgs <- inner_join(cgs,fc) %>%
+  dplyr::select(-c(contains("FCse_"),
+                   contains("stat_"),
+                   contains("p_"),
+                   contains("padj_")),-"log2FoldChange")
+
+cgs <- cgs %>% mutate_if(is.numeric, round, digits = 6)
+
+write.csv(cgs, file = "../../processed/DESEQ/cand_genes.csv" )
 ```
 
 60 hits in DEGs (i.e. 50 unique genes)
