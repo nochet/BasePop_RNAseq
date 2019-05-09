@@ -199,6 +199,12 @@ distt$qdist <- abs(distt$startp-distt$R6pos)
 write.csv(distt, file = "../../processed/DESEQ/DEG_QTL/distt.csv")
 ```
 
+Summary of IIS QTL interval genes: 
+215 DEGs identified under BCIs that are in both treatment effect DEGs and interaction effect DEGs (LRT, qval<0.05) (all_diffExpr_underQTL.csv). 
+This set had 139 unique genes (unique_geneList.csv). 
+12 of these are located within 100 Kb of eQTL peak markers: Ahcy, CG40486, Non1, prel, ced-6, CG33774, Wnt2, CG1882, Dgat2, mus205, CG12822, CG10357. Converted coordinates to v6
+
+
 # Gene summaries
 
 ```{r}

@@ -60,7 +60,6 @@ ll$FBgn = mapIds(org.Dm.eg.db,
 sigDEGs <- read.csv("../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv")
 head(sigDEGs)
 
-# gene symbol
 sigDEGs$symbol = mapIds(org.Dm.eg.db,
                      keys=as.character(sigDEGs$Gene), 
                      column="SYMBOL",
@@ -140,27 +139,41 @@ fox2 <- subset(sigDEGs, sigDEGs$Gene %in% foxo_sirts$primary_FBgn)
 fox2$pathway <- "foxoSirt"
 ```
 
-1. Out of 105 FOXO genes plus 5 sirtuins, modules hold 109 of these
-2. Zero QTL genes and zero sigDEgs map to this list
-3. 16 FOXO and sirtuins were DE, including Sirt2 and Ilp5
+1. Out of 105 FOXO genes plus 5 sirtuins, modules hold 109 of these (fox)
+2. Zero QTL genes and zero sigDEgs map to this list (fox1)
+3. 16 FOXO and sirtuins were DE (fox2: Sirt2, Diap1, beta'COP, CG5059, Gycbeta1008, DOR, TBPH, hid,p38c, Ilp5, alphaCOP, AMPKalpha, Rheb, Cdk2, arm, Atg1)
 
-CG5059 turquoise
-FlyBase Automatically Generated Summary
-This gene is referred to in FlyBase by the symbol Dmel\CG5059 (FBgn0037007). It is a SO0000010:protein_coding_gene from Drosophila melanogaster. It has 5 annotated transcripts and 5 polypeptides (3 unique). Gene sequence location is 3L:20514598..20519393. It has the cytological map location 77C6. Protein features are: BNIP3. Its molecular function is unknown. It is involved in the biological process described with: positive regulation of apoptotic process; mitochondrial outer membrane permeabilization. 10 alleles are reported. No phenotypic data is available. The phenotypic class of alleles includes: viable. Summary of modENCODE Temporal Expression Profile: Temporal profile ranges from a peak of very high expression to a trough of moderate expression. Peak expression observed within 00-06 hour embryonic stages, during late larval stages, during early pupal stages.
+
+```{r}
+# TOR pathway
+tor <- read.csv("../../processed/DESEQ/DEG_QTL/TOR_path.csv")
+tor <- tor[,c(1,3,4)]
+
+tor1 <- subset(ll,ll$FBgn %in% tor$primary_FBgn) # list not screened further
+tor2 <- subset(tor,tor$primary_FBgn %in% common$FBgn)
+tor3 <- subset(sigDEGs, sigDEGs$Gene %in% tor$primary_FBgn)
+tor3$pathway <- "TOR"
+
+```
+
+1. 151 of 152 TOR genes found in modules
+2. Zero of QTL genes
+3. 25 DEGs are in TOR pathway: Vha68-1, tsl, Socs36E, Hsc70-4, sev, CG16908, tub, dpp, eIF4E1, hid, svp, unk, Wdr24, AMPKalpha, stumps, htl, gcl, Rheb, Akap200, arm, slmb, Myc, fkh, Nup44A, Atg1 
 
 ```{r}
 # Toll pathway genes
 toll <- read.csv("../../processed/DESEQ/DEG_QTL/tollPath_precomp.csv")
 toll <- toll[,c(1,3,4)]
 
-toll1 <- subset(ll,ll$FBgn %in% toll$primary_FBgn)
+toll1 <- subset(ll,ll$FBgn %in% toll$primary_FBgn) # list not screened further
 toll2 <- subset(toll,toll$primary_FBgn %in% common$FBgn)
 toll3 <- subset(sigDEGs, sigDEGs$Gene %in% toll$primary_FBgn)
 toll3$pathway <- "Toll"
 ```
 
-1. 52 Toll genes recovered in modules
-2. 
+1. 49 Toll genes recovered in modules. List not checked further (toll1)
+2. Zero of 12 QTL genes found (toll2)
+3. 12 DEGs are Toll pathway genes (toll3: PGRP-SC1a, spz, Gprk2, tub, dgrn, grass, wek, Spn88Ea, senju, spirit, Hrs, Herc4)
 
 ```{r}
 # IIS pathway genes
@@ -173,7 +186,9 @@ iis3 <- subset(sigDEGs, sigDEGs$Gene %in% iis$primary_FBgn)
 iis3$pathway <- "IIS"
 ```
 
-# Indy
+1. 55 IIS pathway genes found in modules (iis1)
+2. Zero of 12 QTL genes are IIS (iis2)
+3. 6 DEGs are IIS pathway genes (iis3: Ilp5, tgo, Rheb, slmb, Myc, lin-28)
 
 ```{r}
 indy <- read.csv("../../processed/DESEQ/DEG_QTL/indy.csv")
@@ -184,8 +199,41 @@ indy2 <- subset(common, common$FBgn %in% indy$primary_FBgn)
 indy3 <- subset(sigDEGs, sigDEGs$Gene %in% indy$primary_FBgn)
 indy1 <- subset(ll, ll$Gene=="FBgn0052027")
 indy3$pathway <- "Indy"
+```
 
-candids <- rbind(fox2,toll3,iis3,indy1,indy3)
-candidates <- subset(sigDEGs, sigDEGs$Gene %in% candids$Gene)
+1. 1 gene related to Indy: hairy (h). Note, a separate gene Hairless (H) also exists
+
+I'm not dead yet (Indy) encodes a plasma membrane transporter of Krebs cycle intermediates (citrate, succinate, fumarate, alpha-ketoglutarate) of the SLC13A family that is important in organismal intermediary metabolism. Mutations in Indy create a favorable metabolic state, similar to calorie restriction, and extend life span.
+
+```{r}
+candids <- rbind(fox2,tor3,iis3)
+sigs <- sigDEGs[,c(1,8)]
+lll <-ll%>%
+  rename(symbol=gene_symbol,
+         Gene=FBgn)
+
+candidates <- inner_join(candids,sigs)
+candidates <- inner_join(candidates,lll)
+candidates$Gene <- as.character(candidates$Gene)
+
+write.csv(candidates, file = "../../processed/DESEQ/cand_genes.csv" )
+```
+
+60 hits in DEGs (i.e. 50 unique genes)
+
+# Gene summaries
+```{r}
+gsum <- read_lines(file = "../../../../automated_gene_summaries.tsv",
+                   skip = 1)%>%
+  str_split(pattern = "\t", simplify = TRUE) %>% 
+  as_tibble() 
+gsum <- gsum[,c(1,2)]
+colnames(gsum) <- c('FBgn', 'summary')
+
+candsum <- subset(gsum, gsum$FBgn %in% candidates$FBgn)
+#colnames(candidates)[colnames(candidates)=="Gene"] <- "FBgn"
+candsum <- inner_join(candsum,candidates, by="FBgn") %>%
+  dplyr::select(c(1,9,everything())) %>% as.data.frame()
+
 ```
 

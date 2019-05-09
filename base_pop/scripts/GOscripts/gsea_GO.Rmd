@@ -369,7 +369,3 @@ unq_gopath <- unique(gopath_genes$FBgn)
 write.csv(gopath_genes, file = "../../processed/DESEQ/gopath_genes.csv")
 ```
 
-```{r}
-
-```
-

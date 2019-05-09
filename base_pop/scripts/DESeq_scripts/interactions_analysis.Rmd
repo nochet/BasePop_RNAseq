@@ -13,7 +13,7 @@ library(cowplot)
 
 ```{r}
 load(file="../../processed/DESEQ/lrtInt_allPadj.Rda")
-load(file="../../processed/DESEQ/dds.02.Rda")
+load(file="../../processed/DESEQ/dds_deseq.02.Rda")
 
 lrt.intAll[which.min(lrt.intAll$padj),]
 
@@ -26,9 +26,9 @@ counter <-1
 for(jj in ccs)
 {
 
-ww <- which(rownames(dds.02)==gg[jj])
+ww <- which(rownames(dds_deseq.02)==gg[jj])
 
-d <- plotCounts(dds.02, gene=ww, intgroup=c("treatment", "tissue"), 
+d <- plotCounts(dds_deseq.02, gene=ww, intgroup=c("treatment", "tissue"), 
                 returnData=TRUE)
 
 p1<- ggplot(d, aes(x=treatment, y=count, color=tissue)) + 
@@ -41,5 +41,40 @@ counter <- counter+1
 
 pall <- plot_grid(plotlist=ps,nrow=2)
 
-ggsave(pall, filename = "../../plots/Interaction_ex.pdf", height = 8, width=10)
+ggplot2::ggsave(pall, filename = "../../plots/Interaction_ex.pdf", height = 8, width=10)
+```
+
+# Look at candidates
+
+```{r}
+candidates <- read.csv(file="../../processed/DESEQ/cand_genes.csv")
+load(file="../../processed/DESEQ/dds_deseq.02.Rda")
+
+#candidates[which.min(candidates$padj),]
+
+gg <- candidates$Gene
+
+ccs1 <- c(20:40)
+ps <- vector(mode='list', length=length(ccs1))
+counter <-1
+
+for(jj in ccs1)
+{
+
+ww <- which(rownames(dds_deseq.02)==gg[jj])
+
+d <- plotCounts(dds_deseq.02, gene=ww, intgroup=c("treatment", "tissue"), 
+                returnData=TRUE)
+
+p1<- ggplot(d, aes(x=treatment, y=count, color=tissue)) + 
+  geom_point(position=position_jitter(w=0.1,h=0)) + 
+  scale_y_log10(breaks=c(25,100,400)) +
+  theme(legend.position='none')
+ps[[counter]]<- p1
+counter <- counter+1
+}
+
+pall <- plot_grid(plotlist=ps,nrow=5,ncol = 4)
+
+ggplot2::ggsave(pall, filename = "../../plots/Interaction_cand1.pdf", height = 8, width=10)
 ```
