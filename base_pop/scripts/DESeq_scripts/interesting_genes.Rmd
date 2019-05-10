@@ -105,23 +105,40 @@ joint <- inner_join(joint, comm_mod_gopath, by="symbol")
 # This list has all genes under QTL - not limiting to 100 Mb
 qtall <- read.csv("../../processed/DESEQ/DEG_QTL/all_diffExpr_underQTL.csv")
 str(qtall)
-# gene symbol
 
 qtmod <- subset(ll,ll$gene_symbol %in% qtall$gname)
 colnames(qtmod)[colnames(qtmod)=="gene_symbol"] <- "symbol"
 qtmod_gopath <- subset(gopath_genes,gopath_genes$symbol %in% qtall$gname)
-qtmod_sigDEGs <- subset(sigDEGs,sigDEGs$symbol %in% qtall$gname)
 
 joint1 <- inner_join(qtmod, qtmod_gopath, by="symbol")
 joint2 <- inner_join(joint1, qtmod_sigDEGs, by="symbol")
 
-
-
 # Common between QTL interval genes and DEGs for treatment
 common1 <- intersect(sigDEGs$symbol, qtgs$gene_symbol)
+```
 
-# Common between WGCNA and DEGs for treatment - useless
-common2 <- intersect(ll$gene_symbol, sigDEGs$symbol)
+# Intersection between QTL and DEGs with FC
+
+```{r}
+qtmod_sigDEGs <- subset(sigDEGs,sigDEGs$symbol %in% qtall$gname) 
+                          
+# Map to fold change table
+qgs <- dplyr::select(qtmod_sigDEGs, Gene,symbol)
+fc <- as.data.frame(all.fc.dat) %>%
+  rownames_to_column(var="Gene") %>%
+    dplyr::select(-c(contains("FCse_"),
+                   contains("stat_"),
+                   contains("p_"),
+                   contains("padj_")),-"log2FoldChange")
+
+qgs <- inner_join(qgs,fc)
+qgss <- subset(ll,ll$gene_symbol %in% qgs$symbol)
+colnames(qgss)[colnames(qgss)=="gene_symbol"] <- "symbol"
+qgs <- inner_join(qgs,qgss)
+qgs <- qgs %>% mutate_if(is.numeric, round, digits = 6)
+
+
+
 ```
 
 # Sirtuins and FOXO pathway genes
@@ -201,7 +218,7 @@ indy1 <- subset(ll, ll$Gene=="FBgn0052027")
 indy3$pathway <- "Indy"
 ```
 
-
+# Candidates
 
 ```{r}
 candids <- rbind(fox2,tor3,iis3)
@@ -229,7 +246,7 @@ cgs <- cgs %>% mutate_if(is.numeric, round, digits = 6)
 write.csv(cgs, file = "../../processed/DESEQ/cand_genes.csv" )
 ```
 
-60 hits in DEGs (i.e. 50 unique genes)
+47 hits in DEGs (i.e. 38 unique genes)
 
 # Gene summaries
 ```{r}
