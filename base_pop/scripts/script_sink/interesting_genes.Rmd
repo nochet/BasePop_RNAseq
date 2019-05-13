@@ -132,12 +132,15 @@ fc <- as.data.frame(all.fc.dat) %>%
                    contains("padj_")),-"log2FoldChange")
 
 qgs <- inner_join(qgs,fc)
+
+# Add module names
 qgss <- subset(ll,ll$gene_symbol %in% qgs$symbol)
 colnames(qgss)[colnames(qgss)=="gene_symbol"] <- "symbol"
 qgs <- inner_join(qgs,qgss)
-qgs <- qgs %>% mutate_if(is.numeric, round, digits = 6)
-
-
+qgs <- qgs %>% mutate_if(is.numeric, round, digits = 6) %>%
+  dplyr::select(1:2,mod,everything(),-FBgn) %>%
+  arrange(mod)
+write.csv(qgs, file = "../../processed/DESEQ/cand_genes_qtl.csv" )
 
 ```
 
@@ -244,6 +247,9 @@ cgs <- inner_join(cgs,fc) %>%
 cgs <- cgs %>% mutate_if(is.numeric, round, digits = 6)
 
 write.csv(cgs, file = "../../processed/DESEQ/cand_genes.csv" )
+
+qgs_cgs <- inner_join(cgs,qgs)
+qgs_cgs<-merge(x=qgs,y=cgs,by="symbol")
 ```
 
 47 hits in DEGs (i.e. 38 unique genes)
