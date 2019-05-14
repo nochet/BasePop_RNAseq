@@ -9,7 +9,63 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+library(AnnotationDbi)
+library(org.Dm.eg.db)
+```
 
+# Data
+
+```{r}
+#  
+FC <- read.csv("../../processed/DESEQ/GO/sigDEGs_for_DAVID.csv", 
+                 stringsAsFactors = FALSE)
+FC <- dplyr::select(FC, -X)
+
+
+sigGeneList <- FC
+# Filter genes that pass absolute log (base2) fold change >= 4 and FDR (BH) Q<=0.0001
+#log2FCcutoff <- 1.5
+#BHcutoff <- 0.05
+# sigGeneList <- subset(FC, abs(FC$log2FoldChange)>=log2FCcutoff & padj<=BHcutoff)[,1]
+```
+
+# Enrichment analysis
+
+```{r}
+# Enrichment cut-off
+enrichBcutoff <- 0.05
+DAVID <- subset(sigGeneList, Benjamini<enrichBcutoff)
+DAVID <- DAVID[,c(1,2,3,6)]
+
+
+#Pull out only terms with WNT genes
+#DAVID <- DAVID[grep("WNT", DAVID[,4]),]
+#Create a new dataframe that has '1' for when the gene is part of a term, and '0' when not
+
+annGSEA <- data.frame(row.names=sigGeneList)
+for (j in 1:length(sigGeneList))
+{
+    #Create a matching pattern to ensure genes match exactly
+    #   ^GENE,  --> Match at beginning of matching string
+    #   , GENE$ --> Match at end of matching string
+    #    GENE,  --> Match between first and last gene in matching string
+    gene <- sigGeneList[j]
+    pattern <- paste("^", gene, ", |, ", gene, "$| ", gene, ",", sep="")
+    for (k in 1:nrow(DAVID))
+    {
+        if (any(grepl(pattern, DAVID$Genes[k])))
+        {
+            annGSEA[j,k] <- 1
+        }
+else {
+            annGSEA[j,k] <- 0
+        }
+} }
+  colnames(annGSEA) <- DAVID[,2]
+  #Remove terms with no overlapping genes
+  annGSEA <- annGSEA[,apply(annGSEA, 2, mean)!=0]
+  #Remove genes with no overlapping terms
+  annGSEA <- annGSEA[apply(annGSEA, 1, mean)!=0,]
 ```
 
 # Convert FBgn ids of DEGs to FlyBase annotation ids 

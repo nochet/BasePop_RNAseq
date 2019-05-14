@@ -137,6 +137,8 @@ sigDEGs$symbol = mapIds(org.Dm.eg.db,
                      multiVals="first")
 head(sigDEGs)
 
+write.csv(sigDEGs, "../../processed/DESEQ/GO/sigDEGs_for_DAVID.csv")
+
 qtl_sigDEGs <- inner_join(sigDEGs,qtall, by=c("Gene"="FBgn"))
 
 # Check shrinked FC for these
