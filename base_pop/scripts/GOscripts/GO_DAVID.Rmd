@@ -16,39 +16,53 @@ library(org.Dm.eg.db)
 # Data
 
 ```{r}
-#  
-FC <- read.csv("../../processed/DESEQ/GO/sigDEGs_for_DAVID.csv", 
-                 stringsAsFactors = FALSE)
-FC <- dplyr::select(FC, -X)
+# Background List: 12614 genes from DESeq
 
+load("../../processed/DESEQ/all_fc_dat.rda")
+genes2go <- as.data.frame(all.fc.dat)
 
-sigGeneList <- FC
-# Filter genes that pass absolute log (base2) fold change >= 4 and FDR (BH) Q<=0.0001
-#log2FCcutoff <- 1.5
-#BHcutoff <- 0.05
-# sigGeneList <- subset(FC, abs(FC$log2FoldChange)>=log2FCcutoff & padj<=BHcutoff)[,1]
+# List to test enrichment: 2475 genes
+sigDEGs <- read.csv("../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv",
+                    stringsAsFactors = FALSE)
+sigDEGs$Gene <- gsub('FBgn', 'FBGN', sigDEGs$Gene)
+
+# Get both lists to DAVID online v.6.8
+genes2go <- genes2go$X
+rownames(genes2go) <- gsub('FBgn', 'FBGN', rownames(genes2go))
+sigs <- sigDEGs$Gene
 ```
+Ref: https://www.biostars.org/p/299161/
+Procedure online
+1. Upload list of 2475 genes to enrich
+2. Upload background list of 12614 - all genes with >1 transcript (/DESEQ/rlogtrt_batchCor.csv)
+3. Select the identifier - FLYBASE
+4. Select 'Gene List'
+5. Select 'Bakground List'
+6. Select all repositories against to perform enrichment (i.e. GO BP, MF, and CC) 
+7. Select Functional Annotation Chart
+
 
 # Enrichment analysis
 
 ```{r}
+FC <- read.csv("../../processed/DESEQ/GO/David_all_lrtTreat_fbgn.csv", 
+                 stringsAsFactors = FALSE)
+
+sigGeneList <- FC
+
+log2FCcutoff <- 1.5
+BHcutoff <- 0.05
+sigGeneList <- subset(sigDEGs, abs(log2FoldChange)>=log2FCcutoff & padj<=BHcutoff)[,1]
+
 # Enrichment cut-off
 enrichBcutoff <- 0.05
-DAVID <- subset(sigGeneList, Benjamini<enrichBcutoff)
+DAVID <- subset(FC, Benjamini<enrichBcutoff)
 DAVID <- DAVID[,c(1,2,3,6)]
 
-
-#Pull out only terms with WNT genes
-#DAVID <- DAVID[grep("WNT", DAVID[,4]),]
-#Create a new dataframe that has '1' for when the gene is part of a term, and '0' when not
-
+# Create a new dataframe that has '1' for when the gene is part of a term, and '0' when not
 annGSEA <- data.frame(row.names=sigGeneList)
 for (j in 1:length(sigGeneList))
 {
-    #Create a matching pattern to ensure genes match exactly
-    #   ^GENE,  --> Match at beginning of matching string
-    #   , GENE$ --> Match at end of matching string
-    #    GENE,  --> Match between first and last gene in matching string
     gene <- sigGeneList[j]
     pattern <- paste("^", gene, ", |, ", gene, "$| ", gene, ",", sep="")
     for (k in 1:nrow(DAVID))
@@ -57,86 +71,110 @@ for (j in 1:length(sigGeneList))
         {
             annGSEA[j,k] <- 1
         }
-else {
+        else
+        {
             annGSEA[j,k] <- 0
         }
-} }
-  colnames(annGSEA) <- DAVID[,2]
+    }
+}
+colnames(annGSEA) <- DAVID[,2]
+  
   #Remove terms with no overlapping genes
   annGSEA <- annGSEA[,apply(annGSEA, 2, mean)!=0]
   #Remove genes with no overlapping terms
   annGSEA <- annGSEA[apply(annGSEA, 1, mean)!=0,]
 ```
 
-# Convert FBgn ids of DEGs to FlyBase annotation ids 
+# Convert FBgn ids symbols 
 
 ```{r}
-# Fbgn annotation file "Genes:fbgn_annotation_ID_fb_2018_04.tsv"
+rownames(annGSEA) <- gsub('FBGN', 'FBgn', rownames(annGSEA))
 
-FbAnnotIds <- read.csv("../../processed/DESEQ/fbgn_annotation_ID_fb_2018_04.csv",
-                 stringsAsFactors = FALSE)
-anotFbgn <- subset(FbAnnotIds, FbAnnotIds$organism_abbreviation=="Dmel")
-anotFbgn <- select(anotFbgn, gene_symbol, primary_FBgn, annotation_ID)
-names(anotFbgn)[2]<-"FBgn_ID"
-#anotFbgn$FBgn_ID <- toupper(anotFbgn$FBgn_ID)
+rownames(annGSEA) = mapIds(org.Dm.eg.db,
+                     keys=as.character(rownames(annGSEA)), 
+                     column="SYMBOL",
+                     keytype="FLYBASE",
+                     multiVals="first")
 
-# Lists of DEGs
-backList <- read.csv(file = "../../processed/DESEQ/gene_background_list.csv") %>%
-  select(-sn)
-fg_trt <- read.csv(file = "../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv") %>%
-  select(Gene,padj)
-fg_int <- read.csv(file = "../../processed/DESEQ/DEGs_lrt.int_0.05.csv") %>%
-  select(Gene,padj)
-
-# Search and merge sigDEGs_int with filtered anotation file
-names(backList)[1] <- "FBgn_ID"
-names(fg_trt)[1] <- "FBgn_ID"
-names(fg_int)[1] <- "FBgn_ID"
-
-backList <- right_join(anotFbgn, backList, by="FBgn_ID", copy=FALSE)
-bl <- select(backList,gene_symbol)
-
-fg_trt <- right_join(backList, fg_trt, copy=FALSE) %>%
-  select(gene_symbol)
-fg_int <- right_join(backList, fg_int, copy=FALSE) %>%
-  select(gene_symbol)
-
-# export files for GO in DAVID
-write.csv(fg_trt, "../../processed/DESEQ/GO/trtList.csv", row.names = FALSE)
-write.csv(fg_int, "../../processed/DESEQ/GO/intList.csv", row.names = FALSE)
-write.csv(bl, "../../processed/DESEQ/GO/backList.csv", row.names = FALSE)
 ```
 
-# Connect to DAVIDWebservice
-# rJava and configuration issues are explained here: https://support.bioconductor.org/p/72188/
+# Generate heatmap and annotation
 
 ```{r}
-# register with webservice at:
-#https://david.ncifcrf.gov/webservice/register.htm
+require(ComplexHeatmap)
+require(circlize)
 
-#Then, paste url with registered email in browser - it should return "true"
-# https://david.ncifcrf.gov/webservice/services/DAVIDWebService/authenticate?args0=ngomae@missouri.edu
+#Match the order of rownames in toptable with that of annGSEA
+topTable <- topTable[which(topTable$Gene %in% rownames(annGSEA)),]
+topTable <- topTable[match(rownames(annGSEA), topTable$Gene),]
 
-# Start the web connection
-library("RDAVIDWebService")
+#Set text and figure dimensions
+geneLab=10
+termLab=8
 
-#david <- DAVIDWebService$new("ngomae@missouri.edu")
-#david$setEmail("ngomae@missouri.edu")
+#Create heatmap annotations
+    #Colour bar for -log (base 10) FDR Q value for DEGs, and fold changes
+    dfMinusLog10FDRGenes <- data.frame(-log10(topTable[which(topTable[,1] %in% rownames(annGSEA)),"padj"]))
+    dfMinusLog10FDRGenes[dfMinusLog10FDRGenes=="Inf"] <- 0
+    dfFoldChangeGenes <- data.frame(topTable[which(topTable[,1] %in% rownames(annGSEA)),"log2FoldChange"])
+    dfGeneAnno <- data.frame(dfMinusLog10FDRGenes, dfFoldChangeGenes)
+    colnames(dfGeneAnno) <- c("DEG\nsignificance\nscore", "Regulation")
+    dfGeneAnno[,2] <- ifelse(dfGeneAnno[,2]>0, "Up-regulated", "Down-regulated")
+    colours <- list("Regulation"=c("Up-regulated"="royalblue", "Down-regulated"="yellow"))
+    haGenes <- rowAnnotation(df=dfGeneAnno, col=colours, width=unit(1,"cm"))
 
-david<-DAVIDWebService(email="ngomae@missouri.edu", url="https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap12Endpoint/")
+    #Colour bar for -log (base 10) Benjamini enrichment Q value
+    dfMinusLog10BenjaminiTerms <- data.frame(-log10(read.table(DAVIDfile, sep="\t", header=TRUE)[which(read.table(DAVIDfile, sep="\t", header=TRUE)$Term %in% colnames(annGSEA)),"Benjamini"]))
+    colnames(dfMinusLog10BenjaminiTerms) <- "GO Term\nsignificance\nscore"
+    haTerms <- HeatmapAnnotation(df=dfMinusLog10BenjaminiTerms,
+        colname=anno_text(colnames(annGSEA), rot=40, just="right", offset=unit(1,"npc")-unit(2,"mm"), gp=gpar(fontsize=termLab)),
+        annotation_height=unit.c(unit(1, "cm"), unit(8, "cm")))
 
-david
-```
+pdf("GO.pdf", width=7, height=6)
+    hmapGSEA <- Heatmap(annGSEA,
 
-# Define Foreground and Background gene lists
+        name="My enrichment",
 
-```{r}
-# Foreground list is subset of background list (i.e. DEGs)
-fgt <- addList(david, fg_trt, idType="REFSEQ_MRNA", listName="isClass", listType="Gene")
+        split=dfGeneAnno[,2],
 
-fgi <- addList(david, fg_int, idType="REFSEQ_MRNA", listName="isClass", listType="Gene")
+        col=c("0"="white", "1"="forestgreen"),
 
-# All genes in the experiment (i.e. all genes from StringTie)
-BG <- addList(david, bl, idType="REFSEQ_MRNA", listName="all", listType="Background")
+        rect_gp=gpar(col="grey85"),
+
+        cluster_rows=T,
+        show_row_dend=T,
+        row_title="Statistically-significant genes",
+        row_title_side="left",
+        row_title_gp=gpar(fontsize=12, fontface="bold"),
+        row_title_rot=0,
+        show_row_names=TRUE,
+        row_names_gp=gpar(fontsize=geneLab, fontface="bold"),
+        row_names_side="left",
+        row_names_max_width=unit(15, "cm"),
+        row_dend_width=unit(10,"mm"),
+
+        cluster_columns=T,
+        show_column_dend=T,
+        column_title="Enriched terms",
+        column_title_side="top",
+        column_title_gp=gpar(fontsize=12, fontface="bold"),
+        column_title_rot=0,
+        show_column_names=FALSE,
+        #column_names_gp=gpar(fontsize=termLab, fontface="bold"),
+        #column_names_max_height=unit(15, "cm"),
+
+        show_heatmap_legend=FALSE,
+
+        #width=unit(12.5, "cm"),
+
+        clustering_distance_columns="euclidean",
+        clustering_method_columns="ward.D2",
+        clustering_distance_rows="euclidean",
+        clustering_method_rows="ward.D2",
+
+        bottom_annotation=haTerms)
+
+    draw(hmapGSEA + haGenes, heatmap_legend_side="right", annotation_legend_side="right")
+dev.off()
 ```
 

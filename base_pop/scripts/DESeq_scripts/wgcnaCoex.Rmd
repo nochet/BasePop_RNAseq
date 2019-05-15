@@ -316,6 +316,7 @@ write.table(module.table_merged, "../../processed/DESEQ/Coexpression/mergedModul
 
 MEcount <- length(colnames(MEs))
 rownames(MEs) <- rownames(phenDat.sva)
+
 write.table(MEs, "../../processed/DESEQ/Coexpression/mergedModuleEigengenes_colorLabel.txt", row.names=F, quote=F, sep="\t")
 modNames = substring(names(MEs), 3)  # remove "ME" at the beginning of module eigengene names
 
