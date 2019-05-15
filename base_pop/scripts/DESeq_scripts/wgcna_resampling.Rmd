@@ -1,0 +1,292 @@
+---
+title: "WGCNA resampling"
+author: "Enoch Ng'oma & Elizabeth King"
+date: "2/5/2019"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2 #defaults to 3 if not specified
+    toc_float: true
+    number_sections: true
+    fig_width: 7
+    fig_height: 6
+    fig_caption: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+library(tidyverse)
+library(WGCNA)
+library(flashClust)
+options(stringsAsFactors = FALSE)
+allowWGCNAThreads()
+#disableWGCNAThreads()
+
+set.seed(341072)
+```
+
+# Prep sample data for WGCNA
+
+```{r}
+
+# Sample info
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+rownames(phenDat.sva) <- phenDat.sva[,1]
+phenDat.sva[,1] <- NULL
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
+
+rlogtrt <- read.csv(file = "../../processed/DESEQ/rlogtrt_batchCor.csv", header=TRUE, row.names=1)
+
+```
+
+# WGCNA Preliminaries
+
+```{r}
+
+# Get data into WGCNA format - genes as columns, samples as rows
+rlogtrt = as.data.frame(t(rlogtrt)) 
+
+```
+
+# Select soft power
+
+```{r}
+
+# Choose a soft threshold power
+powers = c(c(1:10), seq(from = 10, to = 30, by=1)) 
+sft = pickSoftThreshold(rlogtrt, powerVector=powers, 
+                        #corFnc = cor, # see FAQ point 3
+                        networkType="signed",
+                        verbose = 5)
+
+```
+
+# Construct a gene co-expression matrix and generate modules
+# softPower threshold explained here: https://horvath.genetics.ucla.edu/html/CoexpressionNetwork/Rpackages/WGCNA/faq.html
+
+```{r}
+
+# Build the adjacency "correlation" matrix
+pe <- sft$powerEstimate
+adjc = adjacency(rlogtrt, power=pe, type="signed")
+
+# Topological overlap matrix (TOM) of the adjacency matrix
+TOM = TOMsimilarity(adjc, TOMType="signed") # specify network type
+
+# Calculate the corresponding dissimilarity
+dissTOM = 1-TOM
+
+# Note: dissTOM calc minimizes effects of noise and spurious associations
+```
+
+# Detect modules
+
+```{r}
+# Hierarchical clustering of the genes based on TOM dissimilarity
+geneTree = flashClust(as.dist(dissTOM), method = "average")
+
+# Set minimum number of genes in a module
+minModuleSize = 30
+
+# Module identification using dynamic tree cut algorithm
+dynamicMods = cutreeDynamic(dendro = geneTree,
+                            distM = dissTOM, 
+                            deepSplit = 2,
+                            pamRespectsDendro = FALSE, 
+                            minClusterSize = minModuleSize)
+
+dynamicColors= labels2colors(dynamicMods)
+                            
+```
+
+# Quantify module similarity by eigengene correlation
+
+```{r}
+# Calculate eigengenes
+MEList = moduleEigengenes(rlogtrt, 
+                         colors= dynamicColors,
+                         softPower = pe)
+                         
+MEs = MEList$eigengenes
+
+# Calculate dissimilarity of module eigengenes
+MEDiss = 1-cor(MEs);
+
+# Cluster module eigengenes
+METree = flashClust(as.dist(MEDiss), method= "average")
+
+# Set threshold for merging modules 
+# Can choose no merge i.e. MEDissThres=0.0)
+# Merge modules that are 85% similar
+MEDissThres = 0.10 # 0.05 is identical Dynamic Tree Cut
+
+# Call automatic merging function
+merge = mergeCloseModules(rlogtrt, 
+                          dynamicColors, 
+                          cutHeight= MEDissThres, 
+                          verbose =3)
+
+mergedColors = merge$colors;
+mergedMEs = merge$newMEs;
+
+moduleColors = mergedColors
+module.table_merged <- as.data.frame(table(moduleColors))
+
+obs.dat <- data.frame("FBgn" = colnames(rlogtrt), "ModID"= mergedColors, stringsAsFactors = FALSE)
+
+```
+
+
+## Set up resampling
+
+```{r}
+
+samps <- row.names(rlogtrt)
+
+niter <- 100
+
+out.dat <- matrix(NA, nrow(obs.dat), niter)
+
+ME.list <- vector(mode="list", length=niter)
+
+for(ii in 1:niter)
+{
+toc <- Sys.time()
+
+sub.samps <- c( 
+sample(samps[seq(1,18, by=3)],4),
+sample(samps[seq(2,18, by=3)],4),
+sample(samps[seq(3,18, by=3)],4),
+sample(samps[seq(19,36, by=3)],4),
+sample(samps[seq(20,36, by=3)],4),
+sample(samps[seq(21,36, by=3)],4),
+sample(samps[seq(37,54, by=3)],4),
+sample(samps[seq(38,54, by=3)],4),
+sample(samps[seq(39,54, by=3)],4))
+
+rlogtrt_sub <- rlogtrt[sub.samps,]
+
+# Choose a soft threshold power
+powers = c(c(1:10), seq(from = 10, to = 30, by=1)) 
+sft = pickSoftThreshold(rlogtrt_sub, powerVector=powers, 
+                        #corFnc = cor, # see FAQ point 3
+                        networkType="signed",
+                        verbose = 5)
+
+
+# Build the adjacency "correlation" matrix
+pe <- sft$powerEstimate
+adjc = adjacency(rlogtrt_sub, power=pe, type="signed")
+
+# Topological overlap matrix (TOM) of the adjacency matrix
+TOM = TOMsimilarity(adjc, TOMType="signed") # specify network type
+
+# Calculate the corresponding dissimilarity
+dissTOM = 1-TOM
+
+# Hierarchical clustering of the genes based on TOM dissimilarity
+geneTree = flashClust(as.dist(dissTOM), method = "average")
+
+# Set minimum number of genes in a module
+minModuleSize = 30
+
+# Module identification using dynamic tree cut algorithm
+dynamicMods = cutreeDynamic(dendro = geneTree,
+                            distM = dissTOM, 
+                            deepSplit = 2,
+                            pamRespectsDendro = FALSE, 
+                            minClusterSize = minModuleSize)
+dynamicColors= labels2colors(dynamicMods)
+
+# Calculate eigengenes
+MEList = moduleEigengenes(rlogtrt_sub, 
+                         colors= dynamicColors,
+                         softPower = pe)
+                         
+MEs = MEList$eigengenes
+
+# Calculate dissimilarity of module eigengenes
+MEDiss = 1-cor(MEs);
+
+# Cluster module eigengenes
+METree = flashClust(as.dist(MEDiss), method= "average")
+
+# Set threshold for merging modules 
+# Can choose no merge i.e. MEDissThres=0.0)
+# Merge modules that are 85% similar
+MEDissThres = 0.10 # 0.05 is identical Dynamic Tree Cut
+
+# Call automatic merging function
+merge = mergeCloseModules(rlogtrt_sub, 
+                          dynamicColors, 
+                          cutHeight= MEDissThres, 
+                          verbose =3)
+
+mergedColors = merge$colors;
+mergedMEs = merge$newMEs;
+
+moduleColors = mergedColors
+module.table_merged <- as.data.frame(table(moduleColors))
+
+out.dat[,ii] <- mergedColors
+ME.list[[ii]] <- mergedMEs
+tic <- Sys.time()
+cat(ii,"\t",tic-toc, "\n")
+
+}
+
+save(out.dat, file="../../processed/DESEQ/Coexpression/Resample_WGCNA_mods.rda")
+save(ME.list, file="../../processed/DESEQ/Coexpression/Resample_WGCNA_eigen.rda")
+
+```
+
+```{r}
+
+load(file="../../processed/DESEQ/Coexpression/Resample_WGCNA_mods.rda")
+row.names(out.dat) <- obs.dat$FBgn
+
+prop.main <- matrix(NA, length(unique(obs.dat$ModID)),niter)
+row.names(prop.main)<-unique(obs.dat$ModID) 
+
+rate.dat <- matrix(1,nrow=nrow(out.dat), ncol=ncol(out.dat))
+row.names(rate.dat) <- row.names(out.dat)
+
+for(kk in unique(obs.dat$ModID))
+{
+ss <- obs.dat[obs.dat$ModID == kk,]
+ss.i <- out.dat[ss$FBgn,]
+
+for(ii in 1:niter)
+{
+  prop.main[kk,ii] <- max(table(ss.i[,ii]))/nrow(ss)
+  rate.dat[names(which(ss.i[,ii] != names(which.max(table(ss.i[,ii]))))),ii] <- 0
+}
+
+}
+
+aa <- apply(rate.dat, 1, mean)
+
+nn<-names(which(aa < 0.5))
+
+elim <- obs.dat[obs.dat$FBgn %in% nn,]
+
+write.csv(elim, file="../../processed/DESEQ/Coexpression/Resamp_droppedGenes.csv", row.names=FALSE)
+
+table(elim$ModID)
+
+
+ccs <- seq(0.2,0.9, by=0.05)
+lls <- numeric(length=length(ccs))
+
+for(cc in 1: length(ccs))
+{
+  lls[cc] <- length(aa[which(aa < ccs[cc])])
+}
+
+plot(ccs, lls)
+
+```
