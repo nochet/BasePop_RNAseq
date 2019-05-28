@@ -105,7 +105,9 @@ all.fc.dat <- cbind(all.fc.dat, FC_DRC[,2:6],FC_HSC[,2:6],FC_DRHS[,2:6])
 }
 
 #save(all.fc.dat, file="../../processed/DESEQ/all_fc_dat.rda")
+```
 
+```{r}
 pp.list <- vector(mode='list', length=3)
 names(pp.list) <- organs
 ax.top <- 9
@@ -143,7 +145,8 @@ pp<-ggplot(plot.dat, aes(FoldChangeDR,FoldChangeHS, color=log10(BaseMean))) +
   ylab("Fold Change (HS)")+
   xlab("Fold Change (DR)")+
   scale_color_gradientn(colours = rainbow_hcl(8, start = 300, end = 40)) +
-  theme(legend.position="none") +
+  theme(legend.position="none", plot.title = element_text(color="grey50")) +
+  ggtitle("Bodies") +
   my_theme
 }
 
@@ -160,7 +163,8 @@ if(oo=='H')
   ylab("Fold Change (HS)")+
   xlab("Fold Change (DR)")+
     scale_color_gradientn(colours = rainbow_hcl(8, start = 300, end = 40)) +
-  theme(legend.position="none", axis.title.y=element_blank()) +
+    ggtitle("Heads") +
+  theme(legend.position="none", axis.title.y=element_blank(),plot.title = element_text(color="grey50")) +
   my_theme
   
 }
@@ -178,7 +182,8 @@ if(oo=='O')
   ylab("Fold Change (HS)")+
   xlab("Fold Change (DR)")+
   #scale_color_continuous(name=expression("-log"[10]*"(P-value)"))+
-    theme(axis.title.y=element_blank()) +
+    ggtitle("Ovaries") +
+    theme(axis.title.y=element_blank(), plot.title = element_text(color="grey50")) +
     scale_color_gradientn(breaks = c(1:5), labels = 10^seq(1,5), name = "Mean\nExpression",colours = rainbow_hcl(8, start = 300, end = 40)) +
   my_theme
   
@@ -187,16 +192,28 @@ pp.list[[oo]] <- pp
 }
 
 
-fcplot <- plot_grid(pp.list[[1]], pp.list[[2]], pp.list[[3]],nrow=1,labels = c('a.', 'b.', 'c.'), align = 'h',rel_widths = c(1.2,1,1.9), label_size = 10)
-fcplot
+fcplot <- plot_grid(pp.list[[1]], pp.list[[2]], pp.list[[3]],nrow=1,labels = c('a.', 'b.', 'c.'), align = 'h',rel_widths = c(1.2,1.05,1.7), label_size = 10)
+#fcplot
 
-#ggsave(fcplot, file="../../plots/FC_all.pdf",width=6.5,height=2.1)
+ggsave(fcplot, file="../../plots/FC_all.pdf",width=6.5,height=2.1)
+```
 
+```{r}
 
 ##Volcanos
 st.ind <- 7
 voc.list <- vector(mode="list", length=9)
 
+p.titles <- c("Bodies:\nDR vs. C",
+              "Bodies:\nHS vs. C",
+              "Bodies:\nDR vs. HS",
+              "Heads:\nDR vs. C",
+              "Heads:\nHS vs. C",
+              "Heads:\nDR vs. HS",
+              "Ovaries:\nDR vs. C",
+              "Ovaries:\nHS vs. C",
+              "Ovaries:\nDR vs. HS")
+  
 for(jj in 1:9)
 {
 
@@ -212,6 +229,8 @@ pp <- ggplot(na.omit(plot.dat), aes(y=-log10(padj), x=FC, color=log10(baseMean))
   xlab(expression("log"[2]*"(FC)"))+
   xlim(c(-9,9)) +
   ylim(c(0,51)) +
+  ggtitle(p.titles[jj]) +
+  theme(plot.title = element_text(color="grey50"))+
   my_theme +
   scale_color_gradientn(breaks = c(1:5), labels = 10^seq(1,5), name = "Mean\nExpression",colours = rainbow_hcl(8, start = 300, end = 40)) 
   
@@ -232,7 +251,7 @@ pp <- ggplot(na.omit(plot.dat), aes(y=-log10(padj), x=FC, color=log10(baseMean))
 vocplot <- plot_grid(plotlist=voc.list,nrow=3,labels = c('a.', 'b.', 'c.','d.', 'e.', 'f.','g.', 'h.', 'i.'),rel_widths = c(1.3,1.1,1.8),rel_heights = c(1,1,1.2), hjust= c(rep(c(-1,rep(1,2)),3)), label_size = 10)
 
 
-#ggsave(vocplot, file="../../plots/Voc_all.pdf",width=6.5,height=5)
+ggsave(vocplot, file="../../plots/Voc_all.pdf",width=6.5,height=6)
 
 
 ```
