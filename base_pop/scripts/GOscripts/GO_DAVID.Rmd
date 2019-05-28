@@ -28,7 +28,6 @@ sigDEGs$Gene <- gsub('FBgn', 'FBGN', sigDEGs$Gene)
 
 # Get both lists to DAVID online v.6.8
 genes2go <- genes2go$X
-rownames(genes2go) <- gsub('FBgn', 'FBGN', rownames(genes2go))
 sigs <- sigDEGs$Gene
 ```
 Ref: https://www.biostars.org/p/299161/
@@ -50,7 +49,8 @@ FC <- read.csv("../../processed/DESEQ/GO/David_all_lrtTreat_fbgn.csv",
 
 sigGeneList <- FC
 
-log2FCcutoff <- 1.5
+#log2FCcutoff <- 1.5 #GO_1
+log2FCcutoff <- 1.0 #GO_2
 BHcutoff <- 0.05
 sigGeneList <- subset(sigDEGs, abs(log2FoldChange)>=log2FCcutoff & padj<=BHcutoff)[,1]
 
@@ -85,19 +85,6 @@ colnames(annGSEA) <- DAVID[,2]
   annGSEA <- annGSEA[apply(annGSEA, 1, mean)!=0,]
 ```
 
-# Convert FBgn ids symbols 
-
-```{r}
-rownames(annGSEA) <- gsub('FBGN', 'FBgn', rownames(annGSEA))
-
-rownames(annGSEA) = mapIds(org.Dm.eg.db,
-                     keys=as.character(rownames(annGSEA)), 
-                     column="SYMBOL",
-                     keytype="FLYBASE",
-                     multiVals="first")
-
-```
-
 # Generate heatmap and annotation
 
 ```{r}
@@ -105,18 +92,34 @@ require(ComplexHeatmap)
 require(circlize)
 
 #Match the order of rownames in toptable with that of annGSEA
-topTable <- topTable[which(topTable$Gene %in% rownames(annGSEA)),]
-topTable <- topTable[match(rownames(annGSEA), topTable$Gene),]
+sigDEGs <- sigDEGs[which(sigDEGs$Gene %in% rownames(annGSEA)),]
+sigDEGs <- sigDEGs[match(rownames(annGSEA), sigDEGs$Gene),]
 
 #Set text and figure dimensions
 geneLab=10
 termLab=8
 
+# Conver ids in both objects
+rownames(annGSEA) <- gsub('FBGN', 'FBgn', rownames(annGSEA))
+rownames(annGSEA) = mapIds(org.Dm.eg.db,
+                     keys=as.character(rownames(annGSEA)), 
+                     column="SYMBOL",
+                     keytype="FLYBASE",
+                     multiVals="first")
+
+sigDEGs$Gene <- gsub('FBGN', 'FBgn', sigDEGs$Gene)
+sigDEGs$Gene = mapIds(org.Dm.eg.db,
+                     keys=as.character(sigDEGs$Gene), 
+                     column="SYMBOL",
+                     keytype="FLYBASE",
+                     multiVals="first")
+
+
 #Create heatmap annotations
     #Colour bar for -log (base 10) FDR Q value for DEGs, and fold changes
-    dfMinusLog10FDRGenes <- data.frame(-log10(topTable[which(topTable[,1] %in% rownames(annGSEA)),"padj"]))
+    dfMinusLog10FDRGenes <- data.frame(-log10(sigDEGs[which(sigDEGs[,1] %in% rownames(annGSEA)),"padj"]))
     dfMinusLog10FDRGenes[dfMinusLog10FDRGenes=="Inf"] <- 0
-    dfFoldChangeGenes <- data.frame(topTable[which(topTable[,1] %in% rownames(annGSEA)),"log2FoldChange"])
+    dfFoldChangeGenes <- data.frame(sigDEGs[which(sigDEGs[,1] %in% rownames(annGSEA)),"log2FoldChange"])
     dfGeneAnno <- data.frame(dfMinusLog10FDRGenes, dfFoldChangeGenes)
     colnames(dfGeneAnno) <- c("DEG\nsignificance\nscore", "Regulation")
     dfGeneAnno[,2] <- ifelse(dfGeneAnno[,2]>0, "Up-regulated", "Down-regulated")
@@ -124,13 +127,13 @@ termLab=8
     haGenes <- rowAnnotation(df=dfGeneAnno, col=colours, width=unit(1,"cm"))
 
     #Colour bar for -log (base 10) Benjamini enrichment Q value
-    dfMinusLog10BenjaminiTerms <- data.frame(-log10(read.table(DAVIDfile, sep="\t", header=TRUE)[which(read.table(DAVIDfile, sep="\t", header=TRUE)$Term %in% colnames(annGSEA)),"Benjamini"]))
+    dfMinusLog10BenjaminiTerms <- data.frame(-log10(read.csv("../../processed/DESEQ/GO/David_all_lrtTreat_fbgn.csv", header=TRUE)[which(read.csv("../../processed/DESEQ/GO/David_all_lrtTreat_fbgn.csv", header=TRUE)$Term %in% colnames(annGSEA)),"Benjamini"]))
     colnames(dfMinusLog10BenjaminiTerms) <- "GO Term\nsignificance\nscore"
     haTerms <- HeatmapAnnotation(df=dfMinusLog10BenjaminiTerms,
         colname=anno_text(colnames(annGSEA), rot=40, just="right", offset=unit(1,"npc")-unit(2,"mm"), gp=gpar(fontsize=termLab)),
         annotation_height=unit.c(unit(1, "cm"), unit(8, "cm")))
 
-pdf("GO.pdf", width=7, height=6)
+pdf("../../plots/DAVID_GO_2.pdf", width=7, height=6)
     hmapGSEA <- Heatmap(annGSEA,
 
         name="My enrichment",
