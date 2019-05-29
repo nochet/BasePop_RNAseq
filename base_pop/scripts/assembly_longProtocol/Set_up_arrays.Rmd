@@ -30,11 +30,11 @@ for(ii in 1:length(ffs))
 {
 st.s <- "hisat2 --dta -q -x indexes/bdgp6_tran/genome_tran -U " 
 
-st.p <- paste("/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/run",run,"/",sep="")
+st.p <- paste("/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/run",run,"/",sep="")
 
 outf <- paste("/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotsams/",strsplit(ffs[ii], ".", fixed=TRUE)[[1]][1],"_run",run,sep="")
 
-cat(paste(st.s, st.p, ffs[ii], " -S ", outf,".sam",sep=""),"\n", file=paste("S01_Align_cmd_run",run,".txt",sep=""),append=TRUE)
+cat(paste(st.s, st.p, ffs[ii], " -S ", outf,".sam",sep=""),"\n", file=paste("git S01_Align_cmd_run",run,".txt",sep=""),append=TRUE)
 
 ll<- c(ll,paste(strsplit(ffs[ii], ".", fixed=TRUE)[[1]][1],"_run",run,sep=""))
 
