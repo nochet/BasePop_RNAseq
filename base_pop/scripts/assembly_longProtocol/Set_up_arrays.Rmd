@@ -28,7 +28,7 @@ ffs <- list.files(paste("/home/kingeg/Projects/RNA_SEQ_BasePop/Data/run",run,"/"
 
 for(ii in 1:length(ffs))
 {
-st.s <- "hisat2 --dta -q -x indexes/bdgp6_tran/genome_tran -U " 
+st.s <- "hisat2 --dta -q -x indexes/bdgp6_tran -U " 
 
 st.p <- paste("/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/run",run,"/",sep="")
 
