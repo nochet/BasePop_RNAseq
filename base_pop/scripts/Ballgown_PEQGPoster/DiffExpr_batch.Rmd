@@ -1,0 +1,109 @@
+---
+title: "Control for batch and do differential expression"
+author: "Enoch Ng'oma"
+date: "5/7/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#load R packagees:
+library(tidyverse)
+library(cowplot)
+library(reshape)
+#library(ggthemes)
+library(sva)
+#library(pamr)
+#library(limma)
+#library(DESeq2)
+
+set.seed(3176133)
+
+#register(SerialParam()) #specify to use one core, not more
+```
+
+# Load data
+
+```{r}
+# Expression data
+gfpkm_all <- read.csv("../../processed/results/ballG_all_results/nolog_gfpkm_all.csv")
+
+nolog_gfpkm_all <- as.matrix(gfpkm_all)
+
+# sample descriprions csv
+phenDat <- read.csv("../../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
+names(phenDat)[5]<-"batch"
+```
+
+# svaseq
+# svaseq: Moderated log link sva (i.e. log(g + c; c=1)
+
+```{r}
+# svaseq
+mod <- model.matrix(~as.factor(treatment) + 
+                              as.factor(tissue) + 
+                              as.factor(batch), 
+                              data=phenDat)
+
+mod0 <- model.matrix(~as.factor(batch), data=phenDat) 
+
+# calculate number of surrogate variables
+n.sv <- num.sv(nolog_gfpkm_all, mod, method = "be", B = 5)
+print(c("Calculated number of significant SVs = ", n.sv))
+
+svobj <- svaseq(nolog_gfpkm_all, mod, mod0, n.sv=n.sv, B = 5) 
+# compare with vfilter inluded
+
+svseq <- svaseq(nolog_gfpkm_all, mod, mod0,  
+                 n.sv = n.sv, controls = NULL, 
+                 method = c("irw", "two-step","supervised"))
+```
+
+# Did svaseq do better than without it?
+
+```{r}
+par(mfrow=c(2,1), mar=c(5,3,3,1))
+stripchart(svobj$sv ~ phenDat$batch, vertical=TRUE, main="SV1")
+abline(h=0)
+```
+
+# Adjust for surrogates, compute p- and q- values
+
+```{r}
+# include surrogates in both full and null models, then get p-vals and q-vals
+modSv = cbind(mod, svobj$sv) 
+
+mod0Sv = cbind(mod0, svobj$sv)
+
+pValuesSv = f.pvalue(nolog_gfpkm_all, modSv, mod0Sv)
+qValuesSv = p.adjust(pValuesSv, method = "BH")
+
+q.vals <- as.data.frame(qValuesSv)
+names(q.vals)[1]<-"qVal"
+q.Sig <- subset(q.vals, qVal < 0.01)
+#9415 genes significant out of 9640??
+```
+
+# Add svs to sample variables
+
+```{r}
+phenDat$SV1 <- svobj$sv
+```
+
+# Differential expression using DESeq
+# needs read counts - integer values
+
+```{r}
+addSVs <- data.frame(row.names=colnames(nolog_gfpkm_all), svseq$sv, 
+                     as.factor(phenDat$batch), as.factor(phenDat$treatment),
+                     as.factor(phenDat$tissue))
+colnames(addSVs) <- c("unsupervised_sv1", "batch", "treatment", "tissue")
+
+dds <- DESeqDataSetFromMatrix(countData=nolog_gfpkm_all, colData=addSVs, 
+                              design= ~ unsupervised_sv1 + batch + treatment +
+                              tissue)
+dds <- DESeq(dds)
+
+```
+

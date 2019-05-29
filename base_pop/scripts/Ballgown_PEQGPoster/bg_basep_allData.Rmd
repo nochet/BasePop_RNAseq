@@ -1,0 +1,305 @@
+---
+title: "Collect stringtie output and analyze DE"
+author: "Enoch Ng'oma"
+date: "May 5, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Differential expression analysis protocol
+
+```{r}
+#R
+#load R version R version 3.2.2
+#load R packagees:
+library(ballgown)
+library(genefilter)
+library(tidyverse)
+library(devtools)
+library(cowplot)
+library(reshape)
+
+
+phenDat <- read.csv("../../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
+```
+
+```{r}
+bg_ballG <- ballgown(dataDir = "../processed/ballG_all", samplePattern = "", pData = phenDat)
+
+# Save .Rda
+save(bg_ballG, file = "../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
+
+```
+
+```{r}
+load("../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
+
+# Dispplay a decsription
+bg_ballG
+```
+
+# Filter to remove low-abundance genes (i.e. those with variance across samples of <=1)
+
+```{r}
+bg_ballG_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TRUE)
+
+# See counts
+bg_ballG_filt
+```
+
+# Identify transcripts that show significant differences between groups
+
+```{r}
+results_ballG_transcripts <- stattest(bg_ballG_filt, feature="transcript",
+        covariate="treatment", meas="FPKM") 
+which(results_ballG_transcripts$qval<0.05)
+```
+
+# Identify genes that show statistically significant differences between groups
+
+```{r}
+results_ballG_genes <- stattest(bg_ballG_filt, feature="gene", 
+                                covariate="treatment",  meas="FPKM")
+which(results_ballG_genes$qval<0.05)
+
+```
+
+# Add gene names and gene IDs to the results_transcripts data frame
+
+```{r}
+results_ballG_transcripts <- data.frame(geneNames=ballgown::transcriptNames(bg_ballG_filt), geneIDs=ballgown::geneIDs(bg_ballG_filt), results_ballG_transcripts)
+
+full_table.ov<-texpr(bg_ballG_filt, 'all')
+```
+
+# Sort results from smallest P value to largest
+
+```{r}
+results_ballG_transcripts = arrange(results_ballG_transcripts,pval) 
+results_ballG_genes = arrange(results_ballG_genes,pval)
+
+# Transfer transcript names fron stringtie (protocol does not output gene names)
+
+indicies.bg <- match(results_ballG_genes$id, texpr(bg_ballG_filt, "all")$gene_id)
+gene_names.bg <- texpr(bg_ballG_filt, "all")$t_name[indicies.bg]
+results_ballG_genes$tname <- gene_names.bg
+
+```
+
+# Write results to csv
+
+```{r}
+write.csv(results_ballG_transcripts, 
+          "../processed/results/ballG_all_results/results_ballG_transcript.csv", row.names=FALSE)
+write.csv(results_ballG_genes, 
+          "../processed/results/ballG_all_results/results_ballG_genes.csv", row.names=FALSE)
+
+```
+
+# Identify transcripts and genes with a q value <0.05
+
+```{r}
+sigQval_ballG_transcripts <- subset(results_ballG_transcripts,results_ballG_transcripts$qval<0.05)
+sigQval_ballG_genes <- subset(results_ballG_genes,results_ballG_genes$qval<0.05)
+write.csv(sigQval_ballG_genes, 
+          "../processed/results/ballG_all_results/sigQval_ballG_genes.csv", row.names=FALSE)
+```
+
+# Plotting
+
+```{r}
+#Set plot settings
+tropical= c('darkorange', 'dodgerblue', 'hotpink', 'limegreen', 'yellow')
+palette(tropical)
+```
+
+# Distribution of gene abundances (FPKM values) across samples (libraries), colored by treatment
+
+```{r}
+fpkm_ballG = texpr(bg_ballG,meas="FPKM")
+fpkm_ballG = log2(fpkm_ballG+1) 
+boxplot(fpkm_ballG,col=as.numeric(phenDat$treatment),las=2,ylab='log2(FPKM+1)')
+```
+
+# Number of transcripts per gene
+
+```{r}
+
+# Load transcript gene indexes from ballgown objects
+t.genes_table_ballG <- indexes(bg_ballG)$t2g
+
+# Plot # of transcripts per gene
+counts.bg <- table(t.genes_table_ballG[,"g_id"])
+bg_one <- length(which(counts.bg==1))
+bg_more <- length(which(counts.bg>1))
+bg_max <- max(counts.bg)
+hist(counts.bg, breaks=50, col="bisque4", xlab="Transcripts per gene",
+main="Distribution of transcript count per gene")
+legend_text=c(paste("Genes with one transcript =", bg_one), paste("Genes with more than one transcript =", bg_more), paste("Max transcripts for single gene = ", bg_max))
+legend("topright", legend_text, lty = NULL)
+```
+
+# Distribution of transcript sizes
+
+```{r}
+full_table.bg<-texpr(bg_ballG, 'all')
+hist(full_table.bg$length, breaks=50, xlab="Transcript length (bp)", main="Distribution of transcript lengths", col="steelblue")
+```
+
+# Visualize expression across libraries
+
+```{r}
+tfpkm_bg<-texpr(bg_ballG_filt, meas="FPKM")
+tfpkm_bg <-log2(tfpkm_bg+1)
+colnames(tfpkm_bg)<-phenDat$id
+
+gfpkm_bg <-gexpr(bg_ballG_filt)
+gfpkm_bg <-log2(gfpkm_bg +1)
+
+
+tbg<- as.data.frame(tfpkm_bg) %>% gather(id, fpkm)
+tbg$treatment <- rep(c("C","DR","HS"), each=18*nrow(tfpkm_bg))
+
+
+b1 <- ggplot(tbg, aes(x=id, y=fpkm,fill=treatment)) +
+  geom_boxplot() +
+  ylab(expression("log"[2]*"(FPKM + 1)"))
+b1 +labs(title="Distribution of FPKMs across head samples",
+        x ="Diet treatment")  
+```
+
+```{r}
+rm <- which(results_ballG_genes$qval<=0.05)
+rowMeans(gfpkm_bg[rm,])
+
+fm<-5
+rmm<-data.frame('FPKM'=gfpkm_bg[rm[fm],], 'Treatment' = rep(c('C','DR','HS'),each=18))
+
+m1 <- ggplot(rmm, aes(x=Treatment, y=FPKM)) +
+  geom_point(position=position_jitter(width = 0.05),color='steelblue', alpha=0.7,size=3) +
+  ylab(expression("log"[2]*"(FPKM + 1)"))
+m1 +labs(title="Gene expression across diet treatments \n for all samples",
+        x ="Diet treatment")
+```
+
+# Heat map
+
+```{r}
+rk<- t(scale(t(gfpkm_bg),center=TRUE,scale=FALSE))
+rk<- rowVars(rk)
+## select the top 250 most variable genes for clustering
+idk<- order(-rk)[1:250]
+
+
+
+library(ComplexHeatmap) 
+
+Heatmap(gfpkm_bg[idk,], name = "log2(FPKM+1)", 
+        show_row_names = FALSE, show_column_names = FALSE, 
+        row_dend_reorder = TRUE, column_dend_reorder = TRUE,
+        clustering_distance_rows = "pearson",
+        clustering_distance_columns = "euclidean",
+        clustering_method_rows = "complete",
+        clustering_method_columns = "complete")
+```
+
+# ggplot simple heat map
+
+```{r}
+rf <- as.character(results_ballG_genes[which(results_ballG_genes$qval<=0.05), 'id'])
+
+gfpkm_bg_diff <-as.data.frame(gfpkm_bg[rf,])
+
+gf <- rowMeans(gfpkm_bg_diff)
+#gfpkm_hds_diff$gname<-rownames(gfpkm_hds_diff)
+gfpkm_bg_diff<-gfpkm_bg_diff[order(gf),]
+gfpkm_bg_diff <- gfpkm_bg_diff[1:5,]
+
+gfpkm_bg_diff$gname<-seq(1,nrow(gfpkm_bg_diff))
+
+bg.long<-melt(gfpkm_bg_diff,id='gname')
+bg.long$variable <- unlist(lapply(strsplit(as.character(bg.long$variable), split=".",fixed=TRUE),function(x) x[2]))
+
+ggplot(bg.long, aes(variable, gname)) +
+  geom_tile(aes(fill = value), colour = "white") + 
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  theme(#axis.text.x = element_blank(),
+        axis.text.y=element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+
+
+```
+
+# add labels to heatmap
+
+```{r}
+df<- data.frame(Diet = phenDat$treatment, Tissue = phenDat$tissue)
+## choose some colors to repesent cell lines and tissues
+library(RColorBrewer)
+
+## how many we need?
+table(df$Diet)
+table(df$Tissue)
+
+##  3 for tissues and 3 for treatments 
+tissue.cols<- brewer.pal(3, "Dark2")
+
+diet.cols<- brewer.pal(3, "Set3")
+
+## make a named vector from two vectors
+diet.cols.assigned<- setNames(diet.cols, unique(as.character(df$Diet)))
+tissue.cols.assigned<- setNames(tissue.cols, unique(as.character(df$Tissue)))
+
+## Heatmap annotation
+ha<- HeatmapAnnotation(df = df, 
+                       col = list(Diet = diet.cols.assigned, 
+                                  Tissue = tissue.cols.assigned))
+
+Heatmap(gfpkm_bg[idk,], name = "log2(FPKM+1)",
+        show_row_names = FALSE, show_column_names = FALSE, 
+        row_dend_reorder = TRUE, column_dend_reorder = TRUE, 
+        clustering_distance_rows = "pearson",
+        clustering_distance_columns = "euclidean",
+        clustering_method_rows = "complete",
+        clustering_method_columns = "complete",
+        top_annotation = ha)
+```
+
+# PCA
+
+```{r}
+# all samples
+X<- t(scale(t(gfpkm_bg),center=TRUE,scale=FALSE))
+sv<- svd(t(X))
+U<- sv$u
+V<- sv$v
+D<- sv$d
+Z<- t(X)%*%V
+
+# put PC1 and PC2 into a dataframe and add the phenotpe info side by side
+pc.dat<- data.frame(phenDat$id, PC1 = Z[,1], PC2 = Z[,2])
+
+pc.dat$Diet <- unlist(lapply(strsplit(as.character(pc.dat$phenDat.id), split="-",fixed=TRUE),function(x) x[1]))
+
+## make figure with ggplot2
+library(ggthemes)
+#e <- rep(c('B','H','O'),each=18)
+name <- phenDat$tissue
+a <- ggplot(pc.dat, aes(x=PC1, y=PC2, col=Diet, label=name)) + 
+        geom_point() + 
+        theme_bw() +
+        theme(panel.border = element_blank(), 
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(), 
+              axis.line.x = element_line(color="black", size = 0.6),
+              axis.line.y = element_line(color="black", size = 0.6))
+a + col 
+#a + geom_label(label = rownames(phenDat$tissue))+
+#a+geom_text()
+```
+
+
