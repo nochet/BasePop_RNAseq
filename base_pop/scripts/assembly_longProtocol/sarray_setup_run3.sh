@@ -30,7 +30,7 @@ echo "### Starting at: $(date) ###"
 # load packages
 module load hisat2/hisat2-2.0.5
 
-COMMANDA=`head -n ${SLURM_ARRAY_TASK_ID} scripts/Align_cmd_run3.txt | tail -n 1` 
+COMMANDA=`head -n ${SLURM_ARRAY_TASK_ID} S01_Align_cmd_run3.txt | tail -n 1` 
 $COMMANDA
 
 
