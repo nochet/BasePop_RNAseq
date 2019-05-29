@@ -43,26 +43,29 @@ Output files: Align_cmd_run1.txt, Align_cmd_run2.txt and Align_cmd_run3.txt
 Copy output .txt files to Lewis Cluster
 
 Commands at the prompt:
-first run test align of two samples to see if it works:
-sbatch --array=1-2 scripts/sarray_setup_run1.sh
+cd to /scripts/assembly_longProtocol/
+
+First run test align of two samples to see if it works:
+  sbatch --array=1-2 sarray_setup_run1.sh
 
 second, run for all samples in a run1:
 
-sbatch --array=1-54 scripts/sarray_setup_run1.sh
+sbatch --array=1-54 sarray_setup_run1.sh
 
 sbatch scripts:
 `sarray_setup_run1.sh`  # 54 samples in run1
 `sarray_setup_run2.sh`  # 54 samples in run2
-`sarray_setup_run2.sh`  # 54 samples in run3
+`sarray_setup_run3.sh`  # 54 samples in run3
 
-Output files: ???.sam (SEE Lewis directory), path???
+Output files are located in /base_pop/processed/dotsams/
 
 Note: can run the three sbatch files at once - the scheduler takes care of resources
 
 
-STEP 2: Samtools (Sort and convert the SAM files to BAM)
 
-example from hisat2 paper:
+STEP 2a: Samtools (Sort and convert SAM files to BAM)
+
+example from Pertea et al 2016:
 $ samtools sort -@ 8 -o ERR188044_chrX.bam ERR188044_chrX.sam
 
 Do Samtools sort in `Set_up_arrays.Rmd` by running `samtools_setup.sh`  
@@ -79,6 +82,7 @@ STEP 2b: Samtools merge (combine transcripts from all runs)
 Do Samtools merge step in `Set_up_arrays.Rmd` by running `???_merge.sh` check lewis
 Output: `S02b_samtools_merge.txt`
 Next, run `samtools_merge.sh` to merge
+
 
 
 STEP 4: StringTie (Assemble and quantify expressed genes and transcripts)
