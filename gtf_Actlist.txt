@@ -1,7 +1,0 @@
-~/MyGitHub/LearnMemTol/LearnMemTolRnaseq/DEseq_LearnMemTol/Data/AH_1_assembled.gtf
-~/MyGitHub/LearnMemTol/LearnMemTolRnaseq/DEseq_LearnMemTol/Data/AH_3_assembled.gtf
-~/MyGitHub/LearnMemTol/LearnMemTolRnaseq/DEseq_LearnMemTol/Data/AL_1_assembled.gtf
-~/MyGitHub/LearnMemTol/LearnMemTolRnaseq/DEseq_LearnMemTol/Data/AL_2_assembled.gtf
-~/MyGitHub/LearnMemTol/LearnMemTolRnaseq/DEseq_LearnMemTol/Data/AL_3_assembled.gtf
-~/MyGitHub/LearnMemTol/LearnMemTolRnaseq/DEseq_LearnMemTol/Data/AL_4_assembled.gtf
-~/MyGitHub/LearnMemTol/LearnMemTolRnaseq/DEseq_LearnMemTol/Data/AL_5_assembled.gtf

@@ -319,22 +319,18 @@ as.list(GOBPANCESTOR[terms])
 
 # Note: GOMFANCESTOR for MF, GOCCANCESTOR, for CC, GOCCCHILDREN, for children
 
-# gots <- go_sets[[1]]
-# gqval05_gots <- gqval05[,"goterm"]
-# gqval05_goterms <- gots[gqval05_gots]
-# 
-# gqval05_goterms <- do.call(rbind.data.frame, gqval05_goterms)
-# gqval05_goterms <- data.frame(sapply(gqval05_goterms,c))
-# gqval05_goterms <- data.frame(Reduce(rbind, gqval05_goterms))
-
 # Write table of pathways and GO terms together
 gqval05 <- gqval05[,1:4]
 colnames(gqval05)[colnames(gqval05)=="goterm"] <- "term"
 colnames(pqval1)[colnames(pqval1)=="pathway"] <- "term"
 path_terms <- rbind(pqval1,gqval05)
-
 write.csv(path_terms, "../../processed/DESEQ/GO/sig_terms.csv") 
 
+# For parent term analysis in QUICKGO
+term_names <- gqval05$term
+term_names <- substr(term_names,1, 10)
+term_names <- paste(term_names,collapse = ",")
+write.table(term_names, file = "../../processed/DESEQ/GO/term_names.txt", row.names = FALSE)
 ```
 
 # Get term genes

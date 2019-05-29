@@ -8,6 +8,19 @@ date: "7/9/2018"
 
 ## Project Record
 
+- Start at the top of the Methods section.
+- When you get to a data analysis step, identify the script that produced it and put an entry in to the project record. You can use subsections- try to use same as in methods or results.
+- Then go through results. Make sure each result has a source entry for the script that made it, including visualizations. 
+- Also, do all of these run? Are the paths correct?
+
+e.g. 
+
+## RNA-seq processing
+Step 1:....
+
+Step 2:....
+
+
 
 
 Genome-wide expression (RNA-seq) of base population
@@ -19,14 +32,15 @@ B. Sequence assembly (ref. Pertea et al 2016)
 `Set_up_arrays.Rmd` - step-by-step protocol as follows:
 
 
+
 STEP 1: Hisat2 (Align reads to reference)
 
-test: align one sample to genome:
+Test: align one sample to genome:
 hisat2 --dta -q -x indexes/bdgp6_tran/genome_tran -U samples/run1/HS-6_O_S53_R1_001.fastq.gzHS-6_O_S53_R1_001.fastq.gz -S HS6O_1.sam >temp.txt 2>error.txt &
 
-Do Step 1 Align in `Set_up_arrays.Rmd`
+Do Step 1 Align in `/base_pop/scripts/assembly_longProtocol/Set_up_arrays.Rmd`
 Output files: Align_cmd_run1.txt, Align_cmd_run2.txt and Align_cmd_run3.txt 
-Copy output files to Lewis Cluster
+Copy output .txt files to Lewis Cluster
 
 Commands at the prompt:
 first run test align of two samples to see if it works:
