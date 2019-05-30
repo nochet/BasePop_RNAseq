@@ -74,7 +74,7 @@ for(ii in un.set)
 ```{r}
 # Assemble transcripts for each sample
 
-cat("", file="S04_stringtie_assemble.txt")
+cat("", file="S03_stringtie_assemble.txt")
 cat("", file="assembled_file_list.txt")
 
 indir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/" 
@@ -85,7 +85,7 @@ base.cmd <- "stringtie -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base
 for(ff in un.set) 
 {
   samp.set <- paste(base.cmd,outdir,ff,"_assembled.gtf ",indir,ff,"_merged.bam",sep="")
-  cat(samp.set,"\n", file="S04_stringtie_assemble.txt",append=TRUE)
+  cat(samp.set,"\n", file="S03_stringtie_assemble.txt",append=TRUE)
    
 # For stringtie merge 
   cat(paste(outdir,ff,"_assembled.gtf",sep=""), "\n",file="mergelist.txt",append=TRUE)

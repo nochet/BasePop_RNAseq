@@ -76,11 +76,12 @@ Output: .bam files located in /base_pop/processed/dotbams/ (on Lewis cluster onl
 
 
 
-STEP 2b: Samtools merge (combine transcripts from all runs)
+STEP 2b: Samtools merge to combine corresponding transcripts from each run
 
-Do Samtools merge (step 2b in `Set_up_arrays.Rmd`) by running `???_merge.sh` check lewis
+Do Samtools merge (step 2b in `Set_up_arrays.Rmd`) in R
 Output: `S02b_samtools_merge.txt`
-Next, run `samtools_merge.sh` to merge
+Next, run `sbatch --array=1-2 samtools_merge.sh` using `S02b_samtools_merge.txt` to merge like files
+Output: 54 `x_merged.bam` located in /base_pop/processed/dotbams/
 
 
 
