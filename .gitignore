@@ -9,7 +9,7 @@
 *.md5sum
 *.fastq.gz.md5sum
 *.ctab
-
+*.html
 
 # Compiled source #
 ###################
