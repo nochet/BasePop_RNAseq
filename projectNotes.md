@@ -68,7 +68,7 @@ STEP 2a: Samtools (Sort and convert SAM files to BAM)
 example from Pertea et al 2016:
 $ samtools sort -@ 8 -o ERR188044_chrX.bam ERR188044_chrX.sam
 
-Do Samtools sort in `Set_up_arrays.Rmd` by running `samtools_setup.sh`  
+Do Samtools sort: 1) run `Set_up_arrays.Rmd` in R, 2) run `samtools_setup.sh`  
 Output: `S02_samtools_all.txt`
 Next, run `samtools_all.sh`
 Output: ???dot bams
