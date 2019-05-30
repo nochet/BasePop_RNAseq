@@ -57,7 +57,7 @@ sbatch scripts:
 `sarray_setup_run2.sh`  # 54 samples in run2
 `sarray_setup_run3.sh`  # 54 samples in run3
 
-Output files are located in /base_pop/processed/dotsams/
+Output files are located in /base_pop/processed/dotsams/ (on Lewis cluster only)
 
 Note: can run the three sbatch files at once - the scheduler takes care of resources
 
@@ -68,18 +68,17 @@ STEP 2a: Samtools (Sort and convert SAM files to BAM)
 example from Pertea et al 2016:
 $ samtools sort -@ 8 -o ERR188044_chrX.bam ERR188044_chrX.sam
 
-Do Samtools sort: 1) run `Set_up_arrays.Rmd` in R, 2) run `samtools_setup.sh`  
-Output: `S02_samtools_all.txt`
-Next, run `samtools_all.sh`
-Output: ???dot bams
+In R, do Samtools sort (step 2a in `Set_up_arrays.Rmd`) 
+Output: `S02a_short_samtools.txt` located in /base_pop/scripts/assembly_shortProtocol/
 
-Command at the prompt:
-sbatch --array=1-162 samtools_all.sh
+Next, run `sbatch --array=1-162 samtools_all.sh` for all samples. This reads `S02a_short_samtools.txt` created above.
+Output: .bam files located in /base_pop/processed/dotbams/ (on Lewis cluster only)
+
 
 
 STEP 2b: Samtools merge (combine transcripts from all runs)
 
-Do Samtools merge step in `Set_up_arrays.Rmd` by running `???_merge.sh` check lewis
+Do Samtools merge (step 2b in `Set_up_arrays.Rmd`) by running `???_merge.sh` check lewis
 Output: `S02b_samtools_merge.txt`
 Next, run `samtools_merge.sh` to merge
 
