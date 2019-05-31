@@ -85,14 +85,26 @@ Output: 54 `x_merged.bam` located in /base_pop/processed/dotbams/
 
 
 
-STEP 4: StringTie (Assemble and quantify expressed genes and transcripts)
+STEP 3: StringTie (Assemble and quantify expressed genes and transcripts)
 
-Do StringTie (Assemble) in `Set_up_arrays.Rmd` by running `???.sh` see lewis
-Output: `S04_stringtie_assemble.txt`
-Next, run `stringtie_assemble.sh`
-Output: ?????
+Do Step 3: 'StringTie Assemble and quantify' in `Set_up_arrays.Rmd` in R
+Output: `S03_stringtie_assemble.txt`
+Next, run `sbatch --array=1-54 stringtie_assemble.sh`
+Output: 54 .gtf files located in /base_pop/processed/dotgtfs/
 
-Run perl script to extract more gene ids from StringTie output
+Run `mstrg_prep.pl` to extract more gene ids from StringTie output (MSTRG names)
+Ref: https://github.com/gpertea/stringtie/issues/179
+Script is here: https://gist.github.com/gpertea/b83f1b32435e166afa92a2d388527f4b
+Command: `perl mstrg_prep.pl stringtie_merged.gtf > stringtie_merged_pl.gtf`
+
+
+
+STEP 4: Merge transcripts from all samples
+e.g. `stringtie --merge -p 8 -G ....`
+This step is skipped in the short protocol where novel transcripts are not needed:
+Ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
+
+
 
 STEP 5: gffcompare (Compare transcripts to reference genome - optional)
 step skipped
@@ -348,7 +360,7 @@ https://gist.github.com/gpertea/b83f1b32435e166afa92a2d388527f4b
 
 ### 2018-07-17 (EN)
 
-- Started a new, hopefully streamlined `DiffExpr_batch.Rmd` script. Script with all models tried up to now is pushed to `script_sink/` an `DiffExpr_batch_old.Rmd`
+- Started a new, streamlined `DiffExpr_batch.Rmd` script. Script with all models tried up to now is pushed to `script_sink/` an `DiffExpr_batch_old.Rmd`
 
 ### 2018-07-11 (EN)
 

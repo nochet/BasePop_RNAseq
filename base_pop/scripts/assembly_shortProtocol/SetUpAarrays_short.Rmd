@@ -1,5 +1,5 @@
 ---
-title: "Set_up_array_jobs"
+title: "Set_up_array_jobs for short protocol"
 author: "Enoch Ng'oma"
 date: "4/24/2018"
 output: html_document
@@ -90,12 +90,16 @@ for(ff in un.set)
 # For stringtie merge 
   cat(paste(outdir,ff,"_assembled.gtf",sep=""), "\n",file="mergelist.txt",append=TRUE)
 }
+
+# Run perl step here before proceeding 
+# To extract more gene names from STRG ids
 ```
 
 ## Step 4: StringTie merge transcripts from all samples
 
 ```{r}
-# chunck probably deleted accidentally; remake or use regex
+# step skipped in short protocol
+# see http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
 ```
 
 ## Step 5: Compare transcripts to reference genome (optional)
@@ -114,8 +118,8 @@ cat("", file="S03_abundances_short.txt")
 indir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/bam_merged_runs/" 
 outdir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/scripts/assembly_shortProtocol/" 
 
-# for long protocal
-#base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/stringtie_merged.gtf -o "
+# for short protocol
+base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/genes/dmel-all-r6.18.gtf -o "
 
 for(ff in un.set) 
 {
