@@ -91,22 +91,6 @@ for(ff in un.set)
   cat(paste(outdir,ff,"_assembled.gtf",sep=""), "\n",file="mergelist.txt",append=TRUE)
 }
 
-# Run perl step here before proceeding 
-# To extract more gene names from STRG ids
-```
-
-## Step 4: StringTie merge transcripts from all samples
-
-```{r}
-# step skipped in short protocol
-# see http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
-```
-
-## Step 5: Compare transcripts to reference genome (optional)
-
-```{r}
-# gffcompare
-# step skipped
 ```
 
 # Step 6: StringTie - transcript abundances and table of counts
@@ -116,7 +100,7 @@ cat("", file="S03_abundances_short.txt")
 
 
 indir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/bam_merged_runs/" 
-outdir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/scripts/assembly_shortProtocol/" 
+outdir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/shortProtocol/S03_short_ballg/" 
 
 # for short protocol
 base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/genes/dmel-all-r6.18.gtf -o "

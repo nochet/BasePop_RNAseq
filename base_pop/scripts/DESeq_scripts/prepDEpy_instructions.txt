@@ -1,7 +1,7 @@
 Preparing RNASeq data for DESeq
 
 - Ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
-- Ref p.92-93 Haddok & Dunn book
+- Ref p.92-93 in Haddok SHD & Dunn CW (2011). Practical computing for biologists. Sinauer. MA.
 
 ######
 Steps:

@@ -84,13 +84,20 @@ Next, run `sbatch --array=1-2 samtools_merge.sh` using `S02b_samtools_merge.txt`
 Output: 54 `x_merged.bam` located in /base_pop/processed/dotbams/
 
 
+Novel transcripts not needed for analysis. Therefore we adopt the alternative pipeline for stringtie: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
+
+Instead of merging transcripts from all samples (step 4 Pertea et al, 2016), we get expression estimates separately for each sample by applying the reference annotation to each sample separately.Thus we apply `stringtie -eB` output of 2b (i.e. `x_merged.bam`)
+
+Quote from gpertea commented on Jun 11, 2018
+https://github.com/gpertea/stringtie/issues/179
+"Oh, actually if you are "not interested in novel transcripts", which are indeed complicating things (yet are the whole reason for the "full" protocol with stringtie --merge) then perhaps you would be better off running the "alternate", faster protocol, as mentioned in issue #170 and in StringTie's manual web page? That way you could directly get expression estimates (read counts) for all those ENSMUSG genes separately, for each sample -- by simply using the reference annotation file instead of the merged GTF produced by stringtie --merge. I somehow assumed you knew that was an option.."
 
 STEP 3: StringTie (Assemble and quantify expressed genes and transcripts)
 
 Do Step 3: 'StringTie Assemble and quantify' in `Set_up_arrays.Rmd` in R
 Output: `S03_stringtie_assemble.txt`
 Next, run `sbatch --array=1-54 stringtie_assemble.sh`
-Output: 54 .gtf files located in /base_pop/processed/dotgtfs/
+Output: 54 'sample_name_assembled.gtf' files located in /base_pop/processed/dotgtfs/
 
 Run `mstrg_prep.pl` to extract more gene ids from StringTie output (MSTRG names)
 Ref: https://github.com/gpertea/stringtie/issues/179
@@ -99,22 +106,15 @@ Command: `perl mstrg_prep.pl stringtie_merged.gtf > stringtie_merged_pl.gtf`
 
 
 
-STEP 4: Merge transcripts from all samples
-e.g. `stringtie --merge -p 8 -G ....`
-This step is skipped in the short protocol where novel transcripts are not needed:
-Ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
-
-
-
-STEP 5: gffcompare (Compare transcripts to reference genome - optional)
-step skipped
-
 STEP 6: StringTie (Transcript abundances and table of counts)
+`stringtie -e -B`
 
-Do StringTie transcript abundances in `Set_up_arrays.Rmd` by running `???.sh` see lewis
+Do: StringTie transcript abundances in `Set_up_arrays.Rmd` by running `S03_abundances_short.txt` 
+Next, run `stringt_short_abund.sh`
+
 Output: `S06_abundances.txt`
-Next, run `stringtie_abundances.sh`
-Output: ????
+Next, run `sbatch --array=1-54 stringt_short_abund.sh`
+Output: each of 54 samples directories (e.g. C-1_B) are written to script folder where the sbatch is run. 
 
 STEP 7: Create a csv containing sample ids
 
@@ -296,7 +296,8 @@ Only 200 gene names in type 3 are not represented in type 2. Not sure why for th
 
 Implementing an alternative workflow. A visual of the short protocol is here: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
 
-Run stringtie -eB on the output of samtools -sort ie. (step 2 of Pertea et al, 2016)
+Run stringtie -eB on the output of samtools -sort (ie. 
+step 2 of Pertea et al, 2016)
 
 Gene count tables are written to /processed/S03_short_ballG/ `gene_count_matrix` and `transcript_count_matrix`
 
