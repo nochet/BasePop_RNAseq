@@ -32,7 +32,7 @@ echo "### Starting at: $(date) ###"
 
 module load stringtie/stringtie-1.3.3b
 
-COMMANDA=`head -n ${SLURM_ARRAY_TASK_ID} mergelist.txt | tail -n 1`
+COMMANDA=`head -n ${SLURM_ARRAY_TASK_ID} gtf_shortList.txt | tail -n 1`
 eval $COMMANDA
 
 echo "### Ending at: $(date) ###"
