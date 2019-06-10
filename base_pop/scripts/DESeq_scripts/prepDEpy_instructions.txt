@@ -22,7 +22,7 @@ do:
 Searches and list all .gtf which includes assemb*
 
 - Open gtf_list.txt in TextWrangler [command+F]
-(Note: if on server, sync to git and open on local machine)
+(Note: if on server, scp or sync to git and open on local machine)
 
 In the search window type ^
 In the replace window, type full path where to store the file e.g.: ~/MyGithub/BasePop_RNAseq/scripts/DESeq_scripts/

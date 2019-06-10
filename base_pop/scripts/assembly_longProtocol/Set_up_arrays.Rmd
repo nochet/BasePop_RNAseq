@@ -108,19 +108,19 @@ for(ff in un.set)
 # Step 6: StringTie - transcript abundances and table of counts
 
 ```{r}
-cat("", file="S03_abundances_short.txt")
+cat("", file="S03_abundances_long.txt")
 
 
 indir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/bam_merged_runs/" 
 outdir <- "/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/scripts/assembly_shortProtocol/" 
 
-# for long protocal
+# for long protocal - gets novel transcripts
 #base.cmd <- "stringtie -e -B -p 8 -G /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotbams/stringtie_merged.gtf -o "
 
 for(ff in un.set) 
 {
   cmd.cut <- paste(base.cmd,outdir,ff,"/",ff,"_ballgown.gtf ", indir,ff,"_merged.bam",sep="")
-  cat(cmd.cut,"\n", file="S03_abundances_short.txt",append=TRUE)
+  cat(cmd.cut,"\n", file="S03_abundances_long.txt",append=TRUE)
 }
 ```
 
