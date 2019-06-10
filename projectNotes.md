@@ -144,6 +144,8 @@ STEP 7: Differential gene expression with DESeq2
 
 - Performs likelihood ratio test for several reduced models to identify DEGs
 
+- Compare numbers of DEGs obtained by DESeq2 vs Ballgown
+`/scripts/DESeq_scripts/compare_StringTie_method
 
 ## Project Notes
 
