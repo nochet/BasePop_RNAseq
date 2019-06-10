@@ -21,14 +21,14 @@ do:
 	grep -li assemb *.gtf > ~/MyGithub/BasePop_RNAseq/base_pop/processed/gtf_list.txt
 Searches and list all .gtf which includes assemb*
 
-- Open gtf_list.txt in TextWrangler [command+F]
+- Open gtf_list.txt in TextWrangler
 (Note: if on server, scp or sync to git and open on local machine)
-
+Command+F
 In the search window type ^
 In the replace window, type full path where to store the file e.g.: ~/MyGithub/BasePop_RNAseq/scripts/DESeq_scripts/
 Do Replace All
 This gives full path to each of the .gtf
 
 #While in processed/ (i.e. where directory "ballgown" is located), run:
-#python ../scripts/DESeq_scripts/prepDE.py
+#python ../scripts/DESeq_scripts/prepDE.py (modify path accordingly)
 #Two output matrices are written: `transcript_count_matrix.csv` and `gene_count_matrix.csv`

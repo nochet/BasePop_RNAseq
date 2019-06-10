@@ -36,10 +36,9 @@ cdat2 <- read.csv("../../processed/Old-gene_count_matrix.csv", row.names="gene_i
 
 cdat3 <- read.csv("../../processed/S03_short_ballG/gene_count_matrix.csv", row.names="gene_id")
 
-
-
-
 ```
+
+
 
 ```{r}
 

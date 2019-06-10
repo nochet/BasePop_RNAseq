@@ -104,6 +104,7 @@ Next, run `sbatch --array=1-54 stringt_short_abund.sh`
 
 Output: each of 54 sample directories (e.g. C-1_B, etc) are written to /processed/shortProtocol/S03_short_ballg/. 
 
+---- END OF READ MAPPING ----
 
 
 STEP 4: Create a csv containing sample ids
@@ -112,21 +113,36 @@ Do "Create a csv containing sample ids" in `Set_up_arrays.Rmd`
 Output: `describe_samples.csv`
 
 
+
 STEP5A: BallGown (transcript level differential expression based on transformed transcript or gene counts). Performed, but reported results not based on Ballgown.
 
-STEP5B: DESeq (gene-level differential expression based on read count)
+STEP5B: Prep for DESeq (gene-level, read count-based differential expression )
 Run `prepDESeq.Rmd` by following instructions in `/scripts/DESeq_scripts/prepDEpy_instructions.txt`
 
+
+
 STEP6: Control for batch effects using SVAseq package
-- `dataPrep_batch.Rmd` - data prep for sva
+- `batch_DESeq.Rmd` - data prep for sva
 	- input1: `/processed/describe_samples_batch.csv` 
-	- input2: `/processed/results/ballG_all_results/bg_ballG_all_results.Rda`
-	- output1: `/processed/results/ballG_all_results/log_gfpkm_all.Rda` log-transformed data for sva
-	- output2: `/processed/results/ballG_all_results/nolog_gfpkm_all.Rda` untransformed data for svaseq
-- `DiffExpr_batch.Rmd` - identify and remove batch effects
-	- input: `/processed/results/ballG_all_results/nolog_gfpkm_all.Rda`
-	- output: `svaseq.dat` - an object containing batch-corrected expression data from the sva package
-	
+	- input2: `/processed/shortProtocol/S03_short_matrices/gene_count_matrix.csv`
+	- writes: 1) `/processed/DESEQ/Expr_countData.csv`, a DESeqDataSet based on     design matrix `~ tissue*treatment` which is input into SVASeq
+	- writes: 2) `/processed/DESEQ/sampleDat_with_SV.csv`. Surrogate variables 
+	are appened as additional columns
+
+
+
+STEP 7: Differential gene expression with DESeq2
+- Take the two outputs from step six as input files:
+  - input 1: `/processed/DESEQ/Expr_countData.csv`
+  - input2: `/processed/DESEQ/sampleDat_with_SV.csv`
+
+- Runs two DESeq models:
+  - dds.01: design = ~ SV1 + batch + tissue + treatment
+      saving output `/processed/DESEQ/dds_deseq01.Rda`
+  - dds.02: design = ~ SV1 + batch + tissue*treatment
+      saving output `/processed/DESEQ/dds.02.Rda`
+
+- Performs likelihood ratio test for several reduced models to identify DEGs
 
 
 ## Project Notes
