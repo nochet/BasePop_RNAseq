@@ -32,12 +32,27 @@ DEunderPeak <- function(DEgenes, arm, upper, lower)
 # Data
 
 ```{r}
+
+# check fold changes with Stanley results for bodies?
+# only include peaks for difference QTL?
+
+load(file="../../processed/DESEQ/all_fc_dat.rda")
+load(file="/home/kingeg/Projects/AllocationRILs/InputFiles/FC_DR_Stanley.rda")
+
+
 # gene map table
 gmtable <- read.csv("../../processed/DESEQ/DEG_QTL/gene_map_table.csv", 
                  stringsAsFactors = FALSE)
 which(gmtable$gname == "d")
 gmtable$gname[gmtable$gname == "d"] <- "CG42840" 
 
+gid <- gmtable[gmtable$gname %in% all.dr$id,]
+all.dr <- merge(all.dr, gid[,c("gname","FBgn")],by.y="gname", by.x='id')
+
+rna.dr <- all.fc.dat[,1:11]
+
+mm <- rna.dr[all.dr$FBgn,]
+cor(mm$FC_DR_B[-14], log2(all.dr$mean.dcq[-14]))
 
 # treatment effect DEGs
 DEGs_treat <- read.csv("../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv")
@@ -70,12 +85,23 @@ DEGs_treat[c(214,1257,1668),]
 ```
 
 # DEGs in iis QTL peaks for the effect of treatment
+## Focus on peaks for difference between treatments
 
 ```{r}
 # trans-eQTL
 # to do: extract BCIs programmatically from iis 
 
 load("../../processed/DESEQ/DEG_QTL/all_iisPeak.rda")
+
+#peak pos 9412495
+LinDiscrDRC_2R <- DEunderPeak(merge_treat,  arm="2R", 
+                   upper = 9472495, lower =7712495)
+
+
+
+
+
+
 
 
 
@@ -90,9 +116,7 @@ Ilp5_3L <- DEunderPeak(merge_treat,  arm="X",
 #from IIS_mapping_DFA_byTreat.R
 LinDiscrDR_2R <- DEunderPeak(merge_treat,  arm="2R", 
                    upper = 9632495, lower =6122495)
-#peak pos 9412495
-LinDiscrDRC_2R <- DEunderPeak(merge_treat,  arm="2R", 
-                   upper = 9472495, lower =7712495)
+
 #peak pos 7762495
 
 #from lifespan.R

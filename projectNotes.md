@@ -121,8 +121,9 @@ Run `prepDESeq.Rmd` by following instructions in `/scripts/DESeq_scripts/prepDEp
 
 
 
-STEP6: Control for batch effects using SVAseq package
-- `batch_DESeq.Rmd` - data prep for sva
+##### STEP6: Control for batch effects using SVAseq package
+
+  - `batch_DESeq.Rmd` - data prep for sva
 	- input1: `/processed/describe_samples_batch.csv` 
 	- input2: `/processed/shortProtocol/S03_short_matrices/gene_count_matrix.csv`
 	- writes: 1) `/processed/DESEQ/Expr_countData.csv`, a DESeqDataSet based on     design matrix `~ tissue*treatment` which is input into SVASeq
