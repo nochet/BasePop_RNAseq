@@ -21,7 +21,7 @@ set.seed(38142903)
 
 ```{r}
 # Read in data frame and fill in empty spaces in column 2 with value in 1
-cdat1 <- read.csv("../../processed/gene_count_matrix_pl3c.csv", stringsAsFactors = FALSE)
+cdat1 <- read.csv("../../processed/DESEQ/Expr_countData.csv", stringsAsFactors = FALSE)
 
 #dds.g <- which(duplicated(cdat1$gene_id0))
 #cdat1[cdat1$gene_id0==cdat1$gene_id0[dds.g[6]],1:6]
@@ -32,9 +32,9 @@ cdat1 <- cdat1[c(2, 1, 3:57)]
 rownames(cdat1) <- cdat1[,1]
 cdat1[,1:3] <- NULL
 
-cdat2 <- read.csv("../../processed/Old-gene_count_matrix.csv", row.names="gene_id")
+cdat2 <- read.csv("../../processed/longProtocol/Old-gene_count_matrix.csv", row.names="gene_id")
 
-cdat3 <- read.csv("../../processed/S03_short_ballG/gene_count_matrix.csv", row.names="gene_id")
+cdat3 <- read.csv("../../processedshortProtocol/S03_short_ballG/gene_count_matrix.csv", row.names="gene_id")
 
 ```
 
@@ -124,7 +124,7 @@ ggplot(phenDat.sva, aes(x=SV1, y=SV2)) +
 
 
 ```{r}
-cdat1 <- read.csv("../../processed/gene_count_matrix_pl3c.csv", stringsAsFactors = FALSE)
+cdat1 <- read.csv("../../processed/longProtocol/gene_count_matrix_pl3c.csv", stringsAsFactors = FALSE)
 
 dds.g <- which(duplicated(cdat1$gene_id0))
 #cdat1[cdat1$gene_id0==cdat1$gene_id0[dds.g[6]],1:6]

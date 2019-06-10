@@ -342,7 +342,7 @@ MEs0 = moduleEigengenes(rlogtrt, moduleColors)$eigengenes
 MEs = orderMEs(MEs0)
 write.table(MEs0, file="../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t", row.names = FALSE)
 
-write.table(MEs0, file="../../processed/DESEQ/Coexpression/WCGNA_eigenGO.txt", sep="\t", row.names = TRUE)
+#write.table(MEs0, file="../../processed/DESEQ/Coexpression/WCGNA_eigenGO.txt", sep="\t", row.names = TRUE)
 
 ```
 

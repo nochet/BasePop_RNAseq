@@ -253,18 +253,5 @@ vocplot <- plot_grid(plotlist=voc.list,nrow=3,labels = c('a.', 'b.', 'c.','d.', 
 
 ggsave(vocplot, file="../../plots/Voc_all.pdf",width=6.5,height=6)
 
-
-```
-
-## Interesting genes
-
-```{r}
-genes <- as.data.frame(all.fc.dat)
-DRC_B <-  select(genes, FC_DR_B,padj_DR_B)
-DRC_B$y=-log10(DRC_B$padj)
-
-#DRC_B_up <- DRC_B[abs(DRC_B$FC_DR_B > 2 & DRC_B$y > 10),]
-
-
 ```
 
