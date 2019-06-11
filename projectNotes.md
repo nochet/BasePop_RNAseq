@@ -8,120 +8,100 @@ date: "7/9/2018"
 
 ## Project Record
 
-- Start at the top of the Methods section.
-- When you get to a data analysis step, identify the script that produced it and put an entry in to the project record. You can use subsections- try to use same as in methods or results.
-- Then go through results. Make sure each result has a source entry for the script that made it, including visualizations. 
-- Also, do all of these run? Are the paths correct?
+### RNA read mapping
 
-e.g. 
+- Locate these resources:
+1. Download reference files: gtf files from Index of ftp://ftp.flybase.org/genomes/dmel/current/
+2. Sequence assembly (ref. Pertea et al 2016)
+3. `/scripts/assembly_shortProtocol/SetUpArrays_short.Rmd` for use with the short pipeline
+4. `/scripts/assembly_longProtocol/Set_up_arrays.Rmd` for use with the long pipeline (Ballgown)
+- A step-by-step workflow follows:
 
-## RNA-seq processing
-Step 1:....
+#### STEP 1: Align reads to reference - Hisat2
 
-Step 2:....
+- To test, align one sample to genome:
+`hisat2 --dta -q -x indexes/bdgp6_tran/genome_tran -U samples/run1/HS-6_O_S53_R1_001.fastq.gzHS-6_O_S53_R1_001.fastq.gz -S HS6O_1.sam >temp.txt 2>error.txt &`
 
+- Run Step 1 Align in `/base_pop/scripts/assembly_longProtocol/Set_up_arrays.Rmd`
+- Output are 3 text lists of hisat commands: 
+1. `/base_pop/scripts/assembly_longProtocol/S01_Align_cmd_run1.txt`
+2. `/base_pop/scripts/assembly_longProtocol/S02_Align_cmd_run2.txt`
+3. `/base_pop/scripts/assembly_longProtocol/S03_Align_cmd_run3.txt`
 
+- In the terminal, `cd` to `/scripts/assembly_longProtocol/`
 
+- First run test alignment of two samples:
+  `sbatch --array=1-2 sarray_setup_run1.sh`
+- this uses an sbatch script `/scripts/assembly_longProtocol/sarray_setup_run1.sh`
 
-Genome-wide expression (RNA-seq) of base population
+- Second, run for all samples in a `/base_pop/samples/run1/`:
+  `sbatch --array=1-54 sarray_setup_run1.sh`
 
-A. download reference files (EN)
-gtf files downloaded from Index of ftp://ftp.flybase.org/genomes/dmel/current/
+- sbatch scripts available:
+`/scripts/assembly_longProtocol/sarray_setup_run1.sh`  # 54 samples in run1
+`/scripts/assembly_longProtocol/sarray_setup_run2.sh`  # 54 samples in run2
+`/scripts/assembly_longProtocol/sarray_setup_run3.sh`  # 54 samples in run3
 
-B. Sequence assembly (ref. Pertea et al 2016)
-`Set_up_arrays.Rmd` - step-by-step protocol as follows:
-
-
-
-STEP 1: Hisat2 (Align reads to reference)
-
-Test: align one sample to genome:
-hisat2 --dta -q -x indexes/bdgp6_tran/genome_tran -U samples/run1/HS-6_O_S53_R1_001.fastq.gzHS-6_O_S53_R1_001.fastq.gz -S HS6O_1.sam >temp.txt 2>error.txt &
-
-Do Step 1 Align in `/base_pop/scripts/assembly_longProtocol/Set_up_arrays.Rmd`
-Output files: Align_cmd_run1.txt, Align_cmd_run2.txt and Align_cmd_run3.txt 
-Copy output .txt files to Lewis Cluster
-
-Commands at the prompt:
-cd to /scripts/assembly_longProtocol/
-
-First run test align of two samples to see if it works:
-  sbatch --array=1-2 sarray_setup_run1.sh
-
-second, run for all samples in a run1:
-
-sbatch --array=1-54 sarray_setup_run1.sh
-
-sbatch scripts:
-`sarray_setup_run1.sh`  # 54 samples in run1
-`sarray_setup_run2.sh`  # 54 samples in run2
-`sarray_setup_run3.sh`  # 54 samples in run3
-
-Output files are located in /base_pop/processed/dotsams/ (on Lewis cluster only)
-
-Note: can run the three sbatch files at once - the scheduler takes care of resources
+- Output files are `.sam` and are located in `/base_pop/processed/dotsams/`
+- Note: can run all sbatch files at once - SLARM takes care of resources
 
 
 
-STEP 2a: Samtools (Sort and convert SAM files to BAM)
+#### STEP 2a: Sort and convert SAM files to BAM - Samtools
 
-example from Pertea et al 2016:
-$ samtools sort -@ 8 -o ERR188044_chrX.bam ERR188044_chrX.sam
+- Example from Pertea et al 2016:
+`samtools sort -@ 8 -o ERR188044_chrX.bam ERR188044_chrX.sam`
 
-In R, do Samtools sort (step 2a in `Set_up_arrays.Rmd`) 
-Output: `S02a_short_samtools.txt` located in /base_pop/scripts/assembly_shortProtocol/
-
-Next, run `sbatch --array=1-162 samtools_all.sh` for all samples. This reads `S02a_short_samtools.txt` created above.
-Output: .bam files located in /base_pop/processed/dotbams/ (on Lewis cluster only)
-
+- In R, do Samtools sort (step 2a in `Set_up_arrays.Rmd`) 
+- Output1: `/base_pop/scripts/assembly_longProtocol/S02a_short_samtools.txt`
+- Next, run `sbatch --array=1-162 samtools_all.sh` for all samples. This reads `S02a_short_samtools.txt` created above.
+- Output2: .bam files located in `/base_pop/processed/dotbams/`
 
 
-STEP 2b: Samtools merge to combine corresponding transcripts from each run
+#### STEP 2b: Merge to combine corresponding transcripts from each run - Samtools
 
-Do Samtools merge (step 2b in `Set_up_arrays.Rmd`) in R
-Output: `S02b_samtools_merge.txt`
-Next, run `sbatch --array=1-2 samtools_merge.sh` using `S02b_samtools_merge.txt` to merge like files
-Output: 54 `x_merged.bam` located in /base_pop/processed/dotbams/
+- Do Samtools merge in R (step 2b in `Set_up_arrays.Rmd`)
+- Output1: `/scripts/assembly_longProtocol/S02b_samtools_merge.txt`
+- Run `sbatch --array=1-54 samtools_merge.sh` which reads `S02b_samtools_merge.txt` to merge like files
+- Output2: 54 `sampleName_merged.bam` located in `/base_pop/processed/dotbams/`
 
+#### Alternative workflow
+- Novel transcripts not needed for analysis. Therefore we adopt the alternative pipeline for stringtie: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
 
-Novel transcripts not needed for analysis. Therefore we adopt the alternative pipeline for stringtie: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
+- Instead of merging transcripts from all samples (step 4 in Pertea et al, 2016), we get expression estimates separately for each sample by applying the reference annotation (rather than merged sample .gtf files) to each sample separately.So we apply `stringtie -eB` to the output of 2b (i.e. `sampleName_merged.bam`)
 
-Instead of merging transcripts from all samples (step 4 Pertea et al, 2016), we get expression estimates separately for each sample by applying the reference annotation to each sample separately.Thus we apply `stringtie -eB` output of 2b (i.e. `x_merged.bam`)
+##### Quote from gpertea, June 11, 2018 https://github.com/gpertea/stringtie/issues/170:
 
-Quote from gpertea commented on Jun 11, 2018
-https://github.com/gpertea/stringtie/issues/170
-"... if you run the alternate, faster protocol which does not attempt to assemble any novel genes, the output will only have expression level values for the known transcripts given in the reference annotation, and no merge step is needed, so there will be no internally generated IDs like MSTRG.# or STRG.# that could possibly join multiple reference gene IDs. So if you really do not care about any novel transcripts/isoforms and trust the completeness and correctness of your reference annotation, give this alternate protocol a try .... You could then use the prepDE script on the GTF files generated by the these stringtie runs (if you prefer using DESeq2 or other DE analysis tools instead of Ballgown)."
+- "... if you run the alternate, faster protocol which does not attempt to assemble any novel genes, the output will only have expression level values for the known transcripts given in the reference annotation, and no merge step is needed, so there will be no internally generated IDs like MSTRG.# or STRG.# that could possibly join multiple reference gene IDs. So if you really do not care about any novel transcripts/isoforms and trust the completeness and correctness of your reference annotation, give this alternate protocol a try .... You could then use the prepDE script on the GTF files generated by the these stringtie runs (if you prefer using DESeq2 or other DE analysis tools instead of Ballgown)."
 
 
 
-STEP 3: StringTie (Transcript abundances and table of counts)
+#### STEP 3: StringTie (Transcript abundances and table of counts)
 `stringtie -e -B`
 
-Do: StringTie transcript abundances in `Set_up_arrays.Rmd` by running `S03_abundances_short.txt` 
+- Run StringTie transcript abundances in `Set_up_arrays.Rmd`  
+- Output1: `/scripts/assembly_longProtocol/S03_abundances_short.txt`
+- Next, run `sbatch --array=1-54 stringt_short_abund.sh`
+- Output2: each of 54 sample directories (e.g. C-1_B, etc) are written to `/processed/shortProtocol/S03_short_ballG/`. 
 
-Output: `S06_abundances.txt`
-Next, run `sbatch --array=1-54 stringt_short_abund.sh`
-
-Output: each of 54 sample directories (e.g. C-1_B, etc) are written to /processed/shortProtocol/S03_short_ballg/. 
-
----- END OF READ MAPPING ----
+**---- END OF READ MAPPING ----**
 
 
-STEP 4: Create a csv containing sample ids
+#### STEP 4: Create a csv containing sample ids
 
 Do "Create a csv containing sample ids" in `Set_up_arrays.Rmd`
 Output: `describe_samples.csv`
 
 
 
-STEP5A: BallGown (transcript level differential expression based on transformed transcript or gene counts). Performed, but reported results not based on Ballgown.
+#### STEP5 A: Differential gene expression with BallGown 
+Performed, but reported results not based on Ballgown.
 
 STEP5B: Prep for DESeq (gene-level, read count-based differential expression )
 Run `prepDESeq.Rmd` by following instructions in `/scripts/DESeq_scripts/prepDEpy_instructions.txt`
 
 
-
-##### STEP6: Control for batch effects using SVAseq package
+#### STEP 6: Control for batch effects using SVAseq package
 
   - `batch_DESeq.Rmd` - data prep for sva
 	- input1: `/processed/describe_samples_batch.csv` 
@@ -132,11 +112,12 @@ Run `prepDESeq.Rmd` by following instructions in `/scripts/DESeq_scripts/prepDEp
 
 
 
-STEP 7: Downstream analysis
-(a) Differential gene expression with DESeq2
-(b) Gene set enrichment analysis with GAGE
-(c) Hierarchical clustering with WGCNA
-(4) Examination of eQTL in Stanley et al (2017)
+#### STEP 7: Downstream analysis
+
+1. Differential gene expression with DESeq2
+2. Gene set enrichment analysis with GAGE
+3. Hierarchical clustering with WGCNA
+4. Examination of eQTL in Stanley et al (2017)
 
 (a) Differential gene expression with DESeq2
 - Take the two outputs from step six as input files:
