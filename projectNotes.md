@@ -65,7 +65,7 @@ date: "7/9/2018"
 - Run `sbatch --array=1-54 samtools_merge.sh` which reads `S02b_samtools_merge.txt` to merge like files
 - Output2: 54 `sampleName_merged.bam` located in `/base_pop/processed/dotbams/`
 
-#### Alternative workflow
+#### We use the alternative workflow from here on
 - Novel transcripts not needed for analysis. Therefore we adopt the alternative pipeline for stringtie: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
 
 - Instead of merging transcripts from all samples (step 4 in Pertea et al, 2016), we get expression estimates separately for each sample by applying the reference annotation (rather than merged sample .gtf files) to each sample separately.So we apply `stringtie -eB` to the output of 2b (i.e. `sampleName_merged.bam`)
@@ -89,46 +89,54 @@ date: "7/9/2018"
 
 #### STEP 4: Create a csv containing sample ids
 
-Do "Create a csv containing sample ids" in `Set_up_arrays.Rmd`
-Output: `describe_samples.csv`
+- Do "Create a csv containing sample ids" in `Set_up_arrays.Rmd`
+- Output: `/scripts/DESeq_scripts/describe_samples.csv`
 
 
 
 #### STEP5 A: Differential gene expression with BallGown 
-Performed, but reported results not based on Ballgown.
+- Performed, but reported results not based on Ballgown.
+- All scripts located in `/scripts/DESeq_scripts/assembly_longProtocol/`
+- Intermediate files located in `/processed/longProtocol/`
 
-STEP5B: Prep for DESeq (gene-level, read count-based differential expression )
-Run `prepDESeq.Rmd` by following instructions in `/scripts/DESeq_scripts/prepDEpy_instructions.txt`
+#### STEP5B: Prep for DESeq (gene-level, read count-based differential expression )
+- Obtain count-based gene and transcript table by running `/scripts/DESeq_scripts/prepDE.py`
+- Instructions are located in `/scripts/DESeq_scripts/prepDEpy_instructions.txt`
+- Input: StringTie output should be put in this directory structure: `/ballgown/sampleName/` 
+  - it is required this directory be named 'ballgown' (case-sensitive)
+- Output: two matrices: 
+`/processed/shortProtocol/S03_short_ballG/transcript_count_matrix.csv`, and 
+`/processed/shortProtocol/S03_short_ballG/gene_count_matrix.csv`
 
 
 #### STEP 6: Control for batch effects using SVAseq package
 
   - `batch_DESeq.Rmd` - data prep for sva
-	- input1: `/processed/describe_samples_batch.csv` 
-	- input2: `/processed/shortProtocol/S03_short_matrices/gene_count_matrix.csv`
-	- writes: 1) `/processed/DESEQ/Expr_countData.csv`, a DESeqDataSet based on     design matrix `~ tissue*treatment` which is input into SVASeq
+	- Input1: `/processed/describe_samples_batch.csv` 
+	- Input2: `/processed/shortProtocol/S03_short_matrices/gene_count_matrix.csv`
+	- writes: 1) `/processed/DESEQ/Expr_countData.csv`, a DESeqDataSet based on design matrix `~ tissue*treatment` which is input into SVASeq
 	- writes: 2) `/processed/DESEQ/sampleDat_with_SV.csv`. Surrogate variables 
 	are appened as additional columns
 
 
 
-#### STEP 7: Downstream analysis
+### Differential expression and downstream analysis
 
 1. Differential gene expression with DESeq2
 2. Gene set enrichment analysis with GAGE
 3. Hierarchical clustering with WGCNA
 4. Examination of eQTL in Stanley et al (2017)
 
-(a) Differential gene expression with DESeq2
-- Take the two outputs from step six as input files:
-  - input 1: `/processed/DESEQ/Expr_countData.csv`
-  - input2: `/processed/DESEQ/sampleDat_with_SV.csv`
+##### Differential gene expression with DESeq2
+- Takes the two outputs from step six as input files:
+  - Input 1: `/processed/DESEQ/Expr_countData.csv`
+  - Input2: `/processed/DESEQ/sampleDat_with_SV.csv`
 
 - Runs two DESeq models:
   - dds.01: design = ~ SV1 + batch + tissue + treatment
-      saving output `/processed/DESEQ/dds_deseq01.Rda`
+  - Output1 `/processed/DESEQ/dds_deseq01.Rda`
   - dds.02: design = ~ SV1 + batch + tissue*treatment
-      saving output `/processed/DESEQ/dds.02.Rda`
+  - Output2: `/processed/DESEQ/dds.02.Rda`
 - Performs likelihood ratio test for several reduced models to identify DEGs
   - Effect of treatment `reduced=~ SV1 + batch + tissue`; saves `/processed/DESEQ/lrtTreat_allPadj.Rda`
   - Effect of tissue `reduced=~ SV1 + batch + treatment` 
@@ -141,64 +149,74 @@ Run `prepDESeq.Rmd` by following instructions in `/scripts/DESeq_scripts/prepDEp
 - Writes a background list of genes for GO (i.e. all genes with >1 transcript)
   `/processed/DESEQ/gene_background_list.csv`
 
-- Compare numbers of DEGs obtained by DESeq2 vs Ballgown
+##### Compare numbers of DEGs obtained by DESeq2 vs Ballgown
+
 `/scripts/DESeq_scripts/compare_StringTie_method`
-  - input1: `/processed/DESEQ/Expr_countData.csv`
-  - input2: `/processed/longProtocol/Old-gene_count_matrix.csv`
-  - input3: `/processedshortProtocol/S03_short_ballG/gene_count_matrix.csv`
-  - input4: `/processed/describe_samples_batch.csv`
-  - input4: `/processed/longProtocol/gene_count_matrix_pl3c.csv`
+
+  - Input1: `/processed/DESEQ/Expr_countData.csv`
+  - Input2: `/processed/longProtocol/Old-gene_count_matrix.csv`
+  - Input3: `/processedshortProtocol/S03_short_ballG/gene_count_matrix.csv`
+  - Input4: `/processed/describe_samples_batch.csv`
+  - Input4: `/processed/longProtocol/gene_count_matrix_pl3c.csv`
 - Does not write output - QC only.
 
 
-- Visualization of global expression changes
-1. Without removal of batch effects:
+##### Visualization of global expression changes
+__Without removal of batch effects:__
+
 `/scripts/DESeq_scripts/short_protc_viz.Rmd`
-  - input1: `/processed/describe_samples.csv`
-  - input2: `/processed/shortProtocol/S03_short_ballG/ballgown`
+
+  - Input1: `/processed/describe_samples.csv`
+  - Input2: `/processed/shortProtocol/S03_short_ballG/ballgown`
 - Produces transcript expression comparisons across 54 samples (for each diet and tissue):
-  - output1: `/plots/Expression_54_barplot.pdf`
-  - output2: `/plots/Expression_54_barplot_b2.pdf`
-
-  - input3: `/processed/DESEQ/dds_deseq01.Rda`
-  - input4: `/processed/DESEQ/sampleDat_with_SV.csv`
-  - output3: PCA plot `/plots/PCAplot_rlog_uncorrected_trt.pdf`
+  - Output1: `/plots/Expression_54_barplot.pdf`
+  - Output2: `/plots/Expression_54_barplot_b2.pdf`
+  - Input3: `/processed/DESEQ/dds_deseq01.Rda`
+  - Input4: `/processed/DESEQ/sampleDat_with_SV.csv`
+  - Output3: PCA plot `/plots/PCAplot_rlog_uncorrected_trt.pdf`
   
-2. After removal of batch effects (limma::removeBatchEffect)
-  - output4: PCA plot `/plots/PCAplot_rlog_corrected_trt.pdf`
+__After removal of batch effects (limma::removeBatchEffect)__
 
-- Pairwise log2FoldChange comparisons
+  - Output4: PCA plot `/plots/PCAplot_rlog_corrected_trt.pdf`
+
+**Pairwise log2FoldChange comparisons**
+
 `/scripts/DESeq_scripts/foldchange_DEseq.Rmd`
-  - input1: `/processed/DESEQ/Expr_countData.csv`
-  - input2: `/processed/DESEQ/sampleDat_with_SV.csv`
-- Saves `/processed/DESEQ/all_fc_dat.rda`
-  - output1: foldchange comparison plots of HS vs DR relative to C `/plots/FC_all.pdf`
-  output2: volcano plots tissue-diet combinations `/plots/Voc_all.pdf`
+
+  - Input1: `/processed/DESEQ/Expr_countData.csv`
+  - Input2: `/processed/DESEQ/sampleDat_with_SV.csv`
+  - Saves `/processed/DESEQ/all_fc_dat.rda`
+  - Output1: foldchange comparison plots of HS vs DR relative to C `/plots/FC_all.pdf`
+  - Output2: volcano plots tissue-diet combinations `/plots/Voc_all.pdf`
   
 
-- Interaction effects - QC
+**Interaction effects - QC**
+
 `/scripts/DESeq_scripts/interaction_analysis.Rmd`
-  - input1: `/processed/DESEQ/lrtInt_allPadj.Rda`
-  - input2: `/processed/DESEQ/dds_deseq.02.Rda`
-  - output1: `/plots/Interaction_ex.pdf`
-  - input3: `/processed/DESEQ/cand_genes.csv`
-  - input4: `/processed/DESEQ/dds_deseq.02.Rda`
-  - output2: `/plots/Interaction_cand1.pdf`
+
+  - Input1: `/processed/DESEQ/lrtInt_allPadj.Rda`
+  - Input2: `/processed/DESEQ/dds_deseq.02.Rda`
+  - Output1: `/plots/Interaction_ex.pdf`
+  - Input3: `/processed/DESEQ/cand_genes.csv`
+  - Input4: `/processed/DESEQ/dds_deseq.02.Rda`
+  - Output2: `/plots/Interaction_cand1.pdf`
 
 
-(b) Gene set enrichment analysis with GAGE
+##### Gene set enrichment analysis with GAGE
 - GSEA: KEEG pathways and GO on whole list DEGs 
 for the effect of diet performed in GAGE package
 `/scripts/GOscripts/gsea_GO.Rmd`
-  - input: `/processed/DESEQ/all_fc_dat.rda`
-Writes table of enriched pathways and GO terms `/processed/DESEQ/GO/sig_terms.csv`
+  - Input: `/processed/DESEQ/all_fc_dat.rda`
+- Writes table of enriched pathways and GO terms `/processed/DESEQ/GO/sig_terms.csv`
 
 
-(c) Hierarchical clustering with WGCNA
+##### Hierarchical clustering with WGCNA
+
 `/scripts/DESeq_scripts/wgcnaCoex.Rmd`
-  - input1: `/processed/DESEQ/sampleDat_with_SV.csv`
-  - input2 `/processed/DESEQ/dds_deseq01.Rda`
-  - input3 `/processed/DESEQ/dds_deseq.02.Rda`
+
+  - Input1: `/processed/DESEQ/sampleDat_with_SV.csv`
+  - Input2 `/processed/DESEQ/dds_deseq01.Rda`
+  - Input3 `/processed/DESEQ/dds_deseq.02.Rda`
 - Performs rlog transformation of raw expression data, then removes batches with `limma::removeBatchEffect`
   writes `/processed/DESEQ/rlogtrt_batchCor.csv`
 - Implements the whole WGCNA workflow
@@ -208,43 +226,46 @@ Writes table of enriched pathways and GO terms `/processed/DESEQ/GO/sig_terms.cs
   - writes module eigenegenes `/processed/DESEQ/Coexpression/WCGNA_eigengenes.txt`
   
 `/scripts/DESeq_scripts/wgcna_ANOVAs.Rmd`
+
 - Performs module-based ANOVA, and module-based GO term analysis
-  - input1: `/processed/DESEQ/Coexpression/WCGNA_eigengenes.txt`
-  - input2: `/processed/DESEQ/Coexpression/modules.RData` - contains module color data
-  - input3: `/processed/DESEQ/rlogtrt_batchCor.csv` - batch corrected expression data
-  - input4: `/processed/DESEQ/Coexpression/FlyAnnotation.csv` - fly annotation:
+  - Input1: `/processed/DESEQ/Coexpression/WCGNA_eigengenes.txt`
+  - Input2: `/processed/DESEQ/Coexpression/modules.RData` - contains module color data
+  - Input3: `/processed/DESEQ/rlogtrt_batchCor.csv` - batch corrected expression data
+  - Input4: `/processed/DESEQ/Coexpression/FlyAnnotation.csv` - fly annotation:
   (ftp://ftp.flybase.net/releases/FB2018_05/precomputed_files/genes/)
-  - output: `/processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable.csv`
-  - output: `/processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable_simple.txt` - a screen viewable table
-  - input5: `/processed/DESEQ/sampleDat_with_SV.csv`
+  - Output: `/processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable.csv`
+  - Output: `/processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable_simple.txt` - a screen viewable table
+  - Input5: `/processed/DESEQ/sampleDat_with_SV.csv`
 - Main output are ANOVA and adhoc test results `/scripts/DESeq_scripts/wgcna_ANOVAs.html`
 
 `/scripts/DESeq_scripts/wgcna_resampling.Rmd`
+
 - This script vets the modules identified in the full data set. It creates 100 samples each from 
 a random set of 36 samples, and performs WGCNA with same settings as full data set.
-  - input1: `/processed/DESEQ/sampleDat_with_SV.csv`
-  - input2: `/processed/DESEQ/rlogtrt_batchCor.csv`
+  - Input1: `/processed/DESEQ/sampleDat_with_SV.csv`
+  - Input2: `/processed/DESEQ/rlogtrt_batchCor.csv`
   - saves: `/processed/DESEQ/Coexpression/Resample_WGCNA_mods.rda`
   - saves: `/processed/DESEQ/Coexpression/Resample_WGCNA_eigen.rda`
   - writes: `/processed/DESEQ/Coexpression/Resamp_droppedGenes.csv`
 
-`/scripts/DESeq_scripts/wgcna_eigengenExp_acrossDiets.Rmd`
+`/scripts/DESeq_scripts/wgcna_eigengenExp_acrossDiets.Rmd` 
+
 - Visualization of eigengene expression in all diets and tissues
-  - input1: `/processed/DESEQ/sampleDat_with_SV.csv`
-  input2: `/processed/DESEQ/Coexpression/WCGNA_eigengenes.txt`
-  output: `/plots/eigengenes_all.pdf`
+  - Input1: `/processed/DESEQ/sampleDat_with_SV.csv`
+  - Input2: `/processed/DESEQ/Coexpression/WCGNA_eigengenes.txt`
+  - Output: `/plots/eigengenes_all.pdf`
 
 ## Project Notes
 
 ### General Notes & links
 
- Get more gene_ids from StringTie object with python: https://www.biostars.org/p/261128/
+Get more gene_ids from StringTie object with python: https://www.biostars.org/p/261128/
 
- Ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
- Ref p.92-93 Haddok & Dunn book
- Detailed instructions are in /scripts/DESeq_scripts/prepDEpy_instructions.txt
+Ref: http://ccb.jhu.edu/software/stringtie/index.shtml?t=manual#de
+Ref p.92-93 Haddok & Dunn book
+Detailed instructions are in /scripts/DESeq_scripts/prepDEpy_instructions.txt
 
- To split a .csv column with multiple id entries, follow: http://help.snapizzi.com/csv-files/split-csv-data-into-different-columns
+To split a .csv column with multiple id entries, follow: http://help.snapizzi.com/csv-files/split-csv-data-into-different-columns
 
 DESeq vs Ballgown, see https://support.bioconductor.org/p/107011/
 
