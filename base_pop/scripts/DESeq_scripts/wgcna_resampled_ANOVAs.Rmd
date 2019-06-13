@@ -119,8 +119,8 @@ GOenr <- GOenrichmentAnalysis(moduleColors, allIDs,
                               organism = "fly", nBestP = 10)
 tab <- GOenr$bestPTerms[[4]]$enrichment
 names(tab)
-write.table(tab, file = "../../processed/DESEQ/Coexpression/resampMods/GOEnrichTab_Resamp.csv", 
-              sep = ",", quote = TRUE, row.names = FALSE)
+write.csv(tab, file = "../../processed/DESEQ/Coexpression/resampMods/GOEnrichTab_Resamp.csv", 
+              row.names = FALSE)
 ### Note message: GOenrichmentAnalysis: loading annotation data...
 ###  ..of the 12614  Entrez identifiers submitted, 10334 are mapped ###in current GO categories.
 ###  ..will use 10334 background genes for enrichment calculations.
@@ -145,6 +145,6 @@ options(width=95)
 
 # Enrichment table
 screenTab
-write.table(screenTab, file = "../../processed/DESEQ/Coexpression/minMod30/GOEnrichTab_Resamp_simple.txt",
-              sep = ",", quote = TRUE, row.names = FALSE)
+write.csv(screenTab, file = "../../processed/DESEQ/Coexpression/resampMods/GOEnrichTab_Resamp_simple.txt",
+              row.names = FALSE)
 ```
