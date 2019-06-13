@@ -77,7 +77,7 @@ ll$FBgn = mapIds(org.Dm.eg.db,
                      multiVals="first")
 ll$FBgn <- as.character(ll$FBgn)
 
-path_mod <- subset(fb_path, fb_path$primary_FBgn %in% ll$FBgn  )
+path_mod <- subset(fb_path, fb_path$primary_FBgn %in% ll$FBgn)
 ```
 
 1. Out of 317 genes in IIS,TOR, & FOXO, 314 are in modules

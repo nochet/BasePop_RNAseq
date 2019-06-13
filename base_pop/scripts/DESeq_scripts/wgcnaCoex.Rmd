@@ -254,17 +254,6 @@ print(modtable)
 write.table(modtable, "../../processed/DESEQ/Coexpression/dynamicModules_Sizes.txt", 
             quote=F, row.names=F, sep="\t")
 
-
-modtable = rename(modtable, Module = moduleColors, Genes = Freq)
-
-modtable$Genes <- as.numeric(modtable$Genes)
-p <- ggplot(modtable, aes(x=Module, y=Genes, fill="Module")) + 
-  geom_bar(stat = "identity") + 
-  geom_text(aes(label=Genes), 
-            size=3.5)+ annotate("text", label = "right") +
-  
-  coord_flip()
-p + theme(legend.position = "none") 
 ```
 
 # Merge at a selected threshold

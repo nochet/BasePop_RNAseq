@@ -239,10 +239,14 @@ cat(ii,"\t",tic-toc, "\n")
 
 }
 
-save(out.dat, file="../../processed/DESEQ/Coexpression/Resample_WGCNA_mods.rda")
-save(ME.list, file="../../processed/DESEQ/Coexpression/Resample_WGCNA_eigen.rda")
+save(out.dat, 
+     file="../../processed/DESEQ/Coexpression/Resample_WGCNA_mods.rda")
+save(ME.list, 
+     file="../../processed/DESEQ/Coexpression/Resample_WGCNA_eigen.rda")
 
 ```
+
+# Identify genes uniquely assigned to module in less than half datasets
 
 ```{r}
 
@@ -274,7 +278,8 @@ nn<-names(which(aa < 0.5))
 
 elim <- obs.dat[obs.dat$FBgn %in% nn,]
 
-write.csv(elim, file="../../processed/DESEQ/Coexpression/Resamp_droppedGenes.csv", row.names=FALSE)
+write.csv(elim, 
+          file="../../processed/DESEQ/Coexpression/Resamp_droppedGenes.csv", row.names=FALSE)
 
 table(elim$ModID)
 
