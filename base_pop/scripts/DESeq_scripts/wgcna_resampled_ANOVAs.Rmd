@@ -56,14 +56,12 @@ colnames(droppedGenes)[2] <- "mod"
 
 # Delete droppedGenes in ll
 dd <- ll[!(ll$FBgn %in% droppedGenes$FBgn),]
-str(dd)
-str(ll)
+#str(dd)
+#str(ll)
 
 # Move deleted genes to the grey module
 
-lld <- ll[!(ll$FBgn %in% droppedGenes$FBgn),]
-droppedGenes$mod <- "grey"
-lld <- rbind(lld,droppedGenes)
+lld[ll$FBgn %in% droppedGenes$FBgn,"mod"] <- "grey"
 
 ```
 
@@ -90,9 +88,6 @@ stlbl <- rbind(subset(ll, ll$mod=="steelblue"), subset(lld, lld$mod=="steelblue"
 # Gene Ontology on WGCNA modules
 
 ```{r}
-# Modules & module names
-load("../../processed/DESEQ/Coexpression/modules.RData")
-
 
 # Output gene lists
 # Fbgn annotation file "Genes:fbgn_annotation_ID_fb_2018_04.tsv"
@@ -102,20 +97,24 @@ dim(annot)
 names(annot)
 colnames(annot)[colnames(annot)=="X"] <- "FBgn"
 
-rlogtrt <- read.csv("../../processed/DESEQ/rlogtrt_batchCor.csv")
-rownames(rlogtrt) <- rlogtrt[,1]
-FBgenes = as.data.frame(rownames(rlogtrt))
-colnames(FBgenes)[colnames(FBgenes)=="rownames(rlogtrt)"] <- "FBgn"
-FBgenes <- subset(FBgenes, FBgenes$FBgn %in% lld$FBgn)
+#rlogtrt <- read.csv("../../processed/DESEQ/rlogtrt_batchCor.csv")
+#rownames(rlogtrt) <- rlogtrt[,1]
+#FBgenes = as.data.frame(rownames(rlogtrt))
+#colnames(FBgenes)[colnames(FBgenes)=="rownames(rlogtrt)"] <- "FBgn"
+#FBgenes <- subset(FBgenes, FBgenes$FBgn %in% lld$FBgn)
+FBgenes <- lld$FBgn
+#FBgenes <- dd$FBgn
 
-FBgenes2annot = match(FBgenes$FBgn, annot$FBgn)
+FBgenes2annot = match(FBgenes, annot$FBgn)
 allIDs = annot$entrez[FBgenes2annot]
 
 
 # Module GO term enrichment
 
 # Enrichment table containing the 10 best terms for each module
-GOenr <- GOenrichmentAnalysis(moduleColors, allIDs, 
+GOenr <- GOenrichmentAnalysis(lld$mod, allIDs, 
+                              organism = "fly", nBestP = 100)
+#GOenr <- GOenrichmentAnalysis(dd$mod, allIDs, 
                               organism = "fly", nBestP = 100)
 tab <- GOenr$bestPTerms[[4]]$enrichment
 names(tab)
