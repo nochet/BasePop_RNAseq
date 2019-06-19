@@ -1,5 +1,5 @@
 ---
-title: "Gene set analysis"
+title: "Gene set enrichment analysis (GSEA)"
 author: "Enoch Ng'oma"
 date: "12/20/2018"
 output: html_document
@@ -49,6 +49,7 @@ gobpsets = go_sets$go.sets[go_sets$go.subs$BP]
 ```
 
 # List of DEGs for treatment
+- GSEA accounts for expression data to calculate enrichment.
 
 ```{r}
 # List of genes significant for treatment

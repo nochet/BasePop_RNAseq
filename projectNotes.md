@@ -255,6 +255,19 @@ a random set of 36 samples, and performs WGCNA with same settings as full data s
   - Input2: `/processed/DESEQ/Coexpression/WCGNA_eigengenes.txt`
   - Output: `/plots/eigengenes_all.pdf`
 
+`/scripts/GOscripts/wgcna_resampled_GO.Rmd`
+
+- GO analysis on WGCNA modules after resampling
+  - Input1: `/processed/DESEQ/Coexpression/Resamp_droppedGenes.csv`. Genes weakly assigned to modules to be removed.
+  - Input2: `/processed/DESEQ/Coexpression/Mods/fbgn_names/*.txt`. Module gene assignments before resampling
+  - Input3: `/processed/DESEQ/Coexpression/modules.RData`. Module color information 
+  - Input4: `/processed/DESEQ/Coexpression/FlyAnnotation.csv`. Annotation file for mapping gene ids
+  - Output1: `/processed/DESEQ/Coexpression/resampMods/GOEnrichTab_Resamp.csv`. GO terms by module at P-value cut-off <0.01.
+  - Output2: `/processed/DESEQ/Coexpression/resampMods/GOEnrichTab_Resamp_simple.csv`. Same output but lesser details to enable viewing on the screen.
+  - Notes on each module.
+  - Note: `/scripts/GOscripts/style.css` - for controlling font size in a knitted output.
+
+
 ## Project Notes
 
 ### General Notes & links

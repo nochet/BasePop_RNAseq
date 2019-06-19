@@ -131,7 +131,7 @@
 "dme00785 Lipoic acid metabolism",NA,NA,NA,NA,0,NA
 "dme00900 Terpenoid backbone biosynthesis",NA,NA,NA,NA,7,NA
 "dme00910 Nitrogen metabolism",NA,NA,NA,NA,3,NA
-"dme00920 Sulfur metabolism",NA,NA,NA,NA,3,NA
+"dme00920 Sulfur metabolism",NA,NA,NA,NA,4,NA
 "dme01040 Biosynthesis of unsaturated fatty acids",NA,NA,NA,NA,5,NA
 "dme01210 2-Oxocarboxylic acid metabolism",NA,NA,NA,NA,6,NA
 "dme00790 Folate biosynthesis",0.165517472238714,-0.993920234470017,0.165517472238714,0.993273273945524,15,0.165517472238714
@@ -266,6 +266,6 @@
 "dme00785 Lipoic acid metabolism",NA,NA,NA,NA,0,NA
 "dme00900 Terpenoid backbone biosynthesis",NA,NA,NA,NA,7,NA
 "dme00910 Nitrogen metabolism",NA,NA,NA,NA,3,NA
-"dme00920 Sulfur metabolism",NA,NA,NA,NA,3,NA
+"dme00920 Sulfur metabolism",NA,NA,NA,NA,4,NA
 "dme01040 Biosynthesis of unsaturated fatty acids",NA,NA,NA,NA,5,NA
 "dme01210 2-Oxocarboxylic acid metabolism",NA,NA,NA,NA,6,NA
