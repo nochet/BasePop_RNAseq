@@ -9,7 +9,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Differential expression analysis protocol
 
 ```{r}
 #R
@@ -21,21 +20,22 @@ library(tidyverse)
 library(devtools)
 library(cowplot)
 library(reshape)
+```
 
+# Differential expression analysis protocol
+
+```{r}
 
 phenDat <- read.csv("../../processed/describe_samples_batch.csv", stringsAsFactors = FALSE)
-```
 
-```{r}
-bg_ballG <- ballgown(dataDir = "../processed/ballG_all", samplePattern = "", pData = phenDat)
+bg_ballG <- ballgown(
+  dataDir = "../../processed/BallGown/ballG_all", samplePattern = "", pData = phenDat)
 
 # Save .Rda
-save(bg_ballG, file = "../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
+save(bg_ballG, file = "../../processed/BallGown/ballG_all_results/bg_ballG_all_results.Rda")
 
-```
 
-```{r}
-load("../processed/results/ballG_all_results/bg_ballG_all_results.Rda")
+load("../../processed/BallGown/ballG_all_results/bg_ballG_all_results.Rda")
 
 # Dispplay a decsription
 bg_ballG
