@@ -34,18 +34,19 @@ set.seed(354902)
 phenDat <- read.csv("../../processed/describe_samples.csv",
                     stringsAsFactors = FALSE)
 
-bg_ballG <- ballgown(dataDir = "../../processed/S03_short_ballG/ballgown", samplePattern = "", pData = phenDat)
+#bg_ballG <- ballgown(dataDir = "../../processed/S03_short_ballG/ballgown", samplePattern = "", pData = phenDat)
 
 # Save .Rda
-save(bg_ballG, file = "../../processed/S03_short_ballG/bgOut_shortP.Rda")
+#save(bg_ballG, file = "../../processed/S03_short_ballG/bgOut_shortP.Rda")
+
+load("../../processed/shortProtocol/S03_short_ballG/bgOut_shortP.Rda")
+bg_ballG
 
 ```
 
 # Gene abundances across libraries, colored by treatment
 
 ```{r}
-load("../../processed/S03_short_ballG/bgOut_shortP.Rda")
-bg_ballG
 
 # Filter out low-abundance transcripts 
 short_filt <- subset(bg_ballG, "rowVars(texpr(bg_ballG)) >1", genomesubset=TRUE)
@@ -83,7 +84,9 @@ b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
   my_theme
   #tx_color_map() 
 b1 <- b1 + theme(legend.position="none")
-ggsave(plot=b1,filename = "../../plots/Expression_54_barplot.pdf",width = 5,height=5)
+# ggplot2::ggsave(plot=b1,
+#                 filename = "../../plots/Expression_54_barplot.pdf",
+#                 width = 5,height=5)
 
 
 b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
@@ -100,40 +103,65 @@ b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
   my_theme
 b2 <- b2 + theme(legend.position="none")
 
-ggsave(plot=b2,filename = "../../plots/Expression_54_barplot_b2.pdf",width = 3.5,height=3)
+# ggplot2::ggsave(plot=b2,
+#                 filename = "../../plots/Expression_54_barplot_b2.pdf",
+#                 width = 3.5,height=3)
 ```
 
 # Number of transcripts per gene
+# Inputs made in /Ballgown_PEQGPoster/bg_basep_allData.Rmd
 
 ```{r}
-# Load transcript gene indexes from ballgown objects
-t.genes_table_short <- indexes(short_filt)$t2g
+ts_viz <- read.csv("../../processed/BallGown/ballG_all_results/transcript_stats.csv")
 
-# Plot # of transcripts per gene
-counts.bg <- table(t.genes_table_short[,"g_id"])
-bg_one <- length(which(counts.bg==1))
-bg_more <- length(which(counts.bg>1))
-bg_max <- max(counts.bg)
-hist(counts.bg, breaks=50, col="bisque4", xlab="Transcripts per gene",
-main="Distribution of transcript count per gene")
-legend_text=c(paste("Genes with one transcript =", bg_one), paste("Genes with more than one transcript =", bg_more), paste("Max transcripts for single gene = ", bg_max))
-legend("topright", legend_text, lty = NULL)
+counts.bg <- as.data.frame(ts_viz)
+colnames(counts.bg)[1] <- "FBgn"
+
+ggcounts <- counts.bg %>%
+  group_by(Freq) %>%
+  summarise(Frequency = frequency(FBgn), n = n())
+
+p1 <- ggplot(ggcounts, aes(Freq, n)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous(breaks = seq(0, 25, 5), 
+                     limits=c(0, 25)) +
+  xlab("Transcripts per gene") + ylab("Frequency") +
+  theme(text=element_text(size = 10),
+        axis.text.x=element_text(size = 9),
+        axis.text.y=element_text(size = 9))
+
 ```
 
 # Distribution of transcript sizes
 
 ```{r}
-full_table.bg<-texpr(short_filt, 'all')
-hist(full_table.bg$length, breaks=50, xlab="Transcript length (bp)", main="Distribution of transcript lengths", col="steelblue")
 
-ggplot(full_table.bg, aes(x=length, col=length)) +
-  geom_histogram(binwidth = 100) +
-  labs(x = "Transcript length (bp)", y = "Count") +
-  theme(axis.title.y = element_text(size = 12),
-        text = element_text(size = 12))
+tSize_viz <- read.csv("../../processed/BallGown/ballG_all_results/transcriptSize_stats.csv")
 
-min(full_table.bg$length)
-max(full_table.bg$length)
+full.tab <- as.data.frame(tSize_viz$length)
+colnames(full.tab)[1] <- "tlength"
+full.tab <- mutate(full.tab, length = tlength/1000)
+
+p2 <- ggplot(full.tab, aes(length)) +
+  geom_histogram(binwidth = 0.5) +
+  scale_x_continuous(breaks = seq(0, 110, 20),
+                     limits =  c(0,120)) +
+  xlab("Transcript length (x1000 bp)") + ylab("Frequency") +
+  theme(text=element_text(size = 10),
+        axis.text.x=element_text(size = 9),
+        axis.text.y=element_text(size = 9))
+
+
+# On same plot area
+#multiplot(b2, p1, p2, cols=2)
+library(ggpubr)
+cir <- ggarrange(b2, 
+          ggarrange(p1, p2,
+          labels = c("b", "c")),
+          nrow = 2,
+          labels = "a")
+
+ggplot2::ggsave(cir,file = "../../plots/transcripts_stats.pdf",width = 4,height=5)
 ```
 
 # Tranform data to visualize global trends

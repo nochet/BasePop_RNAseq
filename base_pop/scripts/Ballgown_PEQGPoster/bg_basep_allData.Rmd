@@ -140,6 +140,9 @@ hist(counts.bg, breaks=50, col="bisque4", xlab="Transcripts per gene",
 main="Distribution of transcript count per gene")
 legend_text=c(paste("Genes with one transcript =", bg_one), paste("Genes with more than one transcript =", bg_more), paste("Max transcripts for single gene = ", bg_max))
 legend("topright", legend_text, lty = NULL)
+
+write.csv(counts.bg, file = "../../processed/BallGown/ballG_all_results/transcript_stats.csv")
+
 ```
 
 # Distribution of transcript sizes
@@ -147,6 +150,9 @@ legend("topright", legend_text, lty = NULL)
 ```{r}
 full_table.bg<-texpr(bg_ballG, 'all')
 hist(full_table.bg$length, breaks=50, xlab="Transcript length (bp)", main="Distribution of transcript lengths", col="steelblue")
+
+write.csv(full_table.bg, file = "../../processed/BallGown/ballG_all_results/transcriptSize_stats.csv")
+
 ```
 
 # Visualize expression across libraries

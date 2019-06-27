@@ -1,0 +1,53 @@
+---
+title: "Visualize transcript statistics with ggplot2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(cowplot)
+
+source("multiPlot_function.R")
+
+```
+
+# Number of transcripts per gene
+# Inputs made in /Ballgown_PEQGPoster/bg_basep_allData.Rmd
+
+```{r}
+ts_viz <- read.csv("../../processed/BallGown/ballG_all_results/transcript_stats.csv")
+
+counts.bg <- as.data.frame(ts_viz)
+colnames(counts.bg)[1] <- "FBgn"
+
+ggcounts <- counts.bg %>%
+  group_by(Freq) %>%
+  summarise(Frequency = frequency(FBgn), n = n())
+
+p1 <- ggplot(ggcounts, aes(Freq, n)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous(breaks = seq(0, 25, 5), 
+                     limits=c(0, 25)) +
+  xlab("Transcripts per gene") + ylab("Frequency")
+```
+
+# Distribution of transcript sizes
+
+```{r}
+
+tSize_viz <- read.csv("../../processed/BallGown/ballG_all_results/transcriptSize_stats.csv")
+
+full.tab <- as.data.frame(tSize_viz$length)
+colnames(full.tab)[1] <- "tlength"
+
+p2 <- ggplot(full.tab, aes(tlength)) +
+  geom_histogram(binwidth = 50) +
+  scale_x_continuous(breaks = seq(0, 40000, 10000),
+                     limits =  c(0,40000)) +
+  xlab("Transcript length (bp)") + ylab("Frequency")
+
+# On same plot area
+multiplot(p1, p2, cols=2)
+```
