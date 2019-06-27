@@ -125,7 +125,7 @@ p1 <- ggplot(ggcounts, aes(Freq, n)) +
   geom_bar(stat = "identity") +
   scale_x_continuous(breaks = seq(0, 25, 5), 
                      limits=c(0, 25)) +
-  xlab("Transcripts per gene") + ylab("Frequency") +
+  xlab("Transcripts \n per gene") + ylab("Frequency") +
   theme(text=element_text(size = 10),
         axis.text.x=element_text(size = 9),
         axis.text.y=element_text(size = 9))
@@ -146,22 +146,11 @@ p2 <- ggplot(full.tab, aes(length)) +
   geom_histogram(binwidth = 0.5) +
   scale_x_continuous(breaks = seq(0, 110, 20),
                      limits =  c(0,120)) +
-  xlab("Transcript length (x1000 bp)") + ylab("Frequency") +
+  xlab("Transcript length \n (x1000 bp)") + ylab("Frequency") +
   theme(text=element_text(size = 10),
         axis.text.x=element_text(size = 9),
         axis.text.y=element_text(size = 9))
 
-
-# On same plot area
-#multiplot(b2, p1, p2, cols=2)
-library(ggpubr)
-cir <- ggarrange(b2, 
-          ggarrange(p1, p2,
-          labels = c("b", "c")),
-          nrow = 2,
-          labels = "a")
-
-ggplot2::ggsave(cir,file = "../../plots/transcripts_stats.pdf",width = 4,height=5)
 ```
 
 # Tranform data to visualize global trends
@@ -249,5 +238,20 @@ ggsave(gg,file = "../../plots/PCAplot_rlog_corrected_trt.pdf",width = 3,height=2
 #pcaplot <- plot_grid(ll, gg, nrow = 1)
 pcaplot <- plot_grid(ll,gg, align = 'h',rel_widths = c(1.2,1.5), label_size = 10)
 ggsave(pcaplot,file = "../../plots/PCAplot_rlog_trt.pdf",width = 3,height=2.5)
+```
+
+# Figures on the same plot
+
+```{r}
+# On same plot area
+#multiplot(b2, p1, p2, cols=2)
+library(ggpubr)
+cir <- ggarrange(b2, 
+          ggarrange(p1, p2,
+          labels = c("b", "c")),
+          nrow = 2,
+          labels = "a")
+
+#ggplot2::ggsave(cir,file = "../../plots/transcripts_stats.pdf",width = 4,height=5)
 ```
 
