@@ -78,3 +78,16 @@ pall <- plot_grid(plotlist=ps,nrow=5,ncol = 4)
 
 ggplot2::ggsave(pall, filename = "../../plots/Interaction_cand1.pdf", height = 8, width=10)
 ```
+
+```{r}
+
+ww<- "FBgn0033378"
+
+d <- plotCounts(dds_deseq.02, gene=ww, intgroup=c("treatment", "tissue"), 
+                returnData=TRUE)
+
+ggplot(d, aes(x=treatment, y=count, color=tissue)) + 
+  geom_point(position=position_jitter(w=0.1,h=0)) + 
+  scale_y_log10(breaks=c(25,100,400)) 
+
+```

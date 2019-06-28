@@ -37,8 +37,6 @@ DEunderPeak <- function(DEgenes, arm, upper, lower)
 # only include peaks for difference QTL?
 
 load(file="../../processed/DESEQ/all_fc_dat.rda")
-load(file="/home/kingeg/Projects/AllocationRILs/InputFiles/FC_DR_Stanley.rda")
-
 
 # gene map table
 gmtable <- read.csv("../../processed/DESEQ/DEG_QTL/gene_map_table.csv", 
@@ -310,18 +308,11 @@ allDEGs.GO <- inner_join(all_qtl_degs,GO_fly, by="FBgn")
 
 ```
 
-# To Delete
 ```{r}
 
-# iis data
-iis <- read.table("../../processed/DESEQ/DEG_QTL/iis_table1.txt",
-                  header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+gg <- read.csv(file = "../../processed/DESEQ/DEG_QTL/all_diffExpr_underQTL.csv", header=TRUE, stringsAsFactors = FALSE, row.names=1)
 
-iis$chr <- str_split(iis$gene_location, ":",simplify=TRUE)[,1]
-iis$startp <- str_split(iis$bci, "-", simplify = TRUE)[,1]
-iis$stopp <- str_split(iis$bci, "-", simplify = TRUE)[,2]
-
-iis$startp <- as.numeric(iis$startp)
+gg <- subset(gg, QTL == "LinDiscrB")
+nrow(gg[gg$effect=="treat",])
 
 ```
-
