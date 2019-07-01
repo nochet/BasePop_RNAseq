@@ -27,47 +27,9 @@ library(org.Dm.eg.db)
 
 ```
 
-# Modules for the full dataset
 
 ```{r}
-
-# Full dataset
-
-# Load module names
-load("../../processed/DESEQ/Coexpression/modules.RData")
-
-# Read in multiple files by wildcard expansion on file paths
-getMods <- lapply(Sys.glob(
-  "../../processed/DESEQ/Coexpression/Mods/fbgn_names/*.txt",),read.table)
-
-# Rename column
-ss <- "FBgn"
-for (i in 1:length(getMods)) {
- colnames(getMods[[i]]) <- ss 
-}
-
-# Add column for module name to each module
-getMods <- mapply(cbind, getMods, "mod"=sort(modNames), 
-                  SIMPLIFY=FALSE)
- 
-# Merge modules in list into one table (12569 + 45 grey)
-ll <- bind_rows(getMods)
-
-# Resampled data
-
-# Genes uniquely assigned to module in less than half 50 of 100 datasets
-droppedGenes <- read.csv("../../processed/DESEQ/Coexpression/Resamp_droppedGenes.csv")
-colnames(droppedGenes)[2] <- "mod"
-
-# Delete droppedGenes in ll
-dd <- ll[!(ll$FBgn %in% droppedGenes$FBgn),]
-#str(dd)
-#str(ll)
-
-# Move deleted genes to the grey module
-lld <- ll
-lld[ll$FBgn %in% droppedGenes$FBgn,"mod"] <- "grey"
-
+lld <- read.csv("../../processed/DESEQ/Coexpression/modueleMembership.csv")
 ```
 
 # Compare module sizes
@@ -110,11 +72,11 @@ allIDs = annot$entrez[FBgenes2annot]
 # Module GO term enrichment
 
 # Enrichment table
-GOenr <- GOenrichmentAnalysis(lld$mod, allIDs, 
+GOenr <- GOenrichmentAnalysis(lld$ModID, allIDs, 
                               organism = "fly", 
                               #nBestP = 100,
                               pCut = 0.01)
-# GOenr1 <- GOenrichmentAnalysis(lld$mod, allIDs, 
+# GOenr1 <- GOenrichmentAnalysis(lld$ModID, allIDs, 
 #                               organism = "fly", 
 #                               #nBestP = 100,
 #                               pCut = 0.01)
@@ -150,6 +112,20 @@ screenTab
 subset(screenTab, module == "black" & termName == "nucleus")
 write.csv(screenTab, file = "../../processed/DESEQ/Coexpression/resampMods/GOEnrichTab_Resamp_simple.csv",
               row.names = FALSE)
+
+bb <- subset(screenTab, screenTab$Bonf<0.01 & screenTab$module !="grey")
+bc <- subset(screenTab, screenTab$Bonf<0.05 & screenTab$module !="grey")
+
+bd <- bb %>%
+  group_by(module) %>%
+  summarise(lowest = min(Bonf), highest = max(Bonf)) %>%
+  as.data.frame()
+
+blk <- subset(bb,bb$module=="black" & bb$Bonf<0.01)
+bbk <- bb %>%
+  group_by(module) %>%
+  summarise(no_rows = length(module)) %>%
+  as.data.frame()
 ```
 
 # Notes for each module

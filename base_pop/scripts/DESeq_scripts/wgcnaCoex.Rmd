@@ -75,12 +75,14 @@ load("../../processed/DESEQ/dds_deseq.02.Rda")
 
 # log transform null DESeq model: design ~ SV1 + batch + treatment + tissue
 rlog.trt <- rlog(dds_deseq.01, blind = FALSE, fitType = "parametric")
-
+#save(rlog.trt, file="../../processed/DESEQ/rlog_trt.Rda")
 ```
 
 # Remove batches
 
 ```{r}
+load("../../processed/DESEQ/rlog_trt.Rda")
+
 # check variation in size factors
 hist(dds_deseq.01$sizeFactor)
 
@@ -94,7 +96,7 @@ assay(rlog.trt) <- rmat
 print(plotPCA(rlog.trt, intgroup=c("treatment", "tissue"), returnData=FALSE ))
 
 # Needed for GO
-write.csv(rmat, file = "../../processed/DESEQ/rlogtrt_batchCor.csv", row.names = TRUE)
+#write.csv(rmat, file = "../../processed/DESEQ/rlogtrt_batchCor.csv", row.names = TRUE)
 ```
 
 # WGCNA Preliminaries
@@ -133,9 +135,9 @@ sft = pickSoftThreshold(rlogtrt, powerVector=powers,
                         verbose = 5)
   
 sizeGrWindow(9,5)
-pdf(file="../../plots/softThreshold.pdf")
-par(mfrow= c(2,2)) # one row, two columns panel
-cex1=0.9
+pdf(file="../../plots/softThreshold.pdf", width = 10.5, height = 4)
+par(mfrow= c(1,2)) # one row, two columns panel
+cex1=0.7
 
 # Scale-free topology fit index as a function of the sft power
 plot(sft$fitIndices[,1], 
@@ -178,12 +180,16 @@ TOM = TOMsimilarity(adjc, TOMType="signed") # specify network type
 dissTOM = 1-TOM
 
 # Note: dissTOM calc minimizes effects of noise and spurious associations
+#save(TOM, file = "../../processed/DESEQ/TOM.Rda")
 ```
 
 # Detect modules
 
 ```{r}
 # Hierarchical clustering of the genes based on TOM dissimilarity
+
+load("../../processed/DESEQ/TOM.Rda")
+
 geneTree = flashClust(as.dist(dissTOM), method = "average")
 
 sizeGrWindow(12,9)
@@ -276,8 +282,8 @@ mergedMEs = merge$newMEs;
 table(mergedColors)
 
 # Plot dendrogram with module colors below it
-pdf(file="../../plots/dynamic_merged_clusters.pdf", width = 4, height = 2.5)
-par(mfrow=c(1,1))
+pdf(file="../../plots/dynamic_merged_clusters.pdf", width = 6.5, height = 4)
+par(mfrow=c(2,1))
 par(cex = 0.6)
 plotDendroAndColors(geneTree, 
                     cbind(dynamicColors, mergedColors), 
@@ -287,6 +293,7 @@ plotDendroAndColors(geneTree,
                     addGuide= TRUE, guideHang=0.05,
                     cex.colorLabels = 0.7)
 dev.off()
+
 
 # Rename to moduleColors
 table(moduleColors)
@@ -307,31 +314,42 @@ MEcount <- length(colnames(MEs))
 rownames(MEs) <- rownames(phenDat.sva)
 
 write.table(MEs, "../../processed/DESEQ/Coexpression/mergedModuleEigengenes_colorLabel.txt", row.names=F, quote=F, sep="\t")
-modNames = substring(names(MEs), 3)  # remove "ME" at the beginning of module eigengene names
-
-# Modules & names needed in subsequent scripts
-save(modNames, moduleColors, file="../../processed/DESEQ/Coexpression/modules.RData")
 
 
 # Construct numerical labels corresponding to the colors
 colorOrder = c("grey", standardColors(50));
 moduleLabels = match(moduleColors, colorOrder)-1;
-MEs = mergedMEs;
+MEs = mergedMEs
+
+modNames = substring(names(MEs), 3)  # remove "ME" at the beginning of module eigengene names
 
 # Remove modules emptied from merging
 module.table_merged <- na.omit(module.table_merged)
 
+# Modules & names needed in subsequent scripts
+save(modNames, moduleColors, file="../../processed/DESEQ/Coexpression/modules.RData")
+
+modMemb <- data.frame("FBgn" = colnames(rlogtrt), "ModID" = mergedColors, stringsAsFactors = FALSE)
+
+droppedGenes <- read.csv("../../processed/DESEQ/Coexpression/Resamp_droppedGenes.csv")
+modMemb[modMemb$FBgn %in% droppedGenes$FBgn,"ModID"] <- "grey"
+
+write.csv(modMemb, 
+          file="../../processed/DESEQ/Coexpression/modueleMembership.csv",
+          row.names = FALSE)
 ```
 
 # Write out modules eigengenes
 
 ```{r}
 # Recalculate module eigengens 
-MEs0 = moduleEigengenes(rlogtrt, moduleColors)$eigengenes
-MEs = orderMEs(MEs0)
+MEs0 = moduleEigengenes(rlogtrt, modMemb$ModID)$eigengenes
+
 write.table(MEs0, file="../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t", row.names = FALSE)
 
 #write.table(MEs0, file="../../processed/DESEQ/Coexpression/WCGNA_eigenGO.txt", sep="\t", row.names = TRUE)
 
 ```
+
+
 
