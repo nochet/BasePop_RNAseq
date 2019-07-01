@@ -212,6 +212,16 @@ for the effect of diet performed in GAGE package
 
 ##### Hierarchical clustering with WGCNA
 
+`/scripts/DESeq_scripts/wgcna_resampling.Rmd`
+
+- This script resamples repeatedly from 54 samples to identify modules before analysis on the full data set. It creates 100 samples each from a random subset of 36 samples, and performs WGCNA with same settings as full data set.
+
+  - Input1: `/processed/DESEQ/sampleDat_with_SV.csv`
+  - Input2: `/processed/DESEQ/rlogtrt_batchCor.csv`
+  - saves: `/processed/DESEQ/Coexpression/Resample_WGCNA_mods.rda`
+  - saves: `/processed/DESEQ/Coexpression/Resample_WGCNA_eigen.rda`
+  - writes: `/processed/DESEQ/Coexpression/Resamp_droppedGenes.csv`
+
 `/scripts/DESeq_scripts/wgcnaCoex.Rmd`
 
   - Input1: `/processed/DESEQ/sampleDat_with_SV.csv`
@@ -220,9 +230,9 @@ for the effect of diet performed in GAGE package
 - Performs rlog transformation of raw expression data, then removes batches with `limma::removeBatchEffect`
   writes `/processed/DESEQ/rlogtrt_batchCor.csv`
 - Implements the whole WGCNA workflow
-  - writes modules `/processed/DESEQ/Coexpression/minMod30/` - entrez ids; `/Mods` - FBGN & gene symbols
+  - First, genes that are weakly assigned to modules based on resampling are moved to unassigned module
   - writes modules sizes `/processed/DESEQ/Coexpression/mergedModules_Sizes.txt`
-  - saves `/processed/DESEQ/Coexpression/modules.RData`
+  - writes `/processed/DESEQ/Coexpression/modueleMembership.csv`
   - writes module eigenegenes `/processed/DESEQ/Coexpression/WCGNA_eigengenes.txt`
   
 `/scripts/DESeq_scripts/wgcna_ANOVAs.Rmd`
@@ -233,20 +243,11 @@ for the effect of diet performed in GAGE package
   - Input3: `/processed/DESEQ/rlogtrt_batchCor.csv` - batch corrected expression data
   - Input4: `/processed/DESEQ/Coexpression/FlyAnnotation.csv` - fly annotation:
   (ftp://ftp.flybase.net/releases/FB2018_05/precomputed_files/genes/)
+  - writes modules `/processed/DESEQ/Coexpression/minMod30/` - entrez ids; `/Mods` - FBGN & symbols
   - Output: `/processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable.csv`
   - Output: `/processed/DESEQ/Coexpression/minMod30/GOEnrichmentTable_simple.txt` - a screen viewable table
   - Input5: `/processed/DESEQ/sampleDat_with_SV.csv`
 - Main output are ANOVA and adhoc test results `/scripts/DESeq_scripts/wgcna_ANOVAs.html`
-
-`/scripts/DESeq_scripts/wgcna_resampling.Rmd`
-
-- This script vets the modules identified in the full data set. It creates 100 samples each from 
-a random set of 36 samples, and performs WGCNA with same settings as full data set.
-  - Input1: `/processed/DESEQ/sampleDat_with_SV.csv`
-  - Input2: `/processed/DESEQ/rlogtrt_batchCor.csv`
-  - saves: `/processed/DESEQ/Coexpression/Resample_WGCNA_mods.rda`
-  - saves: `/processed/DESEQ/Coexpression/Resample_WGCNA_eigen.rda`
-  - writes: `/processed/DESEQ/Coexpression/Resamp_droppedGenes.csv`
 
 `/scripts/DESeq_scripts/wgcna_eigengenExp_acrossDiets.Rmd` 
 

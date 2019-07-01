@@ -35,20 +35,20 @@ lld <- read.csv("../../processed/DESEQ/Coexpression/modueleMembership.csv")
 # Compare module sizes
 
 ```{r}
-ll %>% 
-  group_by(mod) %>%
-  summarise(no_rows = length(mod)) %>%
-  as.data.frame()
-ll$analysis <- "full"
+# ll %>% 
+#   group_by(mod) %>%
+#   summarise(no_rows = length(mod)) %>%
+#   as.data.frame()
+# ll$analysis <- "full"
 
-lld %>%
-  group_by(mod) %>%
-  summarise(no_rows = length(mod)) %>%
+lls <- lld %>%
+  group_by(ModID) %>%
+  summarise(no_rows = length(ModID)) %>%
   as.data.frame()
-lld$analysis <- "resamp"
+lls$analysis <- "resamp"
 
 # Check one module
-stlbl <- rbind(subset(ll, ll$mod=="steelblue"), subset(lld, lld$mod=="steelblue"))
+#stlbl <- rbind(subset(ll, ll$mod=="steelblue"), subset(lld, lld$mod=="steelblue"))
 
 ```
 

@@ -313,8 +313,6 @@ write.table(module.table_merged, "../../processed/DESEQ/Coexpression/mergedModul
 MEcount <- length(colnames(MEs))
 rownames(MEs) <- rownames(phenDat.sva)
 
-write.table(MEs, "../../processed/DESEQ/Coexpression/mergedModuleEigengenes_colorLabel.txt", row.names=F, quote=F, sep="\t")
-
 
 # Construct numerical labels corresponding to the colors
 colorOrder = c("grey", standardColors(50));
@@ -346,8 +344,6 @@ write.csv(modMemb,
 MEs0 = moduleEigengenes(rlogtrt, modMemb$ModID)$eigengenes
 
 write.table(MEs0, file="../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t", row.names = FALSE)
-
-#write.table(MEs0, file="../../processed/DESEQ/Coexpression/WCGNA_eigenGO.txt", sep="\t", row.names = TRUE)
 
 ```
 
