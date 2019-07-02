@@ -133,39 +133,3 @@ finalp<-plot_grid(plotlist=all.plots,nrow=6, ncol=4,
 #ggsave(finalp, filename="../../plots/eigengenes_all.pdf", height=9,width=6.5)
 ```
 
-
-
-
-# Using modules with weakly connected genes removed
-
-```{r}
-load("../../processed/DESEQ/Coexpression/Resample_WGCNA_eigen.rda")
-resp <- read.csv("../../processed/DESEQ/Coexpression/Resamp_droppedGenes.csv")
-
-# Load module names
-load("../../processed/DESEQ/Coexpression/modules.RData")
-
-# Read in multiple files by wildcard expansion on file paths
-getMods <- lapply(Sys.glob(
-  "../../processed/DESEQ/Coexpression/Mods/fbgn_names/*.txt",),read.table)
-
-# Rename column
-ss <- "FBgn"
-for (i in 1:length(getMods)) {
- colnames(getMods[[i]]) <- ss 
-}
-
-# Add column for module name to each module
-getMods <- mapply(cbind, getMods, "mod"=sort(modNames), 
-                  SIMPLIFY=FALSE)
- 
-# Merge modules in list into one table (12569 + 45 grey)
-library(org.Dm.eg.db)
-ll <- bind_rows(getMods)
-
-# full-data modules: ll
-# resampled modules: resp
-str(c(ll,resp))
-path_mod <- subset(fb_path, fb_path$primary_FBgn %in% ll$FBgn)
-```
-

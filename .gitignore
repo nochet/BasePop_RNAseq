@@ -10,6 +10,7 @@
 *.fastq.gz.md5sum
 *.ctab
 *.html
+*.tsv
 
 # Compiled source #
 ###################
