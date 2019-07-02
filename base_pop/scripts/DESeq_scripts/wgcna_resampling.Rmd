@@ -138,6 +138,8 @@ module.table_merged <- as.data.frame(table(moduleColors))
 
 obs.dat <- data.frame("FBgn" = colnames(rlogtrt), "ModID"= mergedColors, stringsAsFactors = FALSE)
 
+save(obs.dat, file="../../processed/DESEQ/Coexpression/Obs_modMembership.csv")
+
 ```
 
 

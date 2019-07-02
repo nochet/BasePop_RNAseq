@@ -33,9 +33,6 @@ DEunderPeak <- function(DEgenes, arm, upper, lower)
 
 ```{r}
 
-# check fold changes with Stanley results for bodies?
-# only include peaks for difference QTL?
-
 load(file="../../processed/DESEQ/all_fc_dat.rda")
 
 # gene map table
@@ -44,24 +41,14 @@ gmtable <- read.csv("../../processed/DESEQ/DEG_QTL/gene_map_table.csv",
 which(gmtable$gname == "d")
 gmtable$gname[gmtable$gname == "d"] <- "CG42840" 
 
-gid <- gmtable[gmtable$gname %in% all.dr$id,]
-all.dr <- merge(all.dr, gid[,c("gname","FBgn")],by.y="gname", by.x='id')
-
-rna.dr <- all.fc.dat[,1:11]
-
-mm <- rna.dr[all.dr$FBgn,]
-cor(mm$FC_DR_B[-14], log2(all.dr$mean.dcq[-14]))
-
 # treatment effect DEGs
 DEGs_treat <- read.csv("../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv")
 names(DEGs_treat)[1]<-"FBgn"
-names(DEGs_treat)[3] <- "log2FC"
 DEGs_treat$FBgn <- as.character(DEGs_treat$FBgn)
 
 #Interaction effect DEGs
 DEGs_int <- read.csv("../../processed/DESEQ/DEGs_lrt.int_0.05.csv")
 names(DEGs_int)[1]<-"FBgn"
-names(DEGs_int)[3] <- "log2FC"
 DEGs_int$FBgn <- as.character(DEGs_int$FBgn)
 
 # merge
@@ -92,139 +79,45 @@ DEGs_treat[c(214,1257,1668),]
 load("../../processed/DESEQ/DEG_QTL/all_iisPeak.rda")
 
 #peak pos 9412495
-LinDiscrDRC_2R <- DEunderPeak(merge_treat,  arm="2R", 
+qtl_degs <- DEunderPeak(merge_treat,  arm="2R", 
                    upper = 9472495, lower =7712495)
 
-
-
-
-
-
-
-
-
-step_2L <- DEunderPeak(merge_treat,  arm="X", 
-                   upper = allPeak[allPeak$id=='step','Up'], lower =allPeak[allPeak$id=='step','Lp'])
-
-Ilp5_3L <- DEunderPeak(merge_treat,  arm="X", 
-                   upper = allPeak[allPeak$id=='Ilp5','Up'], lower = allPeak[allPeak$id=='Ilp5','Lp'])
-
-# Lifespan QTL
-
-#from IIS_mapping_DFA_byTreat.R
-LinDiscrDR_2R <- DEunderPeak(merge_treat,  arm="2R", 
-                   upper = 9632495, lower =6122495)
-
-#peak pos 7762495
-
-#from lifespan.R
-MedLifeDR_3L <-   DEunderPeak(merge_treat,  arm="3L", 
-                   upper = 3840000, lower =3230000)
-#peak 3650000
-```
-
-# Table of all DEGs under peaks
-
-```{r}
-# add identifier colum to each list
-step_2L$QTL <- "step"
-Ilp5_3L$QTL <- "Ilp5"
-LinDiscrDR_2R$QTL <- "LinDiscrA"
-LinDiscrDRC_2R$QTL <- "LinDiscrB"
-MedLifeDR_3L$QTL <- "MedLife" 
-
-
-qtl_degs <- rbind(step_2L,Ilp5_3L,
-                  LinDiscrDR_2R,LinDiscrDRC_2R,MedLifeDR_3L)
-write.csv(qtl_degs, file = "../../processed/DESEQ/DEG_QTL/diffExpr_trt_underQTL.csv")
-```
-
-# DEGs in iis QTL peaks for the interaction
-
-```{r}
-# trans-eQTL
-# to do: extract BCIs programmatically from iis 
-step_2L.int <- DEunderPeak(merge_int,  arm="X", 
-                   upper = allPeak[allPeak$id=='step','Up'], lower =allPeak[allPeak$id=='step','Lp'])
-Ilp5_3L.int <- DEunderPeak(merge_int,  arm="X", 
-                   upper = allPeak[allPeak$id=='Ilp5','Up'], lower =allPeak[allPeak$id=='Ilp5','Lp'])
-
-# Lifespan QTL
-LinDiscrDR_2R.int <- DEunderPeak(merge_int,  arm="2R", 
-                   upper = 9632495, lower =6122495)
-LinDiscrDRC_2R.int <- DEunderPeak(merge_int,  arm="2R", 
+qtl_degs_int <- DEunderPeak(merge_int,  arm="2R", 
                    upper = 9472495, lower =7712495)
-MedLifeDR_3L.int <-   DEunderPeak(merge_int,  arm="3L", 
-                   upper = 3840000, lower =3230000)
-```
-
-# Table of interaction DEGs under peaks
-
-```{r}
-# add identifier colum to each list
-step_2L.int$QTL <- "step"
-#Ilp5_3L.int$QTL <- "Ilp5" # no genes
-LinDiscrDR_2R.int$QTL <- "LinDiscrA"
-LinDiscrDRC_2R.int$QTL <- "LinDiscrB"
-MedLifeDR_3L.int$QTL <- "MedLife" 
-
-
-qtl_degs_int <- rbind(step_2L.int,
-                    LinDiscrDR_2R.int,LinDiscrDRC_2R.int,
-                    MedLifeDR_3L.int)
-
-qtl_degs_int <- qtl_degs_int[order(qtl_degs_int$QTL), ]
-
-write.csv(qtl_degs_int, file = "../../processed/DESEQ/DEG_QTL/diffExpr_int_underQTL.csv")
-
-```
-
-# Interaction and treatment tables together
-
-```{r}
-colnames(qtl_degs)
-colnames(qtl_degs_int)
 
 qtl_degs$effect <- "treat"
 qtl_degs_int$effect <- "int"
 all_qtl_degs <- rbind(qtl_degs,qtl_degs_int)
-all.qtl.degs <- dplyr::select(all_qtl_degs,-c(lfcSE,v3,cyt,stat,pvalue,spp))
+
+#module membership
+
+load(file="../../processed/DESEQ/Coexpression/Obs_modMembership.csv")
+drop.g <- read.csv(file="../../processed/DESEQ/Coexpression/Resamp_droppedGenes.csv",header=TRUE, stringsAsFactors = FALSE)
+obs.dat[obs.dat$FBgn %in% drop.g$FBgn, "ModID"] <- "grey"
+
+all_qtl_degs <- merge(all_qtl_degs, obs.dat, by="FBgn")
+
+#gene list from IIS
+
+tt <- read.table(file="../../processed/DESEQ/DEG_QTL/iis_genelist_clean.txt", header=TRUE, stringsAsFactors = FALSE, sep="\t")
+tt[tt$id=="tribbles",'id'] <- "trbl"
+tt[tt$id=="PP2A-B'",'id'] <- "wrd"
+tt[tt$id=="eIF-4B",'id'] <- "eIF4B"
+
+tt1 <- merge(tt, gmtable[,c("gname","FBgn")], by.x="id", by.y="gname")
+
+tt1<-merge(tt1, obs.dat, by="FBgn")
 
 write.csv(all_qtl_degs, file = "../../processed/DESEQ/DEG_QTL/all_diffExpr_underQTL.csv")
 
 ```
 
-# Calculate gene distance to center of peak
+## Visualization
 
-```{r}
-#R6pos = peak position in v6
 
-transQTL <- subset(allPeak, allPeak$id==c('Ilp5','step'))
 
-transQTL <- select(transQTL, id, R6chr,R6pos)
-colnames(transQTL)[1] <- "QTL"
-transQTL$R6pos <- as.numeric(transQTL$R6pos)
 
-addQTL <- data.frame('QTL'=c("LinDiscrA","LinDiscrB","MedLife"),
-                     'R6chr'=c("2R","2R","3L"),
-                     'R6pos'=c(9412495, 7762495, 3650000),
-                     stringsAsFactors=FALSE)
 
-addQTL <- rbind(transQTL, addQTL)
-
-# Find distance of DEGs to qtl position
-distt <- inner_join(all_qtl_degs,addQTL, by="QTL")
-
-distt$qdist <- abs(distt$startp-distt$R6pos)
-
-# Save for next script
-write.csv(distt, file = "../../processed/DESEQ/DEG_QTL/distt.csv")
-```
-
-Summary of IIS QTL interval genes: 
-215 DEGs identified under BCIs that are in both treatment effect DEGs and interaction effect DEGs (LRT, qval<0.05) (all_diffExpr_underQTL.csv). 
-This set had 139 unique genes (unique_geneList.csv). 
-12 of these are located within 100 Kb of eQTL peak markers: Ahcy, CG40486, Non1, prel, ced-6, CG33774, Wnt2, CG1882, Dgat2, mus205, CG12822, CG10357. Converted coordinates to v6
 
 
 # Gene summaries
@@ -233,7 +126,7 @@ This set had 139 unique genes (unique_geneList.csv).
 # view few lines in the terminal: head -n 3 automated_gene_summaries.tsv | tail -n 3
 
 
-gsum <- read_lines(file = "../../../../automated_gene_summaries.tsv",
+gsum <- read_lines(file = "../../processed/DESEQ/DEG_QTL/automated_gene_summaries.tsv",
                    skip = 1)%>%
   str_split(pattern = "\t", simplify = TRUE) %>% 
   as_tibble() 
@@ -279,15 +172,6 @@ write.csv(unique(fullset$gname),
 ```
 
 
-# Look for slif in DEG lists
-
-```{r}
-k <- gmtable[which(gmtable$gname=="slif"),]
-kk <- which(DEGs_treat$FBgn %in% k$FBgn)
-ki <- which(DEGs_int$FBgn %in% k$FBgn)
-# slif not among DEGs!
-```
-
 # Gene association table with GO IDs
 
 ```{r}
@@ -305,14 +189,5 @@ GO_fly <- select(GO_fly, gname, GOid)
 colnames(GO_fly)[1] <- "FBgn"
 
 allDEGs.GO <- inner_join(all_qtl_degs,GO_fly, by="FBgn")
-
-```
-
-```{r}
-
-gg <- read.csv(file = "../../processed/DESEQ/DEG_QTL/all_diffExpr_underQTL.csv", header=TRUE, stringsAsFactors = FALSE, row.names=1)
-
-gg <- subset(gg, QTL == "LinDiscrB")
-nrow(gg[gg$effect=="treat",])
 
 ```
