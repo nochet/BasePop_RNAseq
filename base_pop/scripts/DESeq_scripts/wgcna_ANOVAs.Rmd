@@ -15,7 +15,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 
 library(WGCNA)
-library(ggplot2)
+library(tidyverse)
 library(cowplot)
 library(AnnotationDbi)
 library(org.Dm.eg.db)
@@ -134,8 +134,41 @@ summary(aov.mods1)
 
 # ANOVA for interaction
 aov.mods2 <- aov(as.matrix(eg.genes) ~ phenDat.sva$treatment* phenDat.sva$tissue)
-summary(aov.mods2)
+sum.aov <- summary(aov.mods2)
 
+# Extract P values
+kk <- lapply(sum.aov, function(x) x$`Pr(>F)`)
+kk <- as.data.frame(kk)
+rownames(kk) <- c("Diet", "Tissue", "Interaction", "Residuals")
+colnames(kk) <- paste(letters[1:22])
+kk <- as.data.frame(t(kk))
+kk <- dplyr::select(kk, Diet, Tissue, Interaction,)
+kk <- kk %>% 
+  rownames_to_column("key") 
+
+# Get FDR coreected P values
+dietFDR <- p.adjust(kk$Diet, "BH", n = length(kk$Diet))
+tissueFDR <- p.adjust(kk$Tissue, "BH", length(kk$Tissue))
+interFDR <- p.adjust(kk$Interaction, "BH", length(kk$Interaction))
+anova_adj <- as.data.frame(cbind(kk,dietFDR,tissueFDR,interFDR))
+
+
+
+#numb <- out_fig[,5:10]
+anova_adj <- format(anova_adj[,1:7], format = "e", digits = 2)
+
+msKeys <- read.csv("../../processed/DESEQ/Coexpression/ms_module_keys.csv") %>%
+  dplyr::select(-X)
+
+msKeys$Percent <- msKeys$no_rows/12614*100
+
+out_fig <- left_join(msKeys, anova_adj)
+out_fig <- dplyr::select(out_fig, ModID,key,no_rows, everything()) %>%
+  dplyr::rename(Genes = no_rows, MS_ID = key)
+
+out_fig$Percent <- round(out_fig$Percent, digits = 1)
+out_fig
+write.csv(out_fig, file = "../../processed/DESEQ/Coexpression/Module_ANOVA.csv")
 ```
 
 # Visualize modules across diets

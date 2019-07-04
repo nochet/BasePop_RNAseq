@@ -45,8 +45,10 @@ lls <- lld %>%
   group_by(ModID) %>%
   summarise(no_rows = length(ModID)) %>%
   as.data.frame()
-lls$analysis <- "resamp"
+lls$key <- paste(letters[1:22], sep = ",")
+#lls$analysis <- "resamp"
 
+write.csv(lls, file = "../../processed/DESEQ/Coexpression/ms_module_keys.csv")
 # Check one module
 #stlbl <- rbind(subset(ll, ll$mod=="steelblue"), subset(lld, lld$mod=="steelblue"))
 
@@ -97,7 +99,7 @@ screenTab = tab[, keepCols];
 numCols = c(3, 4);
 screenTab[, numCols] = signif(apply(screenTab[, numCols], 2, as.numeric), 2)
 
-# Truncate the the term name to at most 40 characters
+# Truncate term name to at most 40 characters
 screenTab[, 7] = substring(screenTab[, 7], 1, 40)
 
 # Shorten the column names:
