@@ -221,7 +221,7 @@ cgs.s <- cgs.s %>%
 cgs.s <- dplyr::select(cgs.s, 1:3,18:19,4:17)
 colnames(cgs.s)[4] <- "CG_Id"
 
-write.csv(cgs, file = "../../processed/DESEQ/cand_genes.csv" )
+write.csv(cgs.s, file = "../../processed/DESEQ/cand_genes.csv", row.names = FALSE )
 
 ```
 
