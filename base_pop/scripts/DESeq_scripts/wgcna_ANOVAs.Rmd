@@ -152,9 +152,6 @@ tissueFDR <- p.adjust(kk$Tissue, "BH", length(kk$Tissue))
 interFDR <- p.adjust(kk$Interaction, "BH", length(kk$Interaction))
 anova_adj <- as.data.frame(cbind(kk,dietFDR,tissueFDR,interFDR))
 
-
-
-#numb <- out_fig[,5:10]
 anova_adj <- format(anova_adj[,1:7], format = "e", digits = 2)
 
 msKeys <- read.csv("../../processed/DESEQ/Coexpression/ms_module_keys.csv") %>%

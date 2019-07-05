@@ -1,4 +1,4 @@
----
+ttyn 345---
 title: "Data integration to identify candidate genes"
 output: html_document
 ---
@@ -137,7 +137,7 @@ sigDEGs$symbol = mapIds(org.Dm.eg.db,
                      multiVals="first")
 head(sigDEGs)
 
-write.csv(sigDEGs, "../../processed/DESEQ/GO/sigDEGs_for_DAVID.csv")
+#write.csv(sigDEGs, "../../processed/DESEQ/GO/sigDEGs_for_DAVID.csv")
 
 qtl_sigDEGs <- inner_join(sigDEGs,qtall, by=c("Gene"="FBgn"))
 
@@ -170,7 +170,9 @@ All 215 QTL genes assigned to a module that's not grey (i.e. none of QTL genes a
 # DEGs with role in known IIS, TO and foxo pathways
 
 ```{r}
-path_sigDEGs <- inner_join(sigDEGs,fb_path)
+
+colnames(path_mod)[2] <- "FBgn"
+path_sigDEGs <- inner_join(sigDEGs,path_mod)
 
 ```
 
@@ -193,23 +195,33 @@ Comparing path_mod (314 genes), qtl_sigDEGs (186 genes), mod_sigDEGs (2473 genes
 # Map candidate genes (path_sigDEGs) to fold change table 
 
 ```{r}
-cgs <- dplyr::select(path_sigDEGs, Gene,symbol,annotation_ID,pathway)
+load(file="../../processed/DESEQ/Coexpression/Obs_modMembership.csv")
+drop.g <- read.csv(file="../../processed/DESEQ/Coexpression/Resamp_droppedGenes.csv",header=TRUE, stringsAsFactors = FALSE)
+obs.dat[obs.dat$FBgn %in% drop.g$FBgn, "ModID"] <- "grey"
+
+colnames(sigDEGs)[1] <- "FBgn"
+path_sigDEGs <- merge(sigDEGs, obs.dat, by="FBgn")
+
+cgs <- dplyr::select(path_sigDEGs, FBgn,symbol,ModID)
+cgs <- inner_join(cgs,obs.dat)
+
 fc <- as.data.frame(all.fc.dat) %>%
-  rownames_to_column(var="Gene") %>%
+  rownames_to_column(var="FBgn") %>%
     dplyr::select(-c(contains("FCse_"),
                    contains("stat_"),
                    contains("p_"),
                    contains("padj_")),-"log2FoldChange")
-cgs <- inner_join(cgs,fc)
 
-# Add module names
-#cgss <- subset(ll,ll$FBgn %in% cgs$Gene)
-#colnames(cgss)[colnames(cgss)=="gene_symbol"] <- "symbol"
-cgss <- inner_join(cgs,ll)
-cgss <- cgss %>% mutate_if(is.numeric, round, digits = 6) %>%
-  dplyr::select(-FBgn) %>%
-  arrange(FC_DR_O)
-write.csv(cgs, file = "../../processed/DESEQ/cand_genes_qtl.csv" )
+cgs <- inner_join(cgs,fc)
+cgs.s <- inner_join(cgs,path_mod)
+#cgs.s <- cgs[order(cgs.s$pathway),] 
+
+cgs.s <- cgs.s %>% 
+  mutate_if(is.numeric, round, digits = 6)
+cgs.s <- dplyr::select(cgs.s, 1:3,18:19,4:17)
+colnames(cgs.s)[4] <- "CG_Id"
+
+write.csv(cgs, file = "../../processed/DESEQ/cand_genes.csv" )
 
 ```
 
