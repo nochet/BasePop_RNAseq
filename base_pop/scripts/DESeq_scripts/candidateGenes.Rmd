@@ -50,7 +50,11 @@ colnames(iis)[1]<-"symbol"
 iis$pathway <- "IIS"
 
 fb_path <- rbind(fox,iis,tor)
- 
+
+# For a different script
+write.csv(fb_path, 
+          file = "../../processed/DESEQ/Coexpression/ext_pathway_genes.csv", row.names = FALSE)
+
 # Load module names
 load("../../processed/DESEQ/Coexpression/modules.RData")
 
@@ -192,7 +196,7 @@ see_zi <- sigDEGs[sigDEGs$Gene %in% c("FBgn0033247","FBgn0005695"), ]
 Comparing path_mod (314 genes), qtl_sigDEGs (186 genes), mod_sigDEGs (2473 genes) and qtl_mod (215 genes) show only 2 shared genes: Nup44A and gcl. These are already in the most interesting list (path_sigDEGs). These 47 genes will be considered candidates.
 
 
-# Map candidate genes (path_sigDEGs) to fold change table 
+# Map candidate genes to fold change table 
 
 ```{r}
 load(file="../../processed/DESEQ/Coexpression/Obs_modMembership.csv")
@@ -235,9 +239,6 @@ pgo <- read.csv("../../processed/DESEQ/gopath_genes.csv",
 cand_goids <- inner_join(path_sigDEGs,pgo)
 ```
 
-
-
-
 # Candidates
 
 ```{r}
@@ -272,6 +273,7 @@ qgs_cgs<-merge(x=qgs,y=cgs,by="symbol")
 47 hits in DEGs (i.e. 38 unique genes)
 
 # Gene summaries
+
 ```{r}
 gsum <- read_lines(file = "../../../../automated_gene_summaries.tsv",
                    skip = 1)%>%
@@ -285,5 +287,13 @@ candsum <- subset(gsum, gsum$FBgn %in% candidates$FBgn)
 candsum <- inner_join(candsum,candidates, by="FBgn") %>%
   dplyr::select(c(1,9,everything())) %>% as.data.frame()
 
+```
+
+# modules with all expression data
+
+```{r}
+cgs_all <- inner_join(ll,fc)
+cgs_all.l <-inner_join(cgs_all, path_mod)
+colnames(path_mod)[2:3] <- c("FBgn", "CG_Id")
 ```
 

@@ -28,6 +28,9 @@ columns(org.Dm.eg.db)
 # Generate up-to-date KEGG pathway gene sets 
 kegg_sets <- kegg.gsets(species = "dme", id.type = "entrez", check.new=FALSE)
 
+# List of kegg sets
+tit <- as.data.frame(names(kegg_sets$kg.sets))
+
 # check that expr data and gene sets both use entrez
 lapply(kegg_sets[1:3],head)
 head(kegg_sets[[1]])
@@ -139,17 +142,18 @@ lapply(out.list[[ii]], head)
 
 ```{r}
 
-enrich.path <- data.frame("pathway"=character(length=0),
-                          "stat.mean"=numeric(length=0),
+enrich.path <- data.frame("pathway"=character(length = 0),
+                          "stat.mean"=numeric(length = 0),
+                          "set.size" = numeric(length = 0),
+                          "p.val"=numeric(length = 0),
                           "q.val"=numeric(length = 0),
-                          "contrast"=character(length=0), stringsAsFactors = FALSE)
+                          "contrast"=character(length = 0), stringsAsFactors = FALSE)
 
 for(fc.set in cc.sets)
 {
   sub.fc <- out.list[[fc.set]][[1]]%>%as.data.frame()%>%add_column(contrast = fc.set)
   
-sub.fc <- rownames_to_column(sub.fc, "pathway") %>%
-  dplyr::select(pathway,stat.mean,q.val,contrast)
+sub.fc <- rownames_to_column(sub.fc, "pathway") 
 
 enrich.path <- rbind(enrich.path, sub.fc)
   
@@ -162,6 +166,7 @@ write.csv(rbind(fc.kegg$greater, fc.kegg$less),
 
 # outlist.sig <-read.csv("../../processed/DESEQ/pathway_enrich.csv")
 # outlist.sig<-sigGeneSet(fc.kegg, outname="outlist.kegg")
+#tx <- grep("FoxO", enrich.path$pathway)
 ```
 
 # Significant pathways

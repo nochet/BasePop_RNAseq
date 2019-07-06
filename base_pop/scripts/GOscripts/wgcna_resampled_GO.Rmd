@@ -240,3 +240,10 @@ for (ii in 1:length(ff))
 - BP: chitin-based cuticle development, cuticle development, body morphogenesis, multicellular organism development, anatomical structure development, developmental process.
 
 
+# Are external pathways (IIS, TOR, FOXO) enriched?
+
+```{r}
+ext_pway <- read.csv("../../processed/DESEQ/Coexpression/ext_pathway_genes.csv")
+                     
+```
+
