@@ -70,9 +70,10 @@ lrt.treat <- subset(all.fc.dat,rownames(all.fc.dat) %in% lrt.treatment)
 # Need libraries: gage, pathview and org.Dm.eg.db
 # Used this tutorial together with all 3 vignettes: http://www.gettinggeneticsdone.com/2015/12/tutorial-rna-seq-differential.html
 
-```{r}
+
 # Add annotation maps to results object
 
+```{r}
 # gene symbol
 lrt.treat$symbol = mapIds(org.Dm.eg.db,
                      keys=row.names(lrt.treat), 
