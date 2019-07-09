@@ -147,7 +147,7 @@ p2 <- ggplot(full.tab, aes(length)) +
   geom_histogram(binwidth = 0.5) +
   scale_x_continuous(breaks = seq(0, 110, 20),
                      limits =  c(0,120)) +
-  xlab("Transcript length (bp)") + ylab("Frequency") +
+  xlab("Transcript length (Kb)") + ylab("Frequency") +
   theme(text=element_text(size = 10),
         axis.text.x=element_text(size = 9),
         axis.text.y=element_text(size = 9))
