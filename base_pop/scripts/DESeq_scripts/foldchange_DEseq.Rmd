@@ -107,6 +107,8 @@ all.fc.dat <- cbind(all.fc.dat, FC_DRC[,2:6],FC_HSC[,2:6],FC_DRHS[,2:6])
 #save(all.fc.dat, file="../../processed/DESEQ/all_fc_dat.rda")
 ```
 
+## Plot fold change for diets relative to C
+
 ```{r}
 pp.list <- vector(mode='list', length=3)
 names(pp.list) <- organs
@@ -197,6 +199,8 @@ fcplot <- plot_grid(pp.list[[1]], pp.list[[2]], pp.list[[3]],nrow=1,labels = c('
 
 ggsave(fcplot, file="../../plots/FC_all.pdf",width=6.5,height=2.1)
 ```
+
+## Volcano plots by tissue
 
 ```{r}
 

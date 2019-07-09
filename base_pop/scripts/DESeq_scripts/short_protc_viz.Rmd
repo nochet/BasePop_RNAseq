@@ -93,14 +93,15 @@ b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
   geom_boxplot(alpha=0.4) +
   theme(axis.title.x=element_blank(),
         axis.text.x  = element_text(angle=90, vjust=0.5))+
-  scale_color_manual(values=c("indianred4", "olivedrab", "turquoise4")) +
+  #scale_color_manual(values=c("indianred4", "olivedrab", "turquoise4")) +
   #scale_colour_brewer(palette = "Dark2") +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
   xlab("Tissue") +
   #scale_fill_discrete(name="Samples")+
   #scale_colour_tableau() +
   facet_grid(treatment~.) +
-  my_theme
+  my_theme +
+  tx_fill_map()
 b2 <- b2 + theme(legend.position="none")
 
 # ggplot2::ggsave(plot=b2,
@@ -146,7 +147,7 @@ p2 <- ggplot(full.tab, aes(length)) +
   geom_histogram(binwidth = 0.5) +
   scale_x_continuous(breaks = seq(0, 110, 20),
                      limits =  c(0,120)) +
-  xlab("Transcript length \n (x1000 bp)") + ylab("Frequency") +
+  xlab("Transcript length (bp)") + ylab("Frequency") +
   theme(text=element_text(size = 10),
         axis.text.x=element_text(size = 9),
         axis.text.y=element_text(size = 9))
@@ -225,12 +226,13 @@ gg <- ggplot(bcor.pca, aes(PC1, PC2, color=treatment, shape=tissue)) +
   geom_point(size=3, alpha = 0.6) + 
   theme(axis.title = element_text(size = 10),
                 text = element_text(size = 10))+
-  scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
+  #scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
   xlab(paste0("PC1: ", percentVar[1],"% variance")) + 
   ylab(paste0("PC2: ", percentVar[2],"% variance")) + 
   #coord_cartesian(xlim = c(-130, 130)) +
   coord_cartesian(ylim = c(-100, 100)) +
   my_theme +
+  tx_fill_map() +
   labs(color="Treatment", shape="Tissue")
 gg    
 ggsave(gg,file = "../../plots/PCAplot_rlog_corrected_trt.pdf",width = 3,height=2.5)
