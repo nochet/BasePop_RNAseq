@@ -251,6 +251,7 @@ save(ME.list,
 # Identify genes uniquely assigned to module in less than half datasets
 
 ```{r}
+load(file="../../processed/DESEQ/Coexpression/Obs_modMembership.csv")
 
 load(file="../../processed/DESEQ/Coexpression/Resample_WGCNA_mods.rda")
 row.names(out.dat) <- obs.dat$FBgn
