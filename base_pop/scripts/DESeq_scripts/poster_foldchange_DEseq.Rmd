@@ -1,0 +1,261 @@
+---
+title: "Foldchange_DEseq"
+author: "EGK & EN"
+date: "11/15/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(DESeq2)
+library(apeglm)
+library(ggplot2)
+library(cowplot)
+library(colorspace)
+knitr::opts_chunk$set(echo = TRUE)
+
+options(scipen=10)
+source("../ggplot_theme.R")
+```
+
+# Expression count data
+
+```{r}
+# Expression matrix
+countdata <- read.csv("../../processed/DESEQ/Expr_countData.csv")
+rownames(countdata) <- countdata[,1]
+countdata[,1] <- NULL
+countdata <- as.matrix(countdata)
+
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+rownames(phenDat.sva) <- phenDat.sva[,1]
+phenDat.sva[,1] <- NULL
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
+phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, sep="")
+```
+
+
+## Get DEseq object & calculate fold change
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = countdata, 
+                                   colData = phenDat.sva, 
+                                   design = ~ SV1 + batch + treat_tissue)
+dds <- estimateSizeFactors(dds)
+nc <- counts(dds, normalized=TRUE)
+filter <- rowSums(nc >= 10) >= 2
+#dds <- dds[filter,]
+dds <- estimateDispersions(dds, fitType = "local")
+dds <- nbinomWaldTest(dds, maxit = 1000, useOptim = TRUE)
+
+
+dds.01 <- DESeqDataSetFromMatrix(countData = countdata, 
+                                   colData = phenDat.sva, 
+                                   design = ~ SV1 + batch + tissue + treatment)
+lrt.treatment <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + tissue)
+lrt.treatAll <- results(lrt.treatment)
+
+all.equal(rownames(lrt.treatAll), rownames(dds))
+all.equal(rownames(lrt.treatAll), names(filter))
+
+lrt.treatAll <- lrt.treatAll[filter,]
+dds <- dds[filter,]
+
+organs <- c('B','H','O')
+treats <- c('DR','C','HS')
+
+
+
+all.fc.dat <- lrt.treatAll
+
+
+
+for(oo in organs)
+{
+
+FC_DRC <- lfcShrink(dds, contrast=c("treat_tissue",paste("DR_",oo,sep=""),paste("C_",oo,sep="")), type="normal")
+
+FC_HSC <- lfcShrink(dds, contrast=c("treat_tissue",paste("HS_",oo,sep=""),paste("C_",oo,sep="")), type="normal")
+  
+FC_DRHS <- lfcShrink(dds, contrast=c("treat_tissue",paste("DR_",oo,sep=""),paste("HS_",oo,sep="")), type="normal")
+
+colnames(FC_DRC) <- c('baseMean',
+                      paste("FC_DR_",oo,sep=""),
+                      paste("FCse_DR_",oo,sep=""),
+                      paste("stat_DR_",oo,sep=""),
+                      paste("p_DR_",oo,sep=""),
+                      paste("padj_DR_",oo,sep=""))
+
+colnames(FC_HSC) <- c('baseMean',
+                      paste("FC_HS_",oo,sep=""),
+                      paste("FCse_HS_",oo,sep=""),
+                      paste("stat_HS_",oo,sep=""),
+                      paste("p_HS_",oo,sep=""),
+                      paste("padj_HS_",oo,sep=""))
+
+colnames(FC_DRHS) <- c('baseMean',
+                      paste("FC_DRHS_",oo,sep=""),
+                      paste("FCse_DRHS_",oo,sep=""),
+                      paste("stat_DRHS_",oo,sep=""),
+                      paste("p_DRHS_",oo,sep=""),
+                      paste("padj_DRHS_",oo,sep=""))
+
+all.fc.dat <- cbind(all.fc.dat, FC_DRC[,2:6],FC_HSC[,2:6],FC_DRHS[,2:6])
+
+
+}
+
+save(lrt.treatAll, all.fc.dat, file="../../processed/DESEQ/all_fc_dat.rda")
+```
+
+## Plot fold change for diets relative to C
+
+```{r}
+pp.list <- vector(mode='list', length=3)
+names(pp.list) <- organs
+ax.top <- 9
+
+for(oo in organs)
+{
+
+plot.dat <- data.frame("gname" = rownames(lrt.treatAll), 
+                       "Pval"= lrt.treatAll$pvalue, 
+                       "Padj"= lrt.treatAll$padj,
+                       "BaseMean"= lrt.treatAll$baseMean,
+                       "FoldChangeDR"= all.fc.dat[,paste("FC_DR_",oo,sep="")],
+                       "FoldChangeHS"= all.fc.dat[,paste("FC_HS_",oo,sep="")], stringsAsFactors = FALSE)
+plot.dat$Pcol <- NA
+plot.dat$Pcol[is.na(plot.dat$Padj)] <- NA
+plot.dat$Pcol[(plot.dat$Padj <= 0.05 & plot.dat$Padj > 0.01)] <- 2
+plot.dat$Pcol[(plot.dat$Padj <= 0.01 & plot.dat$Padj > 0.001)] <- 3
+plot.dat$Pcol[(plot.dat$Padj <= 0.001 & plot.dat$Padj > 0.0001)] <- 4
+plot.dat$Pcol[plot.dat$Padj <= 0.0001] <- 5
+
+pp.dat <- plot.dat[is.na(plot.dat$Pcol)==FALSE,]
+pp.dat <- pp.dat[order(-pp.dat$Padj),]
+
+if(oo =='B')
+{
+  #plot.dat[is.na(plot.dat$Pcol),]
+pp<-ggplot(plot.dat, aes(FoldChangeDR,FoldChangeHS, color=log10(BaseMean))) +
+  geom_hline(yintercept=0,col='grey80')+
+  geom_vline(xintercept=0,col='grey80')+
+  geom_abline(intercept=0,slope=1,col='grey80',lty=2)+
+  geom_point(alpha=1/2)+
+ # geom_point(data=pp.dat, aes(FoldChangeDR,FoldChangeHS,color=-log10(Padj+1e-16)), alpha=1/2) +
+  ylim(c(-ax.top,ax.top))+
+  xlim(c(-ax.top,ax.top))+
+  ylab("Fold Change (HS)")+
+  xlab("Fold Change (DR)")+
+  scale_color_gradientn(colours = rainbow_hcl(8, start = 300, end = 40)) +
+  theme(legend.position="none", plot.title = element_text(color="grey50")) +
+  ggtitle("Bodies") +
+  my_theme
+}
+
+if(oo=='H')
+{
+  pp<-ggplot(plot.dat, aes(FoldChangeDR,FoldChangeHS, color=log10(BaseMean))) +
+  geom_hline(yintercept=0,col='grey80')+
+  geom_vline(xintercept=0,col='grey80')+
+  geom_abline(intercept=0,slope=1,col='grey80',lty=2)+
+  geom_point(alpha=1/2)+
+  #geom_point(data=pp.dat, aes(FoldChangeDR,FoldChangeHS,color=-log10(Padj+1e-16)), alpha=1/2) +
+    ylim(c(-ax.top,ax.top))+
+  xlim(c(-ax.top,ax.top))+
+  ylab("Fold Change (HS)")+
+  xlab("Fold Change (DR)")+
+    scale_color_gradientn(colours = rainbow_hcl(8, start = 300, end = 40)) +
+    ggtitle("Heads") +
+  theme(legend.position="none", plot.title = element_text(color="grey50")) +
+  my_theme
+  
+}
+
+if(oo=='O')
+{
+  pp<-ggplot(plot.dat, aes(FoldChangeDR,FoldChangeHS,      color=log10(BaseMean))) +
+  geom_hline(yintercept=0,col='grey80')+
+  geom_vline(xintercept=0,col='grey80')+
+  geom_abline(intercept=0,slope=1,col='grey80',lty=2)+
+  geom_point(alpha=1/2)+
+  #geom_point(data=pp.dat, aes(FoldChangeDR,FoldChangeHS,color=-log10(Padj+1e-16)), alpha=1/2) +
+  ylim(c(-ax.top,ax.top))+
+  xlim(c(-ax.top,ax.top))+
+  ylab("Fold Change (HS)")+
+  xlab("Fold Change (DR)")+
+  #scale_color_continuous(name=expression("-log"[10]*"(P-value)"))+
+    ggtitle("Ovaries") +
+    theme(legend.position = "none", plot.title = element_text(color="grey50")) +
+    scale_color_gradientn(breaks = c(1:5), labels = 10^seq(1,5), name = "Mean\nExpression",colours = rainbow_hcl(8, start = 300, end = 40)) +
+  my_theme
+  
+}
+pp.list[[oo]] <- pp
+}
+
+
+fcplot <- plot_grid(pp.list[[1]], pp.list[[2]], pp.list[[3]],nrow=3,ncol=1,labels = c('a.', 'b.', 'c.'), align = 'h',rel_widths = c(1.2,1.05,1.7), label_size = 10)
+#fcplot
+
+ggsave(fcplot, file="../../plots/FC_all.pdf",width=2.5,height=6.8)
+```
+
+## Volcano plots by tissue
+
+```{r}
+
+##Volcanos
+st.ind <- 7
+voc.list <- vector(mode="list", length=9)
+
+p.titles <- c("Bodies:\nDR vs. C",
+              "Bodies:\nHS vs. C",
+              "Bodies:\nDR vs. HS",
+              "Heads:\nDR vs. C",
+              "Heads:\nHS vs. C",
+              "Heads:\nDR vs. HS",
+              "Ovaries:\nDR vs. C",
+              "Ovaries:\nHS vs. C",
+              "Ovaries:\nDR vs. HS")
+  
+for(jj in 1:9)
+{
+
+plot.dat <- as.data.frame(all.fc.dat[,c(1,st.ind:(st.ind+4))])
+colnames(plot.dat) <- c("baseMean","FC","FCse","stat","p","padj")
+
+pp <- ggplot(na.omit(plot.dat), aes(y=-log10(padj), x=FC, color=log10(baseMean))) +
+  geom_hline(yintercept=-log10(0.05), color='grey70')+
+  geom_vline(xintercept= -1, color='grey70')+
+  geom_vline(xintercept= 1, color='grey70')+
+  geom_point(size=1.3, alpha=1/2) +
+  ylab(expression("-log"[10]*"(P"[adj]*")")) +
+  xlab(expression("log"[2]*"(FC)"))+
+  xlim(c(-9,9)) +
+  ylim(c(0,51)) +
+  ggtitle(p.titles[jj]) +
+  theme(plot.title = element_text(color="grey50"))+
+  my_theme +
+  scale_color_gradientn(breaks = c(1:5), labels = 10^seq(1,5), name = "Mean\nExpression",colours = rainbow_hcl(8, start = 300, end = 40)) 
+  
+  
+  if(st.ind %in% c(7,12,22,27,37,42))
+  {pp<- pp + theme(legend.position="none")}
+
+  if(st.ind %in% c(7,12,17,22,27,32))
+  {pp<- pp + theme(axis.title.x=element_blank())}
+
+  if(st.ind %in% c(12,17,27,32,42,47))
+  {pp<- pp + theme(axis.title.y=element_blank())}
+
+  voc.list[[jj]]<- pp
+  st.ind <- st.ind + 5
+}
+
+vocplot <- plot_grid(plotlist=voc.list,nrow=3,labels = c('a.', 'b.', 'c.','d.', 'e.', 'f.','g.', 'h.', 'i.'),rel_widths = c(1.3,1.1,1.8),rel_heights = c(1,1,1.2), hjust= c(rep(c(-1,rep(1,2)),3)), label_size = 10)
+
+
+ggsave(vocplot, file="../../plots/Voc_all.pdf",width=6.5,height=6)
+
+```
+

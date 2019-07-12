@@ -1,0 +1,156 @@
+---
+title: "Module eigengene expression across diets"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(cowplot)
+
+```
+
+# Plot gene expression for each module
+This script subsets and plots gene expression for each WGCNA module. Use data corrected for batches with removeBatchEffects() i.e. "../../processed/DESEQ/rlogtrt.csv" created in wgcnaCoex.Rmd
+
+
+
+# Set formatting
+
+```{r}
+source("../ggplot_theme.R")
+source("../color_map.R")
+
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  legend
+}
+```
+
+# P values from ANOVA
+
+```{r}
+xt <- read.csv("../../processed/DESEQ/Coexpression/Module_ANOVA.csv")
+```
+
+# Plotting
+
+```{r}
+
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+eg.genes <- read.table(file="../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t", header=TRUE, stringsAsFactors = FALSE) 
+
+all.dat <- cbind(phenDat.sva, eg.genes)
+
+ccs <- colnames(all.dat[,6:27])
+all.plots <- vector(mode="list", length=length(ccs))
+names(all.plots) <- ccs
+
+jj <- 1
+for(cc in ccs)
+{
+     if(jj %in% c(1,6,11,16))
+     {
+pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tissue")) +
+  geom_point(alpha=0.5, position = position_jitter(width = 0.15)) +
+  stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
+  stat_summary(fun.y=mean, geom ="line") + 
+  scale_y_continuous(limits = c(-0.6, 0.6)) +
+  theme(legend.position="none", axis.title.x = element_blank()) +
+      my_theme +
+  ylab("Eigengene expression")
+
+  
+all.plots[[cc]] <- pp
+     }else{
+  
+  if(jj %in% c(22))
+     {
+pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tissue")) +
+  geom_point(alpha=0.5, position = position_jitter(width = 0.15)) +
+  stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
+  stat_summary(fun.y=mean, geom ="line") +
+  scale_y_continuous(limits = c(-0.6, 0.6)) +
+  theme(legend.position="none", axis.title.y = element_blank()) +
+      my_theme +
+  xlab("Diet")
+ 
+all.plots[[cc]] <- pp
+  }else{
+
+    if(jj %in% c(21))
+     {
+pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tissue")) +
+  geom_point(alpha=0.5, position = position_jitter(width = 0.15)) +
+  stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
+  stat_summary(fun.y=mean, geom ="line") +
+  scale_y_continuous(limits = c(-0.6, 0.6)) +
+  theme(legend.position="none") +
+      my_theme +
+  xlab("Diet") +
+  ylab("Eigengene expression")
+
+all.plots[[cc]] <- pp
+  }else{
+
+    if(jj %in% c(22))
+     {
+pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tissue")) +
+  geom_point(alpha=0.5, position = position_jitter(width = 0.15)) +
+  stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
+  stat_summary(fun.y=mean, geom ="line") +
+  scale_y_continuous(limits = c(-0.6, 0.6)) +
+  theme(legend.position="none") +
+      my_theme +
+  xlab("Diet")
+
+all.plots[[cc]] <- pp
+    }else{
+    pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tissue")) +
+  geom_point(alpha=0.5, position = position_jitter(width = 0.15)) +
+  stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
+  stat_summary(fun.y=mean, geom ="line") +
+  scale_y_continuous(limits = c(-0.6, 0.6)) +
+  theme(legend.position="none", axis.title.x = element_blank(), 
+        axis.title.y = element_blank()) +
+      my_theme 
+  
+
+all.plots[[cc]] <- pp
+
+    }
+  }
+  }
+}
+  
+jj <- jj+1
+}
+
+#all.plots[[1]]
+
+#get legend
+p1 <- ggplot(all.dat, aes("treatment", cc, color = tissue)) +
+  geom_point(alpha=0.5) +
+  theme(legend.margin=margin(t=0,r=0,b=0,l=4, unit = 'cm')) +
+  theme(legend.position = "bottom") +
+  labs(color = "Tissue") +
+  my_theme
+
+#get legend - add to list
+all.plots[[23]] <- g_legend(p1)
+
+finalp<-plot_grid(plotlist=all.plots,nrow=5, ncol=5,
+          rel_widths = c(1.17,1,1, 1,1), rel_heights = c(1,1,1,1,1.18), 
+          labels=c('a.','b.','c.','d.','e.','f.','g.','h.','i.','j.',
+                   'k.','l.','m.','n.','o.','p.','q.','r.', 's.','t.',
+                   'u.','v.'), 
+          label_size=9, hjust= rep(c(-0.2,rep(0,3)),6),
+          vjust= rep(c(1,rep(1,3)),6))
+
+
+ggsave(finalp, filename="../../plots/poster_eigengenes_all.pdf", height=9,width=9)
+```
+

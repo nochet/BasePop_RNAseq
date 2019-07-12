@@ -127,8 +127,17 @@ all_qtl_degs[order(all_qtl_degs$padj_DR_B),]
 
 write.csv(all_qtl_degs, file = "../../processed/DESEQ/DEG_QTL/all_diffExpr_underQTL.csv")
 
-
 ```
+
+# Genes for poster
+
+```{r}
+poster <- read.csv("../../processed/DESEQ/DEG_QTL/all_diffExpr_underQTL.csv")
+which(poster[poster$effect=="treat","FBgn"] %in% poster[poster$effect=="int","FBgn"])
+poster[which(poster[poster$effect=="treat","FBgn"] %in%
+               poster[poster$effect=="int","FBgn"]),"FBgn"]
+```
+
 
 ## Visualization
 

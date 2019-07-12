@@ -338,6 +338,25 @@ term_names <- gqval05$term
 term_names <- substr(term_names,1, 10)
 term_names <- paste(term_names,collapse = ",")
 write.table(term_names, file = "../../processed/DESEQ/GO/term_names.txt", row.names = FALSE)
+
+# Plot terms
+px <- read.csv("../../processed/DESEQ/GO/sig_terms.csv") 
+px <- filter(px, q.val <= 0.05)
+levels(px$contrast) <- gsub("FC_", "", levels(px$contrast))
+
+#xlab <- c("dme04141: PP_ER","dme00190: OP","dme01200: CM","dme01100: MPs")
+p <- ggplot(px, aes(x=term, y=stat.mean, fill=q.val, label = contrast)) +
+  geom_bar(stat = "identity", width = 0.8) + ylab("Geneset level change") +
+  expand_limits(x = 45, y = 15) +
+  geom_text(
+    aes(x=term,y=10, label = contrast),
+    position = position_dodge((width = 0.5)),
+    hjust = 0, size = 3) +
+  #scale_x_discrete(limits = xlab) +
+  theme(axis.text = element_text(size=10)) +
+  coord_flip()
+ggsave(p, filename="../../plots/GOterms_Pathways.pdf", height=9,width=9)
+#p + theme(axis.title.x = element_blank())
 ```
 
 # Get term genes
