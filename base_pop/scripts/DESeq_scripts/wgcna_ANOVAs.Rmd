@@ -30,7 +30,6 @@ load("../../processed/DESEQ/Coexpression/modules.RData")
 
 
 # Output gene lists
-# Fbgn annotation file "Genes:fbgn_annotation_ID_fb_2018_04.tsv"
 # see Index of ftp://ftp.flybase.net/releases/FB2018_05/precomputed_files/genes/
 
 annot = read.csv("../../processed/DESEQ/Coexpression/FlyAnnotation.csv")
