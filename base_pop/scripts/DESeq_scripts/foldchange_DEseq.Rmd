@@ -34,7 +34,7 @@ phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, 
 ```
 
 
-## Get DEseq object & calculate fold change
+## Get DEseq object
 
 ```{r}
 dds <- DESeqDataSetFromMatrix(countData = countdata, 
@@ -60,14 +60,18 @@ all.equal(rownames(lrt.treatAll), names(filter))
 lrt.treatAll <- lrt.treatAll[filter,]
 dds <- dds[filter,]
 
+```
+
+# Calculate fold change
+
+```{r}
 organs <- c('B','H','O')
 treats <- c('DR','C','HS')
 
 
+#all.fc.dat <- lrt.treatAll
 
-all.fc.dat <- lrt.treatAll
-
-
+load(file="../../processed/DESEQ/all_fc_dat.rda")
 
 for(oo in organs)
 {
@@ -110,6 +114,7 @@ all.fc.dat <- cbind(all.fc.dat, FC_DRC[,2:6],FC_HSC[,2:6],FC_DRHS[,2:6])
 ## Plot fold change for diets relative to C
 
 ```{r}
+
 pp.list <- vector(mode='list', length=3)
 names(pp.list) <- organs
 ax.top <- 9
@@ -173,7 +178,7 @@ if(oo=='H')
 
 if(oo=='O')
 {
-  pp<-ggplot(plot.dat, aes(FoldChangeDR,FoldChangeHS,      color=log10(BaseMean))) +
+  pp<-ggplot(plot.dat, aes(FoldChangeDR,FoldChangeHS, color=log10(BaseMean))) +
   geom_hline(yintercept=0,col='grey80')+
   geom_vline(xintercept=0,col='grey80')+
   geom_abline(intercept=0,slope=1,col='grey80',lty=2)+
@@ -257,5 +262,22 @@ vocplot <- plot_grid(plotlist=voc.list,nrow=3,labels = c('a.', 'b.', 'c.','d.', 
 
 ggsave(vocplot, file="../../plots/Voc_all.pdf",width=6.5,height=6)
 
+```
+
+```{r}
+plot.dat$lg <- -log10(plot.dat$padj)
+subset(na.omit(plot.dat), abs(plot.dat$FC>4) & plot.dat$lg <10)
+
+# Diet-tissue
+ft <- all.fc.dat
+ft$h.hsc <- -log10(all.fc.dat$padj_HS_H)
+ft <- na.omit(ft)
+pl <- subset(ft, abs(ft$FC_HS_H>4) & ft$h.hsc>10)
+ft[ abs(ft$FC_HS_H>4),]
+
+pl <- pl[,c(7,9:12,14:17,19:22,24:27,29:32,34:37,39:42,44:47,49:51)]
+
+#pl <- rownames(pl)
+#pl <- subset(countdata,rownames(countdata) %in% pl)
 ```
 
