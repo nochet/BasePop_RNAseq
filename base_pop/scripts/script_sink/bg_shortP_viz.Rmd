@@ -34,7 +34,7 @@ phenDat <- read.csv("../../processed/describe_samples.csv",
 # Gene abundances across libraries, colored by treatment
 
 ```{r}
-load("../../processed/S03_short_ballG/bgOut_shortP.Rda")
+load("../../processed/shortProtocol/S03_short_ballG/bgOut_shortP.Rda")
 bg_ballG
 
 # Filter out low-abundance transcripts 
@@ -62,6 +62,7 @@ b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
                 text = element_text(size = 12))+
   #scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +       
   #scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
+  theme_half_open() +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
   xlab("Samples")+
   facet_grid(tissue~.) +
@@ -77,6 +78,7 @@ b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
                 axis.title.x=element_blank(),
                 axis.text.x  = element_text(angle=90, vjust=0.5),
                 text = element_text(size = 12)) +
+  theme_half_open() +
   #scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
   scale_color_manual(values=c("indianred4", "olivedrab", "turquoise4")) +
   #scale_colour_brewer(palette = "Dark2") +

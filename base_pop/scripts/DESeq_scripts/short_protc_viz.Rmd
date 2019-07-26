@@ -11,8 +11,6 @@ knitr::opts_chunk$set(echo = TRUE)
 library(ballgown)
 library(DESeq2)
 library(genefilter)
-library(tidyverse)
-library(cowplot)
 library(reshape)
 library(ggthemes)
 library(ggrepel)
@@ -20,6 +18,8 @@ library(data.table)
 library(limma)
 library(gridExtra)
 library(RColorBrewer)
+library(tidyverse)
+library(cowplot)
 
 source("modified_plotPCA_function.R")
 source("../color_map.R")
@@ -165,8 +165,10 @@ load("../../processed/DESEQ/dds_deseq.02.Rda")
 rlog.trt <- rlog(dds_deseq.01, blind = FALSE, fitType = "parametric")
 #rlog.int <- rlog(dds_deseq.02, blind = FALSE, fitType = "parametric")
 
+save(rlog.trt, file = "../../processed/DESEQ/rlog.trt.Rda")
+
 # rlog.trt <- read.table(
-#             file="../../processed/DESEQ/rlog.trt.txt", sep="\t")
+#              file="../../processed/DESEQ/rlog.trt.txt", sep="\t")
 ```
 
 # Sample info
@@ -183,8 +185,9 @@ phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, 
 # PCA plot of uncorrected data
 
 ```{r}
+#load("../../processed/DESEQ/rlog.trt.Rda")
 
-uncor.pca <- plotPCA(rlog.trt, intgroup=c("treatment", "tissue"), returnData=TRUE)
+uncor.pca <- pcaPlot(rlog.trt, intgroup=c("treatment", "tissue"), returnData=TRUE)
 percentVar <- round(100 * attr(uncor.pca, "percentVar"))
 
 ll <- ggplot(uncor.pca, aes(PC1, PC2, color=treatment, shape=tissue)) +
@@ -195,7 +198,7 @@ ll <- ggplot(uncor.pca, aes(PC1, PC2, color=treatment, shape=tissue)) +
   xlab(paste0("PC1: ",percentVar[1],"% variance")) +
   ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
     coord_cartesian(xlim = c(-105, 130)) +
-  coord_cartesian(ylim = c(-105, 100)) +
+  coord_cartesian(ylim = c(-110, 100)) +
   my_theme +
   labs(color="Treatment", shape="Tissue")
 ll 
@@ -230,10 +233,10 @@ gg <- ggplot(bcor.pca, aes(PC1, PC2, color=treatment, shape=tissue)) +
   xlab(paste0("PC1: ", percentVar[1],"% variance")) + 
   ylab(paste0("PC2: ", percentVar[2],"% variance")) + 
   #coord_cartesian(xlim = c(-130, 130)) +
-  coord_cartesian(ylim = c(-100, 100)) +
+  coord_cartesian(ylim = c(-100, 100), xlim=c(-110,100)) +
   my_theme +
   tx_fill_map() +
-  labs(color="Treatment", shape="Tissue")
+  labs(color="Treatment", shape="Tissue") 
 gg    
 ggsave(gg,file = "../../plots/PCAplot_rlog_corrected_trt.pdf",width = 3,height=2.5)
 
@@ -254,8 +257,8 @@ library(ggpubr)
 #           nrow = 2,
 #           labels = "a")
 
-cir <- ggarrange(b2, p1, gg, p2, ncol = 2, nrow = 2, labels = c("a", "b", "d", "c"))
+cir <- ggarrange(b2, p1, gg, p2, ncol = 2, nrow = 2, labels = c("a", "c", "d", "b"))
 
-ggplot2::ggsave(cir,file = "../../plots/transcripts_stats.pdf",width = 6,height=6)
+ggplot2::ggsave(cir,file = "../../plots/transcripts_stat.pdf",width = 6,height=6)
 ```
 
