@@ -1,0 +1,110 @@
+---
+title: "Interactions"
+author: "EGK & EN"
+date: "1/23/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(cowplot)
+
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  legend
+}
+
+source("../ggplot_theme.R")
+
+
+```
+
+```{r}
+gmtable <- read.csv("../../processed/DESEQ/DEG_QTL/gene_map_table.csv", 
+                 stringsAsFactors = FALSE)
+
+gids <- c(gmtable[grep("Ilp",gmtable$gname),"gname"],
+gmtable[grep("Sirt",gmtable$gname),"gname"])
+
+gids <- sort(gids)
+
+gmsort <- gmtable[which(gmtable$gname %in% gids),]
+gmsort <- gmsort[order(gmsort$gname),]
+
+FBgns <- gmsort$FBgn
+
+load(file="../../processed/DESEQ/dds_deseq.02.Rda")
+
+
+ps <- vector(mode='list', length=(length(FBgns)+1))
+counter <-1
+
+yms <- c(75,15000,7000,400,2500,6000,350,3000,4500,2000,1500,2000,1500)
+yls <- c(65,12000,6000,350,2200,5000,300,2500,4000,1500,1200,1500,1000)
+
+
+#yms <- c(75,7000,350,2500,6000,15000,400,3000,1500,2000,2000,1500,4500)
+#yls <- c(65,6000,300,2200,5000,12000,350,2500,1200,1500,1500,1000,4000)
+
+  
+for(jj in FBgns)
+{
+
+#ww <- which(rownames(dds_deseq.02)==jj)
+
+d <- plotCounts(dds_deseq.02, gene=jj, intgroup=c("treatment", "tissue"), 
+                returnData=TRUE)
+ymax <- max(d$count,na.rm=TRUE)
+ymin <- min(d$count,na.rm=TRUE)
+ymin0 <- ifelse(ymin <2.1,2.1,ymin) 
+#
+p1<- ggplot(d, aes(x=treatment, y=count, color=tissue, group = tissue)) + 
+  geom_point(alpha=0.7, position = position_jitter(width = 0.15)) +
+  stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
+  stat_summary(fun.y=mean, geom ="line") + 
+  scale_y_log10(limits=c(ymin0-2, yms[counter])) +
+  annotate("text", x =3, y=yls[counter], label = gids[counter], fontface=3, color="grey30") +
+  ylab("Count") +
+  xlab("Diet") +
+  theme_half_open() +
+  theme(legend.position='none') +
+  my_theme
+
+if(counter %in% c(2,4,6,8,10,12))
+{
+  p1 <- p1 + theme(axis.title.y=element_blank())  
+}
+
+if(counter %in% seq(1,10))
+{
+  p1 <- p1 + theme(axis.title.x=element_blank())  
+}
+
+
+ps[[counter]]<- p1
+counter <- counter+1
+cat(ymin,"\t", ymax+(ymax-ymin)*1.5,"\t",ymax+(ymax-ymin)*1.2,"\n")
+}
+
+pl <- ggplot(d, aes(x=treatment, y=count, color=tissue, group = tissue)) + 
+  geom_point(alpha=0.7, position = position_jitter(width = 0.15)) +
+  stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
+  stat_summary(fun.y=mean, geom ="line") + 
+  scale_y_log10() +
+  ylab("Count") +
+  xlab("Diet") +
+  labs(color = "Tissue") +
+  theme_half_open() +
+  theme(legend.margin=margin(t=0,r=0,b=0,l=2, unit = 'cm')) +
+  my_theme
+pl <- g_legend(pl)
+ps[[14]] <-pl 
+pall <- plot_grid(plotlist=ps,ncol=2,rel_widths = c(1.08,1), rel_heights = c(rep(1,5),1.1,1.1),
+                  labels=c('a.','b.','c.','d.','e.','f.','g.','h.','i.','j.',
+                   'k.','l.','m.'), label_size = 9, vjust = 1.2,hjust=1.2)
+
+ggplot2::ggsave(pall, filename = "../../plots/Individualgenes.pdf", height = 10, width=3.5)
+```
