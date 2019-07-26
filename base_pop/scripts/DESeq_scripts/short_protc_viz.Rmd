@@ -75,6 +75,7 @@ b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
   geom_boxplot(alpha=0.8) +
   theme(axis.title.x=element_blank(),
         axis.text.x  = element_text(angle=90, vjust=0.5))+
+  theme_half_open() +
   #scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +       
   #scale_color_manual(values=c("#CC6666", "#9999CC", "#66CC99")) +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
@@ -93,6 +94,7 @@ b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
   geom_boxplot(alpha=0.4) +
   theme(axis.title.x=element_blank(),
         axis.text.x  = element_text(angle=90, vjust=0.5))+
+  theme_half_open() +
   #scale_color_manual(values=c("indianred4", "olivedrab", "turquoise4")) +
   #scale_colour_brewer(palette = "Dark2") +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
@@ -129,7 +131,8 @@ p1 <- ggplot(ggcounts, aes(Freq, n)) +
   xlab("Transcripts \n per gene") + ylab("Frequency") +
   theme(text=element_text(size = 10),
         axis.text.x=element_text(size = 9),
-        axis.text.y=element_text(size = 9))
+        axis.text.y=element_text(size = 9)) +
+  theme_half_open()
 
 ```
 
@@ -150,7 +153,8 @@ p2 <- ggplot(full.tab, aes(length)) +
   xlab("Transcript length (Kb)") + ylab("Frequency") +
   theme(text=element_text(size = 10),
         axis.text.x=element_text(size = 9),
-        axis.text.y=element_text(size = 9))
+        axis.text.y=element_text(size = 9)) +
+  theme_half_open()
 
 ```
 
@@ -185,15 +189,16 @@ phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, 
 # PCA plot of uncorrected data
 
 ```{r}
-#load("../../processed/DESEQ/rlog.trt.Rda")
+load("../../processed/DESEQ/rlog.trt.Rda")
 
-uncor.pca <- pcaPlot(rlog.trt, intgroup=c("treatment", "tissue"), returnData=TRUE)
+uncor.pca <- plotPCA(rlog.trt, intgroup=c("treatment", "tissue"), returnData=TRUE)
 percentVar <- round(100 * attr(uncor.pca, "percentVar"))
 
 ll <- ggplot(uncor.pca, aes(PC1, PC2, color=treatment, shape=tissue)) +
   geom_point(size=5, alpha = 0.6) +
   theme(axis.title.y = element_text(size = 12),
                 text = element_text(size = 12))+
+  theme_half_open() +
   scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9")) +
   xlab(paste0("PC1: ",percentVar[1],"% variance")) +
   ylab(paste0("PC2: ",percentVar[2],"% variance")) + 

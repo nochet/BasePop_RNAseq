@@ -354,6 +354,7 @@ p <- ggplot(px, aes(x=term, y=stat.mean, fill=q.val, label = contrast)) +
     hjust = 0, size = 3) +
   #scale_x_discrete(limits = xlab) +
   theme(axis.text = element_text(size=10)) +
+  theme_half_open() +
   coord_flip()
 ggsave(p, filename="../../plots/GOterms_Pathways.pdf", height=9,width=9)
 #p + theme(axis.title.x = element_blank())
