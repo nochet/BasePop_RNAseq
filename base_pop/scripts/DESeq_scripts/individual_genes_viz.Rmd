@@ -38,6 +38,11 @@ FBgns <- gmsort$FBgn
 
 load(file="../../processed/DESEQ/dds_deseq.02.Rda")
 
+cc <- counts(dds_deseq.02, normalized=TRUE)
+rr1 <- rowMeans(cc[,1:18])
+rr2 <- rowMeans(cc[,19:36])
+rr3 <- rowMeans(cc[,37:54])
+
 
 ps <- vector(mode='list', length=(length(FBgns)+1))
 counter <-1
