@@ -1,5 +1,5 @@
 {
-    "path" : "~/MyGithub/BasePop_RNAseq/base_pop/samples",
+    "path" : "~/MyGithub/BasePop_RNAseq/base_pop/scripts/DESeq_scripts",
     "sortOrder" : [
         {
             "ascending" : true,
