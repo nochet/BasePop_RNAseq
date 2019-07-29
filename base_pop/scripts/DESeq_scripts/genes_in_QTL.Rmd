@@ -126,7 +126,7 @@ all_qtl_degs <- cbind(all_qtl_degs, all.fc.dat.s)
 all_qtl_degs[order(all_qtl_degs$padj_DR_B),]
 
 write.csv(all_qtl_degs, file = "../../processed/DESEQ/DEG_QTL/all_diffExpr_underQTL.csv")
-
+write.csv(qtl_degs, file = "../../processed/DESEQ/DEG_QTL/qtl_degs.csv")
 ```
 
 # Genes for poster

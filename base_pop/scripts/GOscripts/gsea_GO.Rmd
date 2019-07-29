@@ -346,7 +346,8 @@ levels(px$contrast) <- gsub("FC_", "", levels(px$contrast))
 
 #xlab <- c("dme04141: PP_ER","dme00190: OP","dme01200: CM","dme01100: MPs")
 p <- ggplot(px, aes(x=term, y=stat.mean, fill=q.val, label = contrast)) +
-  geom_bar(stat = "identity", width = 0.8) + ylab("Geneset level change") +
+  geom_bar(stat = "identity", width = 0.8) + 
+  xlab("Pathway or GO term") + ylab("Geneset level change") +
   expand_limits(x = 45, y = 15) +
   geom_text(
     aes(x=term,y=10, label = contrast),

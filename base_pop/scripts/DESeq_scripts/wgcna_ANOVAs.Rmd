@@ -126,6 +126,8 @@ phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, 
 
 eg.genes <- read.table(file="../../processed/DESEQ/Coexpression/WCGNA_eigengenes.txt", sep="\t",
                        header=TRUE, stringsAsFactors = FALSE) 
+# write.csv(eg.genes, file = "../../processed/DESEQ/Coexpression/WCGNA_eigengenes.csv", 
+#           row.names = FALSE)
 
 # ANOVA for treatment
 aov.mods1 <- aov(as.matrix(eg.genes) ~ phenDat.sva$treat_tissue) 
