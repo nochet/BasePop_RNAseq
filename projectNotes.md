@@ -13,8 +13,9 @@ date: "7/9/2018"
 - Locate these resources:
 1. Download reference files: gtf files from Index of ftp://ftp.flybase.org/genomes/dmel/current/
 2. Sequence assembly (ref. Pertea et al 2016)
-3. `/scripts/assembly_shortProtocol/SetUpArrays_short.Rmd` for use with the short pipeline
-4. `/scripts/assembly_longProtocol/Set_up_arrays.Rmd` for use with the long pipeline (Ballgown)
+3. `/scripts/assembly_shortProtocol/SetUpArrays_short.Rmd` for use with the short pipeline leading to DESeq2
+4. `/scripts/assembly_longProtocol/Set_up_arrays.Rmd` for use with the long pipeline leading to Ballgown
+- See `/scripts/assembly_shortProtocol/SetUpArrays_short.html`
 - A step-by-step workflow follows:
 
 #### STEP 1: Align reads to reference - Hisat2
@@ -117,6 +118,7 @@ date: "7/9/2018"
 	- writes: 1) `/processed/DESEQ/Expr_countData.csv`, a DESeqDataSet based on design matrix `~ tissue*treatment` which is input into SVASeq
 	- writes: 2) `/processed/DESEQ/sampleDat_with_SV.csv`. Surrogate variables 
 	are appened as additional columns
+	- See `/scripts/DESeq_scripts/batch_DESeq.html`
 
 
 
@@ -128,6 +130,9 @@ date: "7/9/2018"
 4. Examination of eQTL in Stanley et al (2017)
 
 ##### Differential gene expression with DESeq2
+
+`/scripts/DESeq_scripts/DESeq_DExpr.Rmd`
+
 - Takes the two outputs from step six as input files:
   - Input 1: `/processed/DESEQ/Expr_countData.csv`
   - Input2: `/processed/DESEQ/sampleDat_with_SV.csv`
@@ -151,7 +156,7 @@ date: "7/9/2018"
 
 ##### Compare numbers of DEGs obtained by DESeq2 vs Ballgown
 
-`/scripts/DESeq_scripts/compare_StringTie_method`
+`/scripts/DESeq_scripts/compare_StringTie_method.Rmd`
 
   - Input1: `/processed/DESEQ/Expr_countData.csv`
   - Input2: `/processed/longProtocol/Old-gene_count_matrix.csv`
@@ -162,6 +167,7 @@ date: "7/9/2018"
 
 
 ##### Visualization of global expression changes
+
 __Without removal of batch effects:__
 
 `/scripts/DESeq_scripts/short_protc_viz.Rmd`
@@ -205,7 +211,9 @@ __After removal of batch effects (limma::removeBatchEffect)__
 ##### Gene set enrichment analysis with GAGE
 - GSEA: KEEG pathways and GO on whole list DEGs 
 for the effect of diet performed in GAGE package
+
 `/scripts/GOscripts/gsea_GO.Rmd`
+
   - Input: `/processed/DESEQ/all_fc_dat.rda`
 - Writes table of enriched pathways and GO terms `/processed/DESEQ/GO/sig_terms.csv`
 
@@ -268,6 +276,28 @@ for the effect of diet performed in GAGE package
   - Notes on each module.
   - Note: `/scripts/GOscripts/style.css` - for controlling font size in a knitted output.
 
+`/scripts/DESeq_scripts/individual_genes_viz.Rmd`
+
+- Expression patterns of canonical nutrient sensing pathway genes
+  - Input1: `/processed/DESEQ/DEG_QTL/gene_map_table.csv`
+  - Input2: `/processed/DESEQ/dds_deseq.02.Rda`
+  - Output: `/plots/Individualgenes.pdf`
+
+`/scripts/DESeq_scripts/genes_in_QTL.Rmd`
+
+- search DEGs in a median lifespan suggestive QTL from Stanley et al (2017)
+  - Input1: `/processed/DESEQ/all_fc_dat.rda`
+  - Input2: `/processed/DESEQ/DEG_QTL/gene_map_table.csv`
+  - Input3: `/processed/DESEQ/DEGs_lrt.treatment_0.05.csv`
+  - Input4: `/processed/DESEQ/DEGs_lrt.int_0.05.csv`
+  - Input5: `/processed/DESEQ/DEG_QTL/all_iisPeak.rda`
+  - Input6: `/processed/DESEQ/Coexpression/Obs_modMembership.csv`
+  - Input7: `/processed/DESEQ/DEG_QTL/iis_genelist_clean.txt`
+  - Input8: `/processed/DESEQ/Coexpression/Resamp_droppedGenes.csv`
+  - Input9: `/processed/DESEQ/DEG_QTL/automated_gene_summaries.tsv`
+  - Output1: `/processed/DESEQ/DEG_QTL/all_diffExpr_underQTL.csv`
+  - Output2: `/processed/DESEQ/DEG_QTL/qtl_degs.csv`
+  
 
 ## Project Notes
 
