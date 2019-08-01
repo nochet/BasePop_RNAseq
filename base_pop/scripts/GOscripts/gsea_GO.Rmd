@@ -182,7 +182,7 @@ pqval05$pathway <- c("dme01100: MPs","dme01200: CM","dme00190: OP","dme04141: PP
 xlab <- c("dme04141: PP_ER","dme00190: OP","dme01200: CM","dme01100: MPs")
 ggplot(pqval05, aes(x=pathway, y=stat.mean, fill=q.val, label = contrast)) +
   geom_bar(stat = "identity", width = 0.8) + ylab("Geneset level change") +
-  xlab("Enriched pathways") + 
+  xlab("Enriched pathways") +
   # geom_text(
   #   aes(label = contrast),
   #   position = position_dodge((width = 1)),
@@ -307,7 +307,7 @@ its <- strsplit(enrich.goterm$contrast, split = "_", fixed = TRUE)
 its <- unlist(lapply(its, function(x) x[1]))
 enrich.goterm$diet <- its
 enrich.goterm$diet <- gsub('DRHS', 'DH', enrich.goterm$diet)
-(enrich.goterm <- enrich.goterm[order(enrich.goterm$q.val), ])
+enrich.goterm <- enrich.goterm[order(enrich.goterm$q.val), ]
 #dup <- enrich.goterm[duplicated(enrich.goterm), ]
 
 # qval < 0.05
@@ -331,7 +331,7 @@ gqval05 <- gqval05[,1:4]
 colnames(gqval05)[colnames(gqval05)=="goterm"] <- "term"
 colnames(pqval1)[colnames(pqval1)=="pathway"] <- "term"
 path_terms <- rbind(pqval1,gqval05)
-write.csv(path_terms, "../../processed/DESEQ/GO/sig_terms.csv") 
+write.csv(path_terms, "../../processed/DESEQ/GO/sig_terms.csv")
 
 # For parent term analysis in QUICKGO
 term_names <- gqval05$term
@@ -357,6 +357,7 @@ p <- ggplot(px, aes(x=term, y=stat.mean, fill=q.val, label = contrast)) +
   theme(axis.text = element_text(size=10)) +
   theme_half_open() +
   coord_flip()
+p
 ggsave(p, filename="../../plots/GOterms_Pathways.pdf", height=9,width=9)
 #p + theme(axis.title.x = element_blank())
 ```

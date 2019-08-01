@@ -52,14 +52,14 @@ phenDat.sva$batch <- as.factor(phenDat.sva$batch)
 phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, sep="")
 
 # Sample data to numerical format
-phenDat.sva$trt_tis <- ifelse(phenDat.sva$treat_tissue == "C_B",1, 
-                          ifelse(phenDat.sva$treat_tissue=="C_H",2,
-                          ifelse(phenDat.sva$treat_tissue=="C_O",3,
-                          ifelse(phenDat.sva$treat_tissue=="DR_B",4,
-                          ifelse(phenDat.sva$treat_tissue=="DR_H",5,
-                          ifelse(phenDat.sva$treat_tissue=="DR_O",6,
-                          ifelse(phenDat.sva$treat_tissue=="HS_B",7,
-                          ifelse(phenDat.sva$treat_tissue=="HS_H",8, 9))))))))
+# phenDat.sva$trt_tis <- ifelse(phenDat.sva$treat_tissue == "C_B",1, 
+#                           ifelse(phenDat.sva$treat_tissue=="C_H",2,
+#                           ifelse(phenDat.sva$treat_tissue=="C_O",3,
+#                           ifelse(phenDat.sva$treat_tissue=="DR_B",4,
+#                           ifelse(phenDat.sva$treat_tissue=="DR_H",5,
+#                           ifelse(phenDat.sva$treat_tissue=="DR_O",6,
+#                           ifelse(phenDat.sva$treat_tissue=="HS_B",7,
+#                           ifelse(phenDat.sva$treat_tissue=="HS_H",8, 9))))))))
 
 ```
 
@@ -135,7 +135,7 @@ sft = pickSoftThreshold(rlogtrt, powerVector=powers,
                         verbose = 5)
   
 sizeGrWindow(9,5)
-pdf(file="../../plots/softThreshold.pdf", width = 10.5, height = 4)
+#pdf(file="../../plots/softThreshold.pdf", width = 10.5, height = 4)
 par(mfrow= c(1,2)) # one row, two columns panel
 cex1=0.7
 
@@ -161,7 +161,7 @@ plot(sft$fitIndices[,1], sft$fitIndices[,5],
 
 text(sft$fitIndices[,1], sft$fitIndices[,5], 
      labels=powers, cex=cex1, col="red")
-dev.off()
+#dev.off()
 # Choose the lowest power for which the scale free topology index reaches 0.90
 ```
 
@@ -282,7 +282,7 @@ mergedMEs = merge$newMEs;
 table(mergedColors)
 
 # Plot dendrogram with module colors below it
-pdf(file="../../plots/dynamic_merged_clusters.pdf", width = 6.5, height = 4)
+#pdf(file="../../plots/dynamic_merged_clusters.pdf", width = 6.5, height = 4)
 par(mfrow=c(2,1))
 par(cex = 0.6)
 plotDendroAndColors(geneTree, 
@@ -292,7 +292,7 @@ plotDendroAndColors(geneTree,
                     dendroLabels= FALSE, hang=0.03, 
                     addGuide= TRUE, guideHang=0.05,
                     cex.colorLabels = 0.7)
-dev.off()
+#dev.off()
 
 
 # Rename to moduleColors

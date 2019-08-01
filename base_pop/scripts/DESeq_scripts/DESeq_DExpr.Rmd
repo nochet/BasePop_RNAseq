@@ -59,14 +59,14 @@ colSums(counts(dds_deseq.01))
 plotDispEsts(dds_deseq.01)
 
 # View results
-cc <- results(dds_deseq.01)
-cc%>%data.frame()%>% View()
+ cc <- results(dds_deseq.01)
+# cc%>%data.frame()%>% View()
 
 cc[which.max(cc$log2FoldChange),]
 cc[which.min(cc$log2FoldChange),]
 
-save(dds_deseq.01, file="../../processed/DESEQ/dds_deseq01.Rda")
-load("../../processed/DESEQ/dds_deseq01.Rda")
+# save(dds_deseq.01, file="../../processed/DESEQ/dds_deseq01.Rda")
+# load("../../processed/DESEQ/dds_deseq01.Rda")
 
 
 dds.02 <- DESeqDataSetFromMatrix(countData = countdata, 
@@ -145,7 +145,7 @@ write.csv(resSig_lrt.tissue, "../../processed/DESEQ/DEGs_lrt.tissue_0.05.csv", r
 write.csv(resSig_lrt.treatment, "../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv", row.names = FALSE)
 
 # Background list - all gene_ids for GO term enrichment
-bList <- as.data.frame(rownames(pl3c))
-write.csv(bList, "../../processed/DESEQ/gene_background_list.csv")
+#bList <- as.data.frame(rownames(pl3c))
+#write.csv(bList, "../../processed/DESEQ/gene_background_list.csv")
 ```
 
