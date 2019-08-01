@@ -89,6 +89,7 @@ b1 <- b1 + theme(legend.position="none")
 #                 filename = "../../plots/Expression_54_barplot.pdf",
 #                 width = 5,height=5)
 
+b1
 
 b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
   geom_boxplot(alpha=0.4) +
@@ -105,7 +106,7 @@ b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
   my_theme +
   tx_fill_map()
 b2 <- b2 + theme(legend.position="none")
-
+b2
 # ggplot2::ggsave(plot=b2,
 #                 filename = "../../plots/Expression_54_barplot_b2.pdf",
 #                 width = 3.5,height=3)
@@ -133,7 +134,7 @@ p1 <- ggplot(ggcounts, aes(Freq, n)) +
         axis.text.x=element_text(size = 9),
         axis.text.y=element_text(size = 9)) +
   theme_half_open()
-
+p1
 ```
 
 # Distribution of transcript sizes
@@ -156,6 +157,7 @@ p2 <- ggplot(full.tab, aes(length)) +
         axis.text.y=element_text(size = 9)) +
   theme_half_open()
 
+p2
 ```
 
 # Tranform data to visualize global trends
@@ -204,6 +206,7 @@ ll <- ggplot(uncor.pca, aes(PC1, PC2, color=treatment, shape=tissue)) +
   ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
     coord_cartesian(xlim = c(-105, 130)) +
   coord_cartesian(ylim = c(-110, 100)) +
+  theme_half_open() +
   my_theme +
   labs(color="Treatment", shape="Tissue")
 ll 
@@ -240,6 +243,7 @@ gg <- ggplot(bcor.pca, aes(PC1, PC2, color=treatment, shape=tissue)) +
   #coord_cartesian(xlim = c(-130, 130)) +
   coord_cartesian(ylim = c(-100, 100), xlim=c(-110,100)) +
   my_theme +
+  theme_half_open() +
   tx_fill_map() +
   labs(color="Treatment", shape="Tissue") 
 gg    

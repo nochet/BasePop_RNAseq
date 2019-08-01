@@ -1,14 +1,20 @@
-ttyn 345---
+---
 title: "Data integration to identify candidate genes"
+author: "[Enoch Ng'oma](http://elizabethking.org/enoch-ngoma/)"
+date: "`r Sys.Date()`"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
+                      echo=TRUE, warning=FALSE, message=FALSE)
+```
 
+```{r packages}
 library(tidyverse)
 library(AnnotationDbi)
 library(org.Dm.eg.db)
+library(broman)
 ```
 
 The purpose of this script is to see which of the genes in modules, DGE, and GSEA analyses could be candidates for the effect of diet (i.e. diet-tissue interaction)
@@ -25,7 +31,7 @@ Make the following intersections:
 # Module genes with known role in IIS, TOR and foxo 
 # FlyBase pathways sourced from https://flybase.org/lists/FBgg/pathways
 
-```{r}
+```{r pathway_genes}
 
 # FOXO signaling pathway (i.e. including sirtuins)
 fox <- read.csv("../../processed/DESEQ/DEG_QTL/FOXO_sigPath.csv",
@@ -73,7 +79,7 @@ getMods <- mapply(cbind, getMods, "mod"=sort(modNames),
                   SIMPLIFY=FALSE)
  
 # Merge modules in list into one table (12569 + 45 grey)
-ll <- bind_rows(getMods)
+ll <- as.data.frame(bind_rows(getMods))
 ll$FBgn = mapIds(org.Dm.eg.db,
                      keys=as.character(ll$symbol), 
                      column="FLYBASE",
@@ -100,7 +106,7 @@ path_mod <- subset(fb_path, fb_path$primary_FBgn %in% ll$FBgn)
 
 # QTL genes with known role in IIS, TOR and foxo
 
-```{r}
+```{r qtl_genes}
 # All QTL BCI genes (215 genes)
 qtall <- read.csv(
   file = "../../processed/DESEQ/DEG_QTL/all_diffExpr_underQTL.csv", 
@@ -110,26 +116,16 @@ qtall <- read.csv(
 colnames(qtall)[colnames(qtall)=="x"] <- "symbol"
 
 qtl_path <- inner_join(fb_path,qtall, by=c("primary_FBgn"="FBgn"))
-unique(qtl_sigDEGs$symbol)
 
-qt150kb <- qtall
-qt150kb$dist <- qt150kb$stopp - qt150kb$startp
-qt150kb <- subset(qt150kb, qt150kb$dist<=1500)
-
-qt150kb$symbol = mapIds(org.Dm.eg.db,
-                     keys=as.character(qt150kb$FBgn), 
-                     column="SYMBOL",
-                     keytype="FLYBASE",
-                     multiVals="first")
-as.data.frame(qt150kb$FBgn, rownames = NULL)
-print(data.frame(unique(qt150kb$FBgn)), row.names = FALSE)
+qtl_path
 ```
 
 Gene Nup44A under LinDiscr for both treat and interaction, and gene gcl under LinDiscr for treat recovered in TOR pathway
 
+
 # QTL genes that are DE
 
-```{r}
+```{r qtl_degs}
 # DEGs for treatment (2575 genes)
 sigDEGs <- read.csv("../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv",
                     stringsAsFactors = FALSE)
@@ -145,6 +141,7 @@ head(sigDEGs)
 
 qtl_sigDEGs <- inner_join(sigDEGs,qtall, by=c("Gene"="FBgn"))
 
+
 # Check shrinked FC for these
 load("../../processed/DESEQ/all_fc_dat.rda")
 fcc <- as.data.frame(all.fc.dat) %>%
@@ -159,7 +156,7 @@ min(abs(qtl_fcc$log2FoldChange))
 
 # DEGs assigned to module
 
-```{r}
+```{r module_degs}
 llmod <- filter(ll, mod !="grey")
 mod_sigDEGs <- inner_join(sigDEGs, llmod, by=c("Gene"="FBgn"))
 
@@ -171,9 +168,10 @@ qtl_mod <- inner_join(qtall, llmod)
 
 All 215 QTL genes assigned to a module that's not grey (i.e. none of QTL genes are grey)
 
+
 # DEGs with role in known IIS, TO and foxo pathways
 
-```{r}
+```{r pathway_degs}
 
 colnames(path_mod)[2] <- "FBgn"
 path_sigDEGs <- inner_join(sigDEGs,path_mod)
@@ -185,12 +183,12 @@ The 2 qtl_path genes Nup44A and gcl are in this set of 47
 
 # Common genes
 
-```{r}
+```{r common_genes}
 zi <- Reduce(intersect, list(path_mod$primary_FBgn,qtl_sigDEGs$Gene,mod_sigDEGs$Gene,qtl_mod$FBgn))
 
 see_zi <- sigDEGs[sigDEGs$Gene %in% c("FBgn0033247","FBgn0005695"), ]
 #see_zis <- subset(sigDEGs, Gene %in% c("FBgn0033247","FBgn0005695"))
-
+see_zi
 ```
 
 Comparing path_mod (314 genes), qtl_sigDEGs (186 genes), mod_sigDEGs (2473 genes) and qtl_mod (215 genes) show only 2 shared genes: Nup44A and gcl. These are already in the most interesting list (path_sigDEGs). These 47 genes will be considered candidates.
@@ -198,7 +196,7 @@ Comparing path_mod (314 genes), qtl_sigDEGs (186 genes), mod_sigDEGs (2473 genes
 
 # Map candidate genes to fold change table 
 
-```{r}
+```{r candidate_foldchange}
 load(file="../../processed/DESEQ/Coexpression/Obs_modMembership.csv")
 drop.g <- read.csv(file="../../processed/DESEQ/Coexpression/Resamp_droppedGenes.csv",header=TRUE, stringsAsFactors = FALSE)
 obs.dat[obs.dat$FBgn %in% drop.g$FBgn, "ModID"] <- "grey"
@@ -228,10 +226,10 @@ colnames(cgs.s)[4] <- "CG_Id"
 write.csv(cgs.s, file = "../../processed/DESEQ/cand_genes.csv", row.names = FALSE )
 
 ```
-
+`r myround(cor(x,y), 2)` 
 # Add pathway and GO terms to table
 
-```{r}
+```{r go_terms}
 
 pgo <- read.csv("../../processed/DESEQ/gopath_genes.csv",
                 stringsAsFactors = FALSE)
@@ -239,61 +237,18 @@ pgo <- read.csv("../../processed/DESEQ/gopath_genes.csv",
 cand_goids <- inner_join(path_sigDEGs,pgo)
 ```
 
-# Candidates
-
-```{r}
-candids <- rbind(fox2,tor3,iis3)
-sigs <- sigDEGs[,c(1,8)]
-lll <-ll%>%
-  rename(symbol=gene_symbol,
-         Gene=FBgn)
-
-candidates <- inner_join(candids,sigs)
-candidates <- inner_join(candidates,lll)
-candidates$Gene <- as.character(candidates$Gene)
-
-# Merge with shrinked FC data
-cgs <- dplyr::select(candidates, Gene,symbol,pathway,mod)
-fc <- as.data.frame(all.fc.dat) %>%
-  rownames_to_column(var="Gene")
-cgs <- inner_join(cgs,fc) %>%
-  dplyr::select(-c(contains("FCse_"),
-                   contains("stat_"),
-                   contains("p_"),
-                   contains("padj_")),-"log2FoldChange")
-
-cgs <- cgs %>% mutate_if(is.numeric, round, digits = 6)
-
-write.csv(cgs, file = "../../processed/DESEQ/cand_genes.csv" )
-
-qgs_cgs <- inner_join(cgs,qgs)
-qgs_cgs<-merge(x=qgs,y=cgs,by="symbol")
-```
-
-47 hits in DEGs (i.e. 38 unique genes)
-
 # Gene summaries
 
-```{r}
-gsum <- read_lines(file = "../../../../automated_gene_summaries.tsv",
+```{r gene_summaries}
+gsum <- read_lines(file = "../../processed/DESEQ/DEG_QTL/automated_gene_summaries.tsv",
                    skip = 1)%>%
   str_split(pattern = "\t", simplify = TRUE) %>% 
   as_tibble() 
 gsum <- gsum[,c(1,2)]
 colnames(gsum) <- c('FBgn', 'summary')
 
-candsum <- subset(gsum, gsum$FBgn %in% candidates$FBgn)
+candsum <- subset(gsum, gsum$FBgn %in% cgs.s$FBgn)
 #colnames(candidates)[colnames(candidates)=="Gene"] <- "FBgn"
-candsum <- inner_join(candsum,candidates, by="FBgn") %>%
-  dplyr::select(c(1,9,everything())) %>% as.data.frame()
 
-```
-
-# modules with all expression data
-
-```{r}
-cgs_all <- inner_join(ll,fc)
-cgs_all.l <-inner_join(cgs_all, path_mod)
-colnames(path_mod)[2:3] <- c("FBgn", "CG_Id")
 ```
 

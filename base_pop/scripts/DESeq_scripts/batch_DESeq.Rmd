@@ -22,7 +22,7 @@ set.seed(38142903)
 ```{r}
 # Read in data frame and fill in empty spaces in column 2 with value in 1
 pl3c <- read.csv(
-  "../../processed/shortProtocol/S03_short_matrices/gene_count_matrix.csv",
+  "../../processed/shortProtocol/S03_short_ballG/gene_count_matrix.csv",
   stringsAsFactors = FALSE)
 
 rownames(pl3c) <- pl3c[,1]
