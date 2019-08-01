@@ -85,6 +85,17 @@ date: "7/9/2018"
 - Next, run `sbatch --array=1-54 stringt_short_abund.sh`
 - Output2: each of 54 sample directories (e.g. C-1_B, etc) are written to `/processed/shortProtocol/S03_short_ballG/`. 
 
+- Procedure:
+  - Do Step 3: 'StringTie Assemble and quantify' in `Set_up_arrays.Rmd` in R
+  - Output: `S03_stringtie_assemble.txt`
+  - Next, run `sbatch --array=1-54 stringtie_assemble.sh`
+  - Output: 54 'sample_name_assembled.gtf' files located in /base_pop/processed/dotgtfs/
+
+Run `mstrg_prep.pl` to extract more gene ids from StringTie output (MSTRG names)
+Ref: https://github.com/gpertea/stringtie/issues/179
+Script is here: https://gist.github.com/gpertea/b83f1b32435e166afa92a2d388527f4b
+Command: `perl mstrg_prep.pl stringtie_merged.gtf > stringtie_merged_pl.gtf`
+
 **---- END OF READ MAPPING ----**
 
 
