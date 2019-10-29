@@ -1,0 +1,48 @@
+---
+title: "Enumerate genes up and down regulated"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(knitr)
+
+```
+
+# Data
+
+```{r}
+load("../../processed/DESEQ/all_fc_dat.rda")
+all.fc.dat <- as.data.frame(all.fc.dat) 
+
+all.fc.dat[1,]
+colnames(all.fc.dat)
+
+sub_fc.dat <- all.fc.dat[,c(7,12,17,22,27,32,37,42,47)]
+long_fc <- gather(sub_fc.dat, Diet_Comp, log2FC, FC_DR_B:FC_DRHS_O, factor_key=TRUE)
+long_fc$log2FC <- as.numeric(long_fc$log2FC)
+str(long_fc)
+
+```
+
+# Relative to C
+
+```{r}
+table(sign(long_fc$log2FC))
+
+# sum(sub_fc.dat$FC_DR_B < 0)
+# sum(sub_fc.dat$FC_DR_B > 0)
+
+fc <- long_fc %>% 
+  group_by(Diet_Comp)  %>% 
+  summarise(Up = sum(log2FC>0), 
+            Down = sum(log2FC <0))
+fc
+
+fcc <- sub_fc.dat[,c("FC_DR_B", "FC_HS_B")]
+```
+
