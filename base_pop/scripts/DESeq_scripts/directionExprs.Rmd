@@ -38,7 +38,7 @@ str(long_fc)
 ```{r}
 table(sign(long_fc$log2FC))
 
-# sum(sub_fc.dat$FC_DR_B < 0)
+ sum(sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_HS_B <0)
 # sum(sub_fc.dat$FC_DR_B > 0)
 
 # fc <- long_fc %>% 
@@ -49,13 +49,118 @@ table(sign(long_fc$log2FC))
 
 ```
 
-# One combination
+# 
 
 ```{r}
-fcc <- sub_fc.dat[,c("FC_DR_B", "FC_HS_B")]
+#fcc <- sub_fc.dat[,c("FC_DR_B", "FC_HS_B")]
 
-length(which(fcc$FC_DR_B < 0))
-length(which(fcc$FC_HS_B < 0))
+# DR_B relative to C
+aia <- length(which(sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_HS_B < 0)) 
+aib <- length(which((sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_HS_B < 0) | 
+                    (sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_HS_B > 0))) 
+aic <- length(which(sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_HS_B > 0)) 
+
+bia <- length(which(sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_DR_H < 0)) 
+bib <- length(which((sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_DR_H < 0) | 
+                    (sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_DR_H > 0))) 
+bic <- length(which(sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_DR_H > 0)) 
+
+cia <- length(which(sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_HS_H < 0)) 
+cib <- length(which((sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_HS_H < 0) | 
+                    (sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_HS_H > 0))) 
+cic <- length(which(sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_HS_H > 0)) 
+
+dia <- length(which(sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_DR_O < 0)) 
+dib <- length(which((sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_DR_O < 0) | 
+                    (sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_DR_O > 0))) 
+dic <- length(which(sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_DR_O > 0)) 
+
+eia <- length(which(sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_HS_O < 0)) 
+eib <- length(which((sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_HS_O < 0) | 
+                    (sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_HS_O > 0))) 
+eic <- length(which(sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_HS_O > 0)) 
+
+sg <- c(aia,aib,aic,bia,bib,bic,cia,cib,cic,dia,dib,dic,eia,eib,eic)
+
+# HS_B relative to C
+axa <- length(which(sub_fc.dat$FC_HS_B < 0 & sub_fc.dat$FC_DR_H < 0)) 
+axb <- length(which((sub_fc.dat$FC_HS_B > 0 & sub_fc.dat$FC_DR_H < 0) | 
+                    (sub_fc.dat$FC_HS_B < 0 & sub_fc.dat$FC_DR_H > 0))) 
+axc <- length(which(sub_fc.dat$FC_HS_B > 0 & sub_fc.dat$FC_DR_H > 0)) 
+
+bxa <- length(which(sub_fc.dat$FC_HS_B < 0 & sub_fc.dat$FC_HS_H < 0)) 
+bxb <- length(which((sub_fc.dat$FC_HS_B > 0 & sub_fc.dat$FC_HS_H < 0) | 
+                    (sub_fc.dat$FC_HS_B < 0 & sub_fc.dat$FC_HS_H > 0))) 
+bxc <- length(which(sub_fc.dat$FC_HS_B > 0 & sub_fc.dat$FC_HS_H > 0)) 
+
+cxa <- length(which(sub_fc.dat$FC_HS_B < 0 & sub_fc.dat$FC_DR_O < 0)) 
+cxb <- length(which((sub_fc.dat$FC_HS_B > 0 & sub_fc.dat$FC_DR_O < 0) | 
+                    (sub_fc.dat$FC_HS_B < 0 & sub_fc.dat$FC_DR_O > 0))) 
+cxc <- length(which(sub_fc.dat$FC_HS_B > 0 & sub_fc.dat$FC_DR_O > 0)) 
+
+dxa <- length(which(sub_fc.dat$FC_HS_B < 0 & sub_fc.dat$FC_HS_O < 0)) 
+dxb <- length(which((sub_fc.dat$FC_HS_B > 0 & sub_fc.dat$FC_HS_O < 0) | 
+                    (sub_fc.dat$FC_HS_B < 0 & sub_fc.dat$FC_HS_O > 0))) 
+dxc <- length(which(sub_fc.dat$FC_HS_B > 0 & sub_fc.dat$FC_HS_O > 0)) 
+
+sf <- c(axa,axb,axc,bxa,bxb,bxc,cxa,cxb,cxc,dxa,dxb,dxc)
+
+# DR_H relative to C
+ata <- length(which(sub_fc.dat$FC_DR_H < 0 & sub_fc.dat$FC_HS_H < 0)) 
+atb <- length(which((sub_fc.dat$FC_DR_H > 0 & sub_fc.dat$FC_HS_H < 0) | 
+                    (sub_fc.dat$FC_DR_H < 0 & sub_fc.dat$FC_HS_H > 0))) 
+atc <- length(which(sub_fc.dat$FC_DR_H > 0 & sub_fc.dat$FC_HS_H > 0)) 
+
+bta <- length(which(sub_fc.dat$FC_DR_H < 0 & sub_fc.dat$FC_DR_O < 0)) 
+btb <- length(which((sub_fc.dat$FC_DR_H > 0 & sub_fc.dat$FC_DR_O < 0) | 
+                    (sub_fc.dat$FC_DR_H < 0 & sub_fc.dat$FC_DR_O > 0))) 
+btc <- length(which(sub_fc.dat$FC_DR_H > 0 & sub_fc.dat$FC_DR_O > 0)) 
+
+cta <- length(which(sub_fc.dat$FC_HS_B < 0 & sub_fc.dat$FC_HS_O < 0)) 
+ctb <- length(which((sub_fc.dat$FC_HS_B > 0 & sub_fc.dat$FC_HS_O < 0) | 
+                    (sub_fc.dat$FC_HS_B < 0 & sub_fc.dat$FC_HS_O > 0))) 
+ctc <- length(which(sub_fc.dat$FC_HS_B > 0 & sub_fc.dat$FC_HS_O > 0)) 
+
+mx <- c(ata,atb,atc,bta,btb,btc,cta,ctb,ctc)
+
+# HS_H relative to C
+aqa <- length(which(sub_fc.dat$FC_HS_H < 0 & sub_fc.dat$FC_DR_O < 0)) 
+aqb <- length(which((sub_fc.dat$FC_HS_H > 0 & sub_fc.dat$FC_DR_O < 0) | 
+                    (sub_fc.dat$FC_HS_H < 0 & sub_fc.dat$FC_DR_O > 0))) 
+aqc <- length(which(sub_fc.dat$FC_HS_H > 0 & sub_fc.dat$FC_DR_O > 0)) 
+
+bqa <- length(which(sub_fc.dat$FC_HS_H < 0 & sub_fc.dat$FC_HS_O < 0)) 
+bqb <- length(which((sub_fc.dat$FC_HS_H > 0 & sub_fc.dat$FC_HS_O < 0) | 
+                    (sub_fc.dat$FC_HS_H < 0 & sub_fc.dat$FC_HS_O > 0))) 
+bqc <- length(which(sub_fc.dat$FC_HS_H > 0 & sub_fc.dat$FC_HS_O > 0)) 
+
+np <- c(aqa,aqb,aqc,bqa,bqb,bqc)
+
+# DR_O relative to C
+apa <- length(which(sub_fc.dat$FC_DR_O < 0 & sub_fc.dat$FC_HS_O < 0)) 
+apb <- length(which((sub_fc.dat$FC_DR_O > 0 & sub_fc.dat$FC_HS_O < 0) | 
+                    (sub_fc.dat$FC_DR_O < 0 & sub_fc.dat$FC_HS_O > 0))) 
+apc <- length(which(sub_fc.dat$FC_DR_O > 0 & sub_fc.dat$FC_HS_O > 0)) 
+
+sr <- c(apa,apb,apc)
+
+# DR relative to HS
+fya <- length(which(sub_fc.dat$FC_DRHS_B < 0 & sub_fc.dat$FC_DRHS_H < 0)) 
+fyb <- length(which((sub_fc.dat$FC_DRHS_B > 0 & sub_fc.dat$FC_DRHS_H < 0) | 
+                    (sub_fc.dat$FC_DRHS_B < 0 & sub_fc.dat$FC_DRHS_H > 0))) 
+fyc <- length(which(sub_fc.dat$FC_DRHS_B > 0 & sub_fc.dat$FC_DRHS_H > 0)) 
+
+hya <- length(which(sub_fc.dat$FC_DRHS_B < 0 & sub_fc.dat$FC_DRHS_O < 0)) 
+hyb <- length(which((sub_fc.dat$FC_DRHS_B > 0 & sub_fc.dat$FC_DRHS_O < 0) | 
+                    (sub_fc.dat$FC_DRHS_B < 0 & sub_fc.dat$FC_DRHS_O > 0))) 
+hyc <- length(which(sub_fc.dat$FC_DRHS_B > 0 & sub_fc.dat$FC_DRHS_O > 0))
+
+ika <- length(which(sub_fc.dat$FC_DRHS_H < 0 & sub_fc.dat$FC_DRHS_O < 0)) 
+ikb <- length(which((sub_fc.dat$FC_DRHS_H > 0 & sub_fc.dat$FC_DRHS_O < 0) | 
+                    (sub_fc.dat$FC_DRHS_H < 0 & sub_fc.dat$FC_DRHS_O > 0))) 
+ikc <- length(which(sub_fc.dat$FC_DRHS_H > 0 & sub_fc.dat$FC_DRHS_O > 0))
+
+hd <- c(fya,fyb,fyc,hya,hyb,hyc,ika,ikb,ikc)
 ```
 
 ```{r}
