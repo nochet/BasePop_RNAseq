@@ -11,6 +11,7 @@ library(DESeq2)
 library(apeglm)
 library(ggplot2)
 library(cowplot)
+library(expss)
 
 ```
 
@@ -166,6 +167,26 @@ sg <- c(aia,aib,aic, bia,bib,bic, cia,cib,cic, dia,dib,dic, eia,eib,eic,
         fya,fyb,fyc, hya,hyb,hyc, ika,ikb,ikc)
 
 gl <- as.data.frame(cbind(ctr,sg))
+gl$sg <- as.numeric(sg)
+
+# down <- subset(gl, grepl("d_", gl$ctr))
+# downC <- down[1:15,]
+
+gl <- gl %>% 
+  mutate(Sign = str_split(ctr, "_", simplify = TRUE)[, 1],
+         comba = str_split(ctr, "_", simplify = TRUE)[, 2],
+         combb = str_split(ctr, "_", simplify = TRUE)[, 3])
+
+gl$ref <- "C"
+
+g <- 46:54
+gl$ref <- replace(gl$ref, g, "DR")
+gl <- unite(gl,group, Sign,comba, sep = "_", remove = FALSE)
+
+xf <- gl %>%
+  group_by(group) %>%
+  summarise(sg = sum(sg))
+as.data.frame(xf)
 ```
 
 ```{r}
