@@ -5,18 +5,16 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
 
-```{r}
 library(tidyverse)
 library(DESeq2)
 library(apeglm)
 library(ggplot2)
 library(cowplot)
-library(DescTools)
+
 ```
 
-# Data
+# Pull #s of genes with same or opposite sign
 
 ```{r}
 load("../../processed/DESEQ/all_fc_dat.rda")
@@ -25,33 +23,11 @@ all.fc.dat <- as.data.frame(all.fc.dat)
 all.fc.dat[1,]
 colnames(all.fc.dat)
 
-# long format
+# Get only columns with FC
 sub_fc.dat <- all.fc.dat[,c(7,12,17,22,27,32,37,42,47)]
-long_fc <- gather(sub_fc.dat, Diet_Comp, log2FC, FC_DR_B:FC_DRHS_O, factor_key=TRUE)
-long_fc$log2FC <- as.numeric(long_fc$log2FC)
-str(long_fc)
 
-```
-
-
-
-```{r}
-table(sign(long_fc$log2FC))
-
- sum(sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_HS_B <0)
-# sum(sub_fc.dat$FC_DR_B > 0)
-
-# fc <- long_fc %>% 
-#   group_by(Diet_Comp)  %>% 
-#   summarise(Up = sum(log2FC>0), 
-#             Down = sum(log2FC <0))
-# fc
-
-```
-
-# 
-
-```{r}
+# table(sign(long_fc$log2FC))
+# sum(sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_HS_B <0)
 #fcc <- sub_fc.dat[,c("FC_DR_B", "FC_HS_B")]
 
 # DR_B relative to C
@@ -80,7 +56,10 @@ eib <- length(which((sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_HS_O < 0) |
                     (sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_HS_O > 0))) 
 eic <- length(which(sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_HS_O > 0)) 
 
-sg <- c(aia,aib,aic,bia,bib,bic,cia,cib,cic,dia,dib,dic,eia,eib,eic)
+# ctr <- c(d_DRB_HSB,op_DRB_HSB,u_DRB_HSB, d_DRB_DRH,op_DRB_DRH,u_DRB_DRH,
+#          d_DRB_HSH,op_DRB_HSH,u_DRB_HSH, d_DRB_DRO,op_DRB_DRO,u_DRB_DRO,
+#          d_DRB_HSO,op_DRB_HSO,u_DRB_HSO)
+# sg <- c(aia,aib,aic,bia,bib,bic,cia,cib,cic,dia,dib,dic,eia,eib,eic)
 
 # HS_B relative to C
 axa <- length(which(sub_fc.dat$FC_HS_B < 0 & sub_fc.dat$FC_DR_H < 0)) 
@@ -103,7 +82,9 @@ dxb <- length(which((sub_fc.dat$FC_HS_B > 0 & sub_fc.dat$FC_HS_O < 0) |
                     (sub_fc.dat$FC_HS_B < 0 & sub_fc.dat$FC_HS_O > 0))) 
 dxc <- length(which(sub_fc.dat$FC_HS_B > 0 & sub_fc.dat$FC_HS_O > 0)) 
 
-sf <- c(axa,axb,axc,bxa,bxb,bxc,cxa,cxb,cxc,dxa,dxb,dxc)
+# ctr <- c(d_HSB_DRH,op_HSB_DRH,u_HSB_DRH, d_HSB_HSH,op_HSB_HSH,u_HSB_HSH,
+#          d_HSB_DRO,op_HSB_DRO,u_HSB_DRO, d_HSB_HSO,op_HSB_HSO,u_HSB_HSO)
+# sf <- c(axa,axb,axc,bxa,bxb,bxc,cxa,cxb,cxc,dxa,dxb,dxc)
 
 # DR_H relative to C
 ata <- length(which(sub_fc.dat$FC_DR_H < 0 & sub_fc.dat$FC_HS_H < 0)) 
@@ -121,7 +102,9 @@ ctb <- length(which((sub_fc.dat$FC_HS_B > 0 & sub_fc.dat$FC_HS_O < 0) |
                     (sub_fc.dat$FC_HS_B < 0 & sub_fc.dat$FC_HS_O > 0))) 
 ctc <- length(which(sub_fc.dat$FC_HS_B > 0 & sub_fc.dat$FC_HS_O > 0)) 
 
-mx <- c(ata,atb,atc,bta,btb,btc,cta,ctb,ctc)
+# ctr <- c(d_DRH_HSH,op_DRH_HSH,u_DRH_HSH, d_DRH_DRO,op_DRH_DRO,u_DRH_DRO,
+#          d_HSB_HSO,op_HSB_HSO,u_HSB_HSO)
+# mx <- c(ata,atb,atc,bta,btb,btc,cta,ctb,ctc)
 
 # HS_H relative to C
 aqa <- length(which(sub_fc.dat$FC_HS_H < 0 & sub_fc.dat$FC_DR_O < 0)) 
@@ -134,7 +117,8 @@ bqb <- length(which((sub_fc.dat$FC_HS_H > 0 & sub_fc.dat$FC_HS_O < 0) |
                     (sub_fc.dat$FC_HS_H < 0 & sub_fc.dat$FC_HS_O > 0))) 
 bqc <- length(which(sub_fc.dat$FC_HS_H > 0 & sub_fc.dat$FC_HS_O > 0)) 
 
-np <- c(aqa,aqb,aqc,bqa,bqb,bqc)
+# ctr <- c(d_HSH_DRO,op_HSH_DRO,u_HSH_DRO, d_HSH_HSO,op_HSH_HSO,u_HSH_HSO)
+# np <- c(aqa,aqb,aqc,bqa,bqb,bqc)
 
 # DR_O relative to C
 apa <- length(which(sub_fc.dat$FC_DR_O < 0 & sub_fc.dat$FC_HS_O < 0)) 
@@ -142,7 +126,8 @@ apb <- length(which((sub_fc.dat$FC_DR_O > 0 & sub_fc.dat$FC_HS_O < 0) |
                     (sub_fc.dat$FC_DR_O < 0 & sub_fc.dat$FC_HS_O > 0))) 
 apc <- length(which(sub_fc.dat$FC_DR_O > 0 & sub_fc.dat$FC_HS_O > 0)) 
 
-sr <- c(apa,apb,apc)
+# ctr <- c(d_DRO_HSO,op_DRO_HSO,u_DRO_HSO)
+# sr <- c(apa,apb,apc)
 
 # DR relative to HS
 fya <- length(which(sub_fc.dat$FC_DRHS_B < 0 & sub_fc.dat$FC_DRHS_H < 0)) 
@@ -159,8 +144,28 @@ ika <- length(which(sub_fc.dat$FC_DRHS_H < 0 & sub_fc.dat$FC_DRHS_O < 0))
 ikb <- length(which((sub_fc.dat$FC_DRHS_H > 0 & sub_fc.dat$FC_DRHS_O < 0) | 
                     (sub_fc.dat$FC_DRHS_H < 0 & sub_fc.dat$FC_DRHS_O > 0))) 
 ikc <- length(which(sub_fc.dat$FC_DRHS_H > 0 & sub_fc.dat$FC_DRHS_O > 0))
+```
 
-hd <- c(fya,fyb,fyc,hya,hyb,hyc,ika,ikb,ikc)
+# Tabulate
+
+```{r}
+ctr <- c('d_DRB_HSB','op_DRB_HSB','u_DRB_HSB', 'd_DRB_DRH','op_DRB_DRH','u_DRB_DRH',
+         'd_DRB_HSH','op_DRB_HSH','u_DRB_HSH', 'd_DRB_DRO','op_DRB_DRO','u_DRB_DRO',
+         'd_DRB_HSO','op_DRB_HSO','u_DRB_HSO', 'd_HSB_DRH','op_HSB_DRH','u_HSB_DRH',
+         'd_HSB_HSH', 'op_HSB_HSH','u_HSB_HSH', 'd_HSB_DRO','op_HSB_DRO','u_HSB_DRO',
+         'd_HSB_HSO','op_HSB_HSO','u_HSB_HSO', 'd_DRH_HSH','op_DRH_HSH','u_DRH_HSH',
+         'd_DRH_DRO','op_DRH_DRO','u_DRH_DRO', 'd_HSB_HSO','op_HSB_HSO','u_HSB_HSO',
+         'd_HSH_DRO','op_HSH_DRO','u_HSH_DRO', 'd_HSH_HSO','op_HSH_HSO','u_HSH_HSO',
+         'd_DRO_HSO','op_DRO_HSO','u_DRO_HSO','d_DRHSB_DRHSH','op_DRHSB_DRHSH',
+         'u_DRHSB_DRHSH','d_DRHSB_DRHSO','op_DRHSB_DRHSO','u_DRHSB_DRHSO',
+         'd_DRHSH_DRHSO','op_DRHSH_DRHSO','u_DRHSH_DRHSO')
+
+sg <- c(aia,aib,aic, bia,bib,bic, cia,cib,cic, dia,dib,dic, eia,eib,eic,
+        axa,axb,axc, bxa,bxb,bxc, cxa,cxb,cxc, dxa,dxb,dxc, ata,atb,atc,
+        bta,btb,btc, cta,ctb,ctc, aqa,aqb,aqc, bqa,bqb,bqc, apa,apb,apc,
+        fya,fyb,fyc, hya,hyb,hyc, ika,ikb,ikc)
+
+gl <- as.data.frame(cbind(ctr,sg))
 ```
 
 ```{r}
