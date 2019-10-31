@@ -29,7 +29,9 @@ sub_fc.dat <- all.fc.dat[,c(7,12,17,22,27,32,37,42,47)]
 aia <- length(which(sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_HS_B < 0)) 
 aib <- length(which(sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_HS_B < 0))  
 aic <- length(which(sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_HS_B > 0)) 
-aid <- length(which(sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_HS_B > 0)) 
+aid <- length(which(sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_HS_B > 0))
+
+# table(sign(sub_fc.dat$log2FC))
 
 # Heads: DR vs HS rel. C
 ata <- length(which(sub_fc.dat$FC_DR_H < 0 & sub_fc.dat$FC_HS_H < 0)) 
@@ -60,7 +62,22 @@ qd <- c('llqB','rlqB','luqB','ruqB',
 gl <- as.data.frame(cbind(ctr,qd,sg))
 gl$sg <- as.numeric(sg)
 
-write.table(gl, file = "../../processed/DESEQ/up_down_allgenes.txt", row.names = FALSE)
+write.table(gl, file = "../../processed/DESEQ/unregulated_allgenes.txt", row.names = FALSE)
+
+
+# Unregulated
+aiu <- length(which(sub_fc.dat$FC_DR_B == 0 & sub_fc.dat$FC_HS_B == 0)) 
+atu <- length(which(sub_fc.dat$FC_DR_H == 0 & sub_fc.dat$FC_HS_H == 0)) 
+apu <- length(which(sub_fc.dat$FC_DR_O == 0 & sub_fc.dat$FC_HS_O == 0)) 
+
+ctu <- c('nDRB_dHSB','nDRH_dHSH','nDRO_dHSO')
+
+su <- c(aiu,atu,apu)
+
+gu <- as.data.frame(cbind(ctu,su))
+gu$su <- as.numeric(su)
+
+write.table(gu, file = "../../processed/DESEQ/unregulated_allgenes.txt", row.names = FALSE)
 ```
 
 # Repeat with DEGS only
@@ -111,6 +128,23 @@ gl <- as.data.frame(cbind(ctr,qd,sg))
 gl$sg <- as.numeric(sg)
 
 write.table(gl, file = "../../processed/DESEQ/up_down_DEGs_trt.txt", row.names = FALSE)
+
+# Unregulated
+uiu <- length(which(sub_fc.dat$FC_DR_B == 0 & sub_fc.dat$FC_HS_B == 0)) 
+utu <- length(which(sub_fc.dat$FC_DR_H == 0 & sub_fc.dat$FC_HS_H == 0)) 
+upu <- length(which(sub_fc.dat$FC_DR_O == 0 & sub_fc.dat$FC_HS_O == 0)) 
+
+# Tabulate
+c(uiu,utu,upu)
+
+ctm <- c('dDRB_dHSB','dDRH_dHSH','dDRO_dHSO')
+
+sm <- c(uiu,utu,upu)
+
+gm <- as.data.frame(cbind(ctm,sm))
+gm$sm <- as.numeric(sm)
+
+write.table(gl, file = "../../processed/DESEQ/unregulated_DEGs_trt.txt", row.names = FALSE)
 ```
 # END OF SCRIPT
 
