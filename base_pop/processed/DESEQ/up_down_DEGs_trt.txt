@@ -1,0 +1,13 @@
+"ctr" "qd" "sg"
+"dDRB_dHSB" "llqB" 650
+"uDRB_dHSB" "rlqB" 338
+"dDRD_uHSB" "luqB" 226
+"uDRB_uHSB" "ruqB" 1255
+"dDRH_dHSH" "llqH" 558
+"uDRH_dHSH" "rlqH" 315
+"dDRH_uHSH" "luqH" 221
+"uDRH_uHSH" "ruqH" 1187
+"dDRO_dHSO" "llqO" 844
+"uDRO_dHSO" "rlqO" 134
+"dDRO_uHSO" "luqO" 146
+"uDRO_uHSO" "ruqO" 1341

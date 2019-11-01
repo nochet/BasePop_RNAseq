@@ -22,7 +22,7 @@ library(tidyverse)
 library(cowplot)
 
 source("modified_plotPCA_function.R")
-source("../color_map.R")
+source("../color_map_blindr.R")
 source("../ggplot_theme.R")
 
 set.seed(354902)

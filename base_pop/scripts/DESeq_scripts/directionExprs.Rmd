@@ -5,15 +5,19 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
 
-```{r}
 library(tidyverse)
+<<<<<<< HEAD
 
+=======
+library(DESeq2)
+library(apeglm)
+library(cowplot)
+>>>>>>> dfeab9c29603a4cc7d7ec295a00bb3d3ecb7dd9c
 
 ```
 
-# Data
+# Pull #s of genes with same or opposite sign
 
 ```{r}
 load("../../processed/DESEQ/all_fc_dat.rda")
@@ -22,27 +26,156 @@ all.fc.dat <- as.data.frame(all.fc.dat)
 all.fc.dat[1,]
 colnames(all.fc.dat)
 
+# Only columns with FC
 sub_fc.dat <- all.fc.dat[,c(7,12,17,22,27,32,37,42,47)]
-long_fc <- gather(sub_fc.dat, Diet_Comp, log2FC, FC_DR_B:FC_DRHS_O, factor_key=TRUE)
-long_fc$log2FC <- as.numeric(long_fc$log2FC)
-str(long_fc)
 
+# Bodies: DR vs HS rel. C
+aia <- length(which(sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_HS_B < 0)) 
+aib <- length(which(sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_HS_B < 0))  
+aic <- length(which(sub_fc.dat$FC_DR_B < 0 & sub_fc.dat$FC_HS_B > 0)) 
+aid <- length(which(sub_fc.dat$FC_DR_B > 0 & sub_fc.dat$FC_HS_B > 0))
+
+# table(sign(sub_fc.dat$log2FC))
+
+# Heads: DR vs HS rel. C
+ata <- length(which(sub_fc.dat$FC_DR_H < 0 & sub_fc.dat$FC_HS_H < 0)) 
+atb <- length(which(sub_fc.dat$FC_DR_H > 0 & sub_fc.dat$FC_HS_H < 0)) 
+atc <- length(which(sub_fc.dat$FC_DR_H < 0 & sub_fc.dat$FC_HS_H > 0)) 
+atd <- length(which(sub_fc.dat$FC_DR_H > 0 & sub_fc.dat$FC_HS_H > 0)) 
+
+# Ovaries: DR vs HS rel. C
+apa <- length(which(sub_fc.dat$FC_DR_O < 0 & sub_fc.dat$FC_HS_O < 0)) 
+apb <- length(which(sub_fc.dat$FC_DR_O > 0 & sub_fc.dat$FC_HS_O < 0)) 
+apc <- length(which(sub_fc.dat$FC_DR_O < 0 & sub_fc.dat$FC_HS_O > 0)) 
+apd <- length(which(sub_fc.dat$FC_DR_O > 0 & sub_fc.dat$FC_HS_O > 0)) 
+
+# Tabulate
+c(aia,aib,aic,aid, apa,apb,apc,apd, ata,atb,atc,atd)
+
+ctr <- c('dDRB_dHSB','uDRB_dHSB','dDRD_uHSB','uDRB_uHSB',
+         'dDRH_dHSH','uDRH_dHSH','dDRH_uHSH','uDRH_uHSH',
+         'dDRO_dHSO','uDRO_dHSO','dDRO_uHSO','uDRO_uHSO')
+
+sg <- c(aia,aib,aic,aid, apa,apb,apc,apd, ata,atb,atc,atd)
+
+# left lower quadrant, right lower quadrant, left upper, right upper
+qd <- c('llqB','rlqB','luqB','ruqB', 
+        'llqH','rlqH','luqH','ruqH',
+        'llqO','rlqO','luqO','ruqO')
+
+gl <- as.data.frame(cbind(ctr,qd,sg))
+gl$sg <- as.numeric(sg)
+
+write.table(gl, file = "../../processed/DESEQ/unregulated_allgenes.txt", row.names = FALSE)
+
+
+# Unregulated
+aiu <- length(which(sub_fc.dat$FC_DR_B == 0 & sub_fc.dat$FC_HS_B == 0)) 
+atu <- length(which(sub_fc.dat$FC_DR_H == 0 & sub_fc.dat$FC_HS_H == 0)) 
+apu <- length(which(sub_fc.dat$FC_DR_O == 0 & sub_fc.dat$FC_HS_O == 0)) 
+
+ctu <- c('nDRB_dHSB','nDRH_dHSH','nDRO_dHSO')
+
+su <- c(aiu,atu,apu)
+
+gu <- as.data.frame(cbind(ctu,su))
+gu$su <- as.numeric(su)
+
+write.table(gu, file = "../../processed/DESEQ/unregulated_allgenes.txt", row.names = FALSE)
 ```
 
-# 
+# Repeat with DEGS only
 
 ```{r}
-table(sign(long_fc$log2FC))
+degs_treat <- read.csv("../../processed/DESEQ/DEGs_lrt.treatment_0.05.csv")
 
-# sum(sub_fc.dat$FC_DR_B < 0)
-# sum(sub_fc.dat$FC_DR_B > 0)
+# Rows as columns
+fcc <- as.data.frame(sub_fc.dat) %>%
+  rownames_to_column(var="Gene") 
 
-fc <- long_fc %>% 
-  group_by(Diet_Comp)  %>% 
-  summarise(Up = sum(log2FC>0), 
-            Down = sum(log2FC <0))
-fc
+degs <- inner_join(fcc,degs_treat, by="Gene")
+degs <- degs[,c(1:10,12)]
 
-fcc <- sub_fc.dat[,c("FC_DR_B", "FC_HS_B")]
+# Bodies: DR vs HS rel. C
+aia <- length(which(degs$FC_DR_B < 0 & degs$FC_HS_B < 0)) 
+aib <- length(which(degs$FC_DR_B > 0 & degs$FC_HS_B < 0))  
+aic <- length(which(degs$FC_DR_B < 0 & degs$FC_HS_B > 0)) 
+aid <- length(which(degs$FC_DR_B > 0 & degs$FC_HS_B > 0)) 
+
+# Heads: DR vs HS rel. C
+ata <- length(which(degs$FC_DR_H < 0 & degs$FC_HS_H < 0)) 
+atb <- length(which(degs$FC_DR_H > 0 & degs$FC_HS_H < 0)) 
+atc <- length(which(degs$FC_DR_H < 0 & degs$FC_HS_H > 0)) 
+atd <- length(which(degs$FC_DR_H > 0 & degs$FC_HS_H > 0)) 
+
+# Ovaries: DR vs HS rel. C
+apa <- length(which(degs$FC_DR_O < 0 & degs$FC_HS_O < 0)) 
+apb <- length(which(degs$FC_DR_O > 0 & degs$FC_HS_O < 0)) 
+apc <- length(which(degs$FC_DR_O < 0 & degs$FC_HS_O > 0)) 
+apd <- length(which(degs$FC_DR_O > 0 & degs$FC_HS_O > 0)) 
+
+# Tabulate
+c(aia,aib,aic,aid, apa,apb,apc,apd, ata,atb,atc,atd)
+
+ctr <- c('dDRB_dHSB','uDRB_dHSB','dDRD_uHSB','uDRB_uHSB',
+         'dDRH_dHSH','uDRH_dHSH','dDRH_uHSH','uDRH_uHSH',
+         'dDRO_dHSO','uDRO_dHSO','dDRO_uHSO','uDRO_uHSO')
+
+sg <- c(aia,aib,aic,aid, apa,apb,apc,apd, ata,atb,atc,atd)
+
+# left lower quadrant, right lower quadrant, left upper, right upper
+qd <- c('llqB','rlqB','luqB','ruqB', 
+        'llqH','rlqH','luqH','ruqH',
+        'llqO','rlqO','luqO','ruqO')
+
+gl <- as.data.frame(cbind(ctr,qd,sg))
+gl$sg <- as.numeric(sg)
+
+write.table(gl, file = "../../processed/DESEQ/up_down_DEGs_trt.txt", row.names = FALSE)
+
+# Unregulated
+uiu <- length(which(sub_fc.dat$FC_DR_B == 0 & sub_fc.dat$FC_HS_B == 0)) 
+utu <- length(which(sub_fc.dat$FC_DR_H == 0 & sub_fc.dat$FC_HS_H == 0)) 
+upu <- length(which(sub_fc.dat$FC_DR_O == 0 & sub_fc.dat$FC_HS_O == 0)) 
+
+# Tabulate
+c(uiu,utu,upu)
+
+ctm <- c('dDRB_dHSB','dDRH_dHSH','dDRO_dHSO')
+
+sm <- c(uiu,utu,upu)
+
+gm <- as.data.frame(cbind(ctm,sm))
+gm$sm <- as.numeric(sm)
+
+write.table(gl, file = "../../processed/DESEQ/unregulated_DEGs_trt.txt", row.names = FALSE)
+```
+# END OF SCRIPT
+
+
+<<<<<<< HEAD
+# 
+=======
+>>>>>>> dfeab9c29603a4cc7d7ec295a00bb3d3ecb7dd9c
+
+```{r}
+# down <- subset(gl, grepl("d_", gl$ctr))
+# downC <- down[1:15,]
+
+gl <- gl %>% 
+  mutate(Sign = str_split(ctr, "_", simplify = TRUE)[, 1],
+         comba = str_split(ctr, "_", simplify = TRUE)[, 2],
+         combb = str_split(ctr, "_", simplify = TRUE)[, 3])
+
+gl$ref <- "C"
+
+g <- 46:54
+gl$ref <- replace(gl$ref, g, "DR")
+gl <- unite(gl,group, Sign,comba, sep = "_", remove = FALSE)
+
+xf <- gl %>%
+  group_by(group) %>%
+  summarise(sg = sum(sg))
+as.data.frame(xf)
 ```
 
