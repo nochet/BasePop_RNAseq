@@ -171,12 +171,3 @@ xf <- gl %>%
 as.data.frame(xf)
 ```
 
-```{r}
-diet_tissue <- c('FC_DR_B','FC_HS_B',"FC_DRHS_B","FC_DR_H","FC_HS_H","FC_DRHS_H","FC_DR_O","FC_HS_O","FC_DRHS_O")
-
-for(dd in diet_tissue)
-{
-  up_down <- gather_pairs(sub_fc.dat)
-}
-```
-
