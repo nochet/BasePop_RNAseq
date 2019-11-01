@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
-library(knitr)
+
 
 ```
 
@@ -29,7 +29,7 @@ str(long_fc)
 
 ```
 
-# Relative to C
+# 
 
 ```{r}
 table(sign(long_fc$log2FC))
