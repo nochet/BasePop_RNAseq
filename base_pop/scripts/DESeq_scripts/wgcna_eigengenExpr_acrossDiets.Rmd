@@ -20,7 +20,7 @@ This script subsets and plots gene expression for each WGCNA module. Use data co
 
 ```{r}
 source("../ggplot_theme.R")
-source("../color_map.R")
+#source("../color_map.R")
 
 g_legend<-function(a.gplot){
   tmp <- ggplot_gtable(ggplot_build(a.gplot))
@@ -53,6 +53,7 @@ pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tiss
   stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
   stat_summary(fun.y=mean, geom ="line") + 
   scale_y_continuous(limits = c(-0.65, 0.65)) +
+  scale_colour_OkabeIto() +
   theme_half_open() +
   theme(legend.position="none", axis.title.x = element_blank()) +
       my_theme +
@@ -69,6 +70,7 @@ pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tiss
   stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
   stat_summary(fun.y=mean, geom ="line") +
   scale_y_continuous(limits = c(-0.65, 0.65)) +
+  scale_colour_OkabeIto() +
   theme_half_open() +
   theme(legend.position="none", axis.title.y = element_blank()) +
     my_theme +
@@ -84,6 +86,7 @@ pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tiss
   stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
   stat_summary(fun.y=mean, geom ="line") +
   scale_y_continuous(limits = c(-0.65, 0.65)) +
+  scale_colour_OkabeIto() +
   theme_half_open() +
   theme(legend.position="none") +
     my_theme +
@@ -98,6 +101,7 @@ all.plots[[cc]] <- pp
   stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
   stat_summary(fun.y=mean, geom ="line") +
   scale_y_continuous(limits = c(-0.65, 0.65)) +
+  scale_colour_OkabeIto() +
   theme_half_open() +
       theme(legend.position="none", axis.title.x = element_blank(), 
         axis.title.y = element_blank()) +

@@ -74,6 +74,7 @@ p1<- ggplot(d, aes(x=treatment, y=count, color=tissue, group = tissue)) +
   annotate("text", x =3, y=yls[counter], label = gids[counter], fontface=3, color="grey30") +
   ylab("Count") +
   xlab("Diet") +
+  scale_colour_OkabeIto() +
   theme_half_open() +
   theme(legend.position='none') +
   my_theme
@@ -102,6 +103,7 @@ pl <- ggplot(d, aes(x=treatment, y=count, color=tissue, group = tissue)) +
   ylab("Count") +
   xlab("Diet") +
   labs(color = "Tissue") +
+  scale_colour_OkabeIto() +
   theme_half_open() +
   theme(legend.margin=margin(t=0,r=0,b=0,l=2, unit = 'cm')) +
   my_theme
