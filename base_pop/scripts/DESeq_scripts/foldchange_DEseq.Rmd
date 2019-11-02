@@ -11,6 +11,8 @@ library(apeglm)
 library(ggplot2)
 library(cowplot)
 library(colorspace)
+library(colorblindr)
+
 knitr::opts_chunk$set(echo = TRUE)
 
 options(scipen=10)
