@@ -20,7 +20,8 @@ library(gridExtra)
 library(RColorBrewer)
 library(tidyverse)
 library(cowplot)
-library(colorblindr)
+#library(colorblindr)
+library(viridis)
 
 source("modified_plotPCA_function.R")
 #source("../color_map_blindr.R")
@@ -80,7 +81,7 @@ b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
   xlab("Samples")+
   facet_grid(tissue~.) +
-  scale_colour_OkabeIto() +
+  scale_color_viridis(option = "cividis") +
   theme_half_open() +
   my_theme
   #tx_color_map() 
@@ -98,7 +99,7 @@ b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
   xlab("Tissue") +
   facet_grid(treatment~.) +
-  scale_colour_OkabeIto() +
+  scale_color_viridis(option = "cividis") +
   theme_half_open() +
   my_theme 
 b2 <- b2 + theme(legend.position="none")
@@ -202,7 +203,7 @@ ll <- ggplot(uncor.pca, aes(PC1, PC2, color=treatment, shape=tissue)) +
   coord_cartesian(ylim = c(-100, 100), xlim=c(-110,150)) +
   my_theme +
   theme_half_open() +
-  scale_color_OkabeIto() +
+  scale_color_viridis(option = "cividis") +
   #tx_fill_map() +
   #theme(legend.position="none") +
   labs(color="Treatment", shape="Tissue") 
@@ -244,7 +245,7 @@ gg <- ggplot(bcor.pca, aes(PC1, PC2, color=treatment, shape=tissue)) +
   coord_cartesian(ylim = c(-100, 100), xlim=c(-110,150)) +
   my_theme +
   theme_half_open() +
-  scale_color_OkabeIto() +
+  scale_color_viridis(alpha = 1,option = "cividis") +
   #tx_fill_map() +
   labs(color="Treatment", shape="Tissue") 
 #gg

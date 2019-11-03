@@ -11,12 +11,18 @@ library(apeglm)
 library(ggplot2)
 library(cowplot)
 library(colorspace)
-library(colorblindr)
+#library(colorblindr)
+library(viridis)
 
 knitr::opts_chunk$set(echo = TRUE)
 
 options(scipen=10)
 source("../ggplot_theme.R")
+
+# palette_OkabeIto
+# pal <- c("#E69F00","#56B4E9","#009E73","#F0E442",
+#          "#0072B2","#D55E00","#CC79A7","#999999")
+
 ```
 
 # Expression count data
@@ -34,7 +40,6 @@ phenDat.sva[,1] <- NULL
 phenDat.sva$batch <- as.factor(phenDat.sva$batch)
 phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, sep="")
 ```
-
 
 ## Get DEseq object
 
@@ -147,13 +152,14 @@ pp<-ggplot(plot.dat, aes(FoldChangeDR,FoldChangeHS, color=log10(BaseMean))) +
   geom_hline(yintercept=0,col='grey80')+
   geom_vline(xintercept=0,col='grey80')+
   geom_abline(intercept=0,slope=1,col='grey80',lty=2)+
-  geom_point(alpha=1/2)+
+  geom_point(alpha=0.5)+
  # geom_point(data=pp.dat, aes(FoldChangeDR,FoldChangeHS,color=-log10(Padj+1e-16)), alpha=1/2) +
   ylim(c(-ax.top,ax.top))+
   xlim(c(-ax.top,ax.top))+
   ylab("Fold Change (HS)")+
   xlab("Fold Change (DR)")+
-  scale_color_gradientn(colours = rainbow_hcl(8, start = 300, end = 40)) +
+  theme_half_open() +
+  scale_color_viridis(option = "cividis", colors = 1, begin = 0, end = 1, direction = 1) +
   theme(legend.position="none", plot.title = element_text(color="grey50")) +
   ggtitle("Bodies") +
   my_theme
@@ -171,8 +177,9 @@ if(oo=='H')
   xlim(c(-ax.top,ax.top))+
   ylab("Fold Change (HS)")+
   xlab("Fold Change (DR)")+
-    scale_color_gradientn(colours = rainbow_hcl(8, start = 300, end = 40)) +
+    scale_color_viridis(option = "cividis") +
     ggtitle("Heads") +
+    theme_half_open() +
   theme(legend.position="none", axis.title.y=element_blank(),plot.title = element_text(color="grey50")) +
   my_theme
   
@@ -193,7 +200,8 @@ if(oo=='O')
   #scale_color_continuous(name=expression("-log"[10]*"(P-value)"))+
     ggtitle("Ovaries") +
     theme(axis.title.y=element_blank(), plot.title = element_text(color="grey50")) +
-    scale_color_gradientn(breaks = c(1:5), labels = 10^seq(1,5), name = "Mean\nExpression",colours = rainbow_hcl(8, start = 300, end = 40)) +
+    scale_color_viridis(option = "cividis", breaks = c(1:5), labels = 10^seq(1,5), name = "Mean\nExpression") +
+  theme_half_open() +
   my_theme
   
 }
@@ -242,8 +250,9 @@ pp <- ggplot(na.omit(plot.dat), aes(y=-log10(padj), x=FC, color=log10(baseMean))
   ylim(c(0,51)) +
   ggtitle(p.titles[jj]) +
   theme(plot.title = element_text(color="grey50"))+
+  theme_half_open() +
   my_theme +
-  scale_color_gradientn(breaks = c(1:5), labels = 10^seq(1,5), name = "Mean\nExpression",colours = rainbow_hcl(8, start = 300, end = 40)) 
+  scale_color_viridis(option = "cividis",breaks = c(1:5), labels = 10^seq(1,5), name = "Mean\nExpression") 
   
   
   if(st.ind %in% c(7,12,22,27,37,42))
@@ -261,25 +270,7 @@ pp <- ggplot(na.omit(plot.dat), aes(y=-log10(padj), x=FC, color=log10(baseMean))
 
 vocplot <- plot_grid(plotlist=voc.list,nrow=3,labels = c('a.', 'b.', 'c.','d.', 'e.', 'f.','g.', 'h.', 'i.'),rel_widths = c(1.3,1.1,1.8),rel_heights = c(1,1,1.2), hjust= c(rep(c(-1,rep(1,2)),3)), label_size = 10)
 
-
 ggsave(vocplot, file="../../plots/Voc_all.pdf",width=6.5,height=6)
 
-```
-
-```{r}
-plot.dat$lg <- -log10(plot.dat$padj)
-subset(na.omit(plot.dat), abs(plot.dat$FC>4) & plot.dat$lg <10)
-
-# Diet-tissue
-ft <- all.fc.dat
-ft$h.hsc <- -log10(all.fc.dat$padj_HS_H)
-ft <- na.omit(ft)
-pl <- subset(ft, abs(ft$FC_HS_H>4) & ft$h.hsc>10)
-ft[ abs(ft$FC_HS_H>4),]
-
-pl <- pl[,c(7,9:12,14:17,19:22,24:27,29:32,34:37,39:42,44:47,49:51)]
-
-#pl <- rownames(pl)
-#pl <- subset(countdata,rownames(countdata) %in% pl)
 ```
 
