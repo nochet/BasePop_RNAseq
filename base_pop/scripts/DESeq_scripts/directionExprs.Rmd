@@ -7,14 +7,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
-<<<<<<< HEAD
-
-=======
 library(DESeq2)
 library(apeglm)
 library(cowplot)
->>>>>>> dfeab9c29603a4cc7d7ec295a00bb3d3ecb7dd9c
-
 ```
 
 # Pull #s of genes with same or opposite sign
@@ -153,10 +148,6 @@ write.table(gl, file = "../../processed/DESEQ/unregulated_DEGs_trt.txt", row.nam
 # END OF SCRIPT
 
 
-<<<<<<< HEAD
-# 
-=======
->>>>>>> dfeab9c29603a4cc7d7ec295a00bb3d3ecb7dd9c
 
 ```{r}
 # down <- subset(gl, grepl("d_", gl$ctr))
