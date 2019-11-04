@@ -1,0 +1,473 @@
+---
+title: "FoldChange_sim"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(DESeq2)
+library(ggplot2)
+library(cowplot)
+library(colorblindr)
+source("../ggplot_theme.R")
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  legend
+}
+
+```
+
+
+
+## Simulation to see what fold changes we get by chance to look at similarity of diet responses
+
+# Get obs data
+
+```{r}
+# Expression matrix
+countdata <- read.csv("../../processed/DESEQ/Expr_countData.csv")
+rownames(countdata) <- countdata[,1]
+countdata[,1] <- NULL
+countdata <- as.matrix(countdata)
+
+phenDat.sva <- read.csv("../../processed/DESEQ/sampleDat_with_SV.csv")
+rownames(phenDat.sva) <- phenDat.sva[,1]
+phenDat.sva[,1] <- NULL
+phenDat.sva$batch <- as.factor(phenDat.sva$batch)
+phenDat.sva$treat_tissue <- paste(phenDat.sva$treatment,"_",phenDat.sva$tissue, sep="")
+
+phenDat.sva <- phenDat.sva[c(seq(1,54, by=3), seq(2,54, by=3), seq(3,54, by=3)),]
+countdata <- countdata[,c(seq(1,54, by=3), seq(2,54, by=3), seq(3,54, by=3))]
+
+dds <- DESeqDataSetFromMatrix(countData = countdata, 
+                                   colData = phenDat.sva, 
+                                   design = ~ SV1 + batch + treat_tissue)
+dds <- estimateSizeFactors(dds)
+nc <- counts(dds, normalized=TRUE)
+filter <- rowSums(nc >= 10) >= 2
+#dds <- dds[filter,]
+dds <- estimateDispersions(dds, fitType = "local")
+dds <- nbinomWaldTest(dds, maxit = 1000, useOptim = TRUE)
+
+
+dds.01 <- DESeqDataSetFromMatrix(countData = countdata, 
+                                   colData = phenDat.sva, 
+                                   design = ~ SV1 + batch + tissue + treatment)
+lrt.treatment <- DESeq(dds.01, test="LRT", reduced=~ SV1 + batch + tissue)
+lrt.treatAll <- results(lrt.treatment)
+
+all.equal(rownames(lrt.treatAll), rownames(dds))
+all.equal(rownames(lrt.treatAll), names(filter))
+
+lrt.treatAll <- lrt.treatAll[filter,]
+dds <- dds[filter,]
+
+
+organs <- c('B','H','O')
+treats <- c('DR','C','HS')
+
+
+all.fc.dat <- lrt.treatAll
+
+for(oo in organs)
+{
+
+FC_DRC <- lfcShrink(dds, contrast=c("treat_tissue",paste("DR_",oo,sep=""),paste("C_",oo,sep="")), type="normal")
+
+FC_HSC <- lfcShrink(dds, contrast=c("treat_tissue",paste("HS_",oo,sep=""),paste("C_",oo,sep="")), type="normal")
+  
+FC_DRHS <- lfcShrink(dds, contrast=c("treat_tissue",paste("DR_",oo,sep=""),paste("HS_",oo,sep="")), type="normal")
+
+FC_CHS <- lfcShrink(dds, contrast=c("treat_tissue",paste("C_",oo,sep=""),paste("HS_",oo,sep="")), type="normal")
+
+FC_CDR <- lfcShrink(dds, contrast=c("treat_tissue",paste("C_",oo,sep=""),paste("DR_",oo,sep="")), type="normal")
+
+FC_HSDR <- lfcShrink(dds, contrast=c("treat_tissue",paste("HS_",oo,sep=""),paste("DR_",oo,sep="")), type="normal")
+
+
+
+colnames(FC_DRC) <- c('baseMean',
+                      paste("FC_DR_",oo,sep=""),
+                      paste("FCse_DR_",oo,sep=""),
+                      paste("stat_DR_",oo,sep=""),
+                      paste("p_DR_",oo,sep=""),
+                      paste("padj_DR_",oo,sep=""))
+
+colnames(FC_HSC) <- c('baseMean',
+                      paste("FC_HS_",oo,sep=""),
+                      paste("FCse_HS_",oo,sep=""),
+                      paste("stat_HS_",oo,sep=""),
+                      paste("p_HS_",oo,sep=""),
+                      paste("padj_HS_",oo,sep=""))
+
+colnames(FC_DRHS) <- c('baseMean',
+                      paste("FC_DRHS_",oo,sep=""),
+                      paste("FCse_DRHS_",oo,sep=""),
+                      paste("stat_DRHS_",oo,sep=""),
+                      paste("p_DRHS_",oo,sep=""),
+                      paste("padj_DRHS_",oo,sep=""))
+
+colnames(FC_CHS) <- c('baseMean',
+                      paste("FC_CHS_",oo,sep=""),
+                      paste("FCse_CHS_",oo,sep=""),
+                      paste("stat_CHS_",oo,sep=""),
+                      paste("p_CHS_",oo,sep=""),
+                      paste("padj_CHS_",oo,sep=""))
+
+colnames(FC_CDR) <- c('baseMean',
+                      paste("FC_CDR_",oo,sep=""),
+                      paste("FCse_CDR_",oo,sep=""),
+                      paste("stat_CDR_",oo,sep=""),
+                      paste("p_CDR_",oo,sep=""),
+                      paste("padj_CDR_",oo,sep=""))
+
+colnames(FC_HSDR) <- c('baseMean',
+                      paste("FC_HSDR_",oo,sep=""),
+                      paste("FCse_HSDR_",oo,sep=""),
+                      paste("stat_HSDR_",oo,sep=""),
+                      paste("p_HSDR_",oo,sep=""),
+                      paste("padj_HSDR_",oo,sep=""))
+
+
+all.fc.dat <- cbind(all.fc.dat, FC_DRC[,2:6],FC_HSC[,2:6],FC_DRHS[,2:6],
+                    FC_CHS[,2:6],FC_CDR[,2:6],FC_HSDR[,2:6])
+
+
+}
+
+
+cor.dat <- c(cor(all.fc.dat[,"FC_DR_B"],all.fc.dat[,"FC_HS_B"]),
+cor(all.fc.dat[,"FC_HSDR_B"],all.fc.dat[,"FC_CDR_B"]),
+cor(all.fc.dat[,"FC_DRHS_B"],all.fc.dat[,"FC_CHS_B"]),
+cor(all.fc.dat[,"FC_DR_H"],all.fc.dat[,"FC_HS_H"]),
+cor(all.fc.dat[,"FC_HSDR_H"],all.fc.dat[,"FC_CDR_H"]),
+cor(all.fc.dat[,"FC_DRHS_H"],all.fc.dat[,"FC_CHS_H"]),
+cor(all.fc.dat[,"FC_DR_O"],all.fc.dat[,"FC_HS_O"]),
+cor(all.fc.dat[,"FC_HSDR_O"],all.fc.dat[,"FC_CDR_O"]),
+cor(all.fc.dat[,"FC_DRHS_O"],all.fc.dat[,"FC_CHS_O"]))
+
+
+ns.dat <- c((length(which(all.fc.dat[,"FC_DR_B"] > 0 & all.fc.dat[,"FC_HS_B"] > 0)) + length(which(all.fc.dat[,"FC_DR_B"] < 0 & all.fc.dat[,"FC_HS_B"] < 0)))/nrow(all.fc.dat),
+(length(which(all.fc.dat[,"FC_HSDR_B"] > 0 & all.fc.dat[,"FC_CDR_B"] > 0)) + length(which(all.fc.dat[,"FC_HSDR_B"] < 0 & all.fc.dat[,"FC_CDR_B"] < 0)))/nrow(all.fc.dat),
+(length(which(all.fc.dat[,"FC_DRHS_B"] > 0 & all.fc.dat[,"FC_CHS_B"] > 0)) + length(which(all.fc.dat[,"FC_DRHS_B"] < 0 & all.fc.dat[,"FC_CHS_B"] < 0)))/nrow(all.fc.dat),
+(length(which(all.fc.dat[,"FC_DR_H"] > 0 & all.fc.dat[,"FC_HS_H"] > 0)) + length(which(all.fc.dat[,"FC_DR_H"] < 0 & all.fc.dat[,"FC_HS_H"] < 0)))/nrow(all.fc.dat),
+(length(which(all.fc.dat[,"FC_HSDR_H"] > 0 & all.fc.dat[,"FC_CDR_H"] > 0)) + length(which(all.fc.dat[,"FC_HSDR_H"] < 0 & all.fc.dat[,"FC_CDR_H"] < 0)))/nrow(all.fc.dat),
+(length(which(all.fc.dat[,"FC_DRHS_H"] > 0 & all.fc.dat[,"FC_CHS_H"] > 0)) + length(which(all.fc.dat[,"FC_DRHS_H"] < 0 & all.fc.dat[,"FC_CHS_H"] < 0)))/nrow(all.fc.dat),
+(length(which(all.fc.dat[,"FC_DR_O"] > 0 & all.fc.dat[,"FC_HS_O"] > 0)) + length(which(all.fc.dat[,"FC_DR_O"] < 0 & all.fc.dat[,"FC_HS_O"] < 0)))/nrow(all.fc.dat),
+(length(which(all.fc.dat[,"FC_HSDR_O"] > 0 & all.fc.dat[,"FC_CDR_O"] > 0)) + length(which(all.fc.dat[,"FC_HSDR_O"] < 0 & all.fc.dat[,"FC_CDR_O"] < 0)))/nrow(all.fc.dat),
+(length(which(all.fc.dat[,"FC_DRHS_O"] > 0 & all.fc.dat[,"FC_CHS_O"] > 0)) + length(which(all.fc.dat[,"FC_DRHS_O"] < 0 & all.fc.dat[,"FC_CHS_O"] < 0)))/nrow(all.fc.dat))
+
+
+
+all.fc.dat.sig <- all.fc.dat[is.na(all.fc.dat$padj)==FALSE,]
+all.fc.dat.sig <- all.fc.dat[all.fc.dat.sig$padj<=0.05,]
+
+cor.dat.sig<- c(cor(all.fc.dat.sig[,"FC_DR_B"],all.fc.dat.sig[,"FC_HS_B"]),
+cor(all.fc.dat.sig[,"FC_DR_H"],all.fc.dat.sig[,"FC_HS_H"]),
+cor(all.fc.dat.sig[,"FC_DR_O"],all.fc.dat.sig[,"FC_HS_O"]))
+
+ns.dat.sig<- c((length(which(all.fc.dat.sig[,"FC_DR_B"] > 0 & all.fc.dat.sig[,"FC_HS_B"] > 0)) + length(which(all.fc.dat.sig[,"FC_DR_B"] < 0 & all.fc.dat.sig[,"FC_HS_B"] < 0)))/nrow(all.fc.dat.sig),
+(length(which(all.fc.dat.sig[,"FC_DR_H"] > 0 & all.fc.dat.sig[,"FC_HS_H"] > 0)) + length(which(all.fc.dat.sig[,"FC_DR_H"] < 0 & all.fc.dat.sig[,"FC_HS_H"] < 0)))/nrow(all.fc.dat.sig),
+(length(which(all.fc.dat.sig[,"FC_DR_O"] > 0 & all.fc.dat.sig[,"FC_HS_O"] > 0)) + length(which(all.fc.dat.sig[,"FC_DR_O"] < 0 & all.fc.dat.sig[,"FC_HS_O"] < 0)))/nrow(all.fc.dat.sig))
+
+
+cor.dat.sig <- c(cor(all.fc.dat.sig[,"FC_DR_B"],all.fc.dat.sig[,"FC_HS_B"]),
+cor(all.fc.dat.sig[,"FC_HSDR_B"],all.fc.dat.sig[,"FC_CDR_B"]),
+cor(all.fc.dat.sig[,"FC_DRHS_B"],all.fc.dat.sig[,"FC_CHS_B"]),
+cor(all.fc.dat.sig[,"FC_DR_H"],all.fc.dat.sig[,"FC_HS_H"]),
+cor(all.fc.dat.sig[,"FC_HSDR_H"],all.fc.dat.sig[,"FC_CDR_H"]),
+cor(all.fc.dat.sig[,"FC_DRHS_H"],all.fc.dat.sig[,"FC_CHS_H"]),
+cor(all.fc.dat.sig[,"FC_DR_O"],all.fc.dat.sig[,"FC_HS_O"]),
+cor(all.fc.dat.sig[,"FC_HSDR_O"],all.fc.dat.sig[,"FC_CDR_O"]),
+cor(all.fc.dat.sig[,"FC_DRHS_O"],all.fc.dat.sig[,"FC_CHS_O"]))
+
+
+ns.dat.sig <-c((length(which(all.fc.dat.sig[,"FC_DR_B"] > 0 & all.fc.dat.sig[,"FC_HS_B"] > 0)) + length(which(all.fc.dat.sig[,"FC_DR_B"] < 0 & all.fc.dat.sig[,"FC_HS_B"] < 0)))/nrow(all.fc.dat.sig),
+(length(which(all.fc.dat.sig[,"FC_HSDR_B"] > 0 & all.fc.dat.sig[,"FC_CDR_B"] > 0)) + length(which(all.fc.dat.sig[,"FC_HSDR_B"] < 0 & all.fc.dat.sig[,"FC_CDR_B"] < 0)))/nrow(all.fc.dat.sig),
+(length(which(all.fc.dat.sig[,"FC_DRHS_B"] > 0 & all.fc.dat.sig[,"FC_CHS_B"] > 0)) + length(which(all.fc.dat.sig[,"FC_DRHS_B"] < 0 & all.fc.dat.sig[,"FC_CHS_B"] < 0)))/nrow(all.fc.dat.sig),
+(length(which(all.fc.dat.sig[,"FC_DR_H"] > 0 & all.fc.dat.sig[,"FC_HS_H"] > 0)) + length(which(all.fc.dat.sig[,"FC_DR_H"] < 0 & all.fc.dat.sig[,"FC_HS_H"] < 0)))/nrow(all.fc.dat.sig),
+(length(which(all.fc.dat.sig[,"FC_HSDR_H"] > 0 & all.fc.dat.sig[,"FC_CDR_H"] > 0)) + length(which(all.fc.dat.sig[,"FC_HSDR_H"] < 0 & all.fc.dat.sig[,"FC_CDR_H"] < 0)))/nrow(all.fc.dat.sig),
+(length(which(all.fc.dat.sig[,"FC_DRHS_H"] > 0 & all.fc.dat.sig[,"FC_CHS_H"] > 0)) + length(which(all.fc.dat.sig[,"FC_DRHS_H"] < 0 & all.fc.dat.sig[,"FC_CHS_H"] < 0)))/nrow(all.fc.dat.sig),
+(length(which(all.fc.dat.sig[,"FC_DR_O"] > 0 & all.fc.dat.sig[,"FC_HS_O"] > 0)) + length(which(all.fc.dat.sig[,"FC_DR_O"] < 0 & all.fc.dat.sig[,"FC_HS_O"] < 0)))/nrow(all.fc.dat.sig),
+(length(which(all.fc.dat.sig[,"FC_HSDR_O"] > 0 & all.fc.dat.sig[,"FC_CDR_O"] > 0)) + length(which(all.fc.dat.sig[,"FC_HSDR_O"] < 0 & all.fc.dat.sig[,"FC_CDR_O"] < 0)))/nrow(all.fc.dat.sig),
+(length(which(all.fc.dat.sig[,"FC_DRHS_O"] > 0 & all.fc.dat.sig[,"FC_CHS_O"] > 0)) + length(which(all.fc.dat.sig[,"FC_DRHS_O"] < 0 & all.fc.dat.sig[,"FC_CHS_O"] < 0)))/nrow(all.fc.dat.sig))
+
+
+
+
+```
+
+## Simulated data (from .R script)
+```{r}
+
+niter <- 100
+
+cor.dat.rand <- matrix(NA,niter,9)
+ns.dat.rand <- matrix(NA,niter,9)
+
+for(jj in 1:niter)
+{
+  load(file=paste("../../processed/FC_sim_",jj,".rda", sep="" ))
+  cor.dat.rand[jj,] <-output[[1]]
+  ns.dat.rand[jj,] <- output[[2]]
+}
+
+#for(jj in 1:niter)
+#{
+#  load(file=paste("../../processed/FC_sim_",jj,".rda", sep="" ))
+#  cor.dat.sig <- rbind(cor.dat.sig, output[[3]])
+#  ns.dat.sig <- rbind(ns.dat.sig, output[[4]])
+#}
+
+length(which(cor.dat[2:(niter+1),1]>cor.dat[1,1]))
+length(which(cor.dat[2:(niter+1),2]>cor.dat[1,2]))
+length(which(cor.dat[2:(niter+1),3]>cor.dat[1,3]))
+
+length(which(ns.dat[2:101,1]>ns.dat[1,1]))
+length(which(ns.dat[2:101,2]>ns.dat[1,2]))
+length(which(ns.dat[2:101,3]>ns.dat[1,3]))
+
+length(which(cor.dat[2:101,1]>cor.dat.sig[1,1]))
+length(which(cor.dat[2:101,2]>cor.dat.sig[1,2]))
+length(which(cor.dat[2:101,3]>cor.dat.sig[1,3]))
+
+length(which(ns.dat[2:101,1]>ns.dat.sig[1,1]))
+length(which(ns.dat[2:101,2]>ns.dat.sig[1,2]))
+length(which(ns.dat[2:101,3]>ns.dat.sig[1,3]))
+
+
+
+names(cor.dat) <- c("C_B","DR_B","HS_B",
+                    "C_H","DR_H","HS_H",
+                    "C_O","DR_O","HS_O")
+
+names(ns.dat) <- c("C_B","DR_B","HS_B",
+                    "C_H","DR_H","HS_H",
+                    "C_O","DR_O","HS_O")
+
+colnames(cor.dat.rand) <- c("C_B","DR_B","HS_B",
+                    "C_H","DR_H","HS_H",
+                    "C_O","DR_O","HS_O")
+
+colnames(ns.dat.rand) <- c("C_B","DR_B","HS_B",
+                    "C_H","DR_H","HS_H",
+                    "C_O","DR_O","HS_O")
+lims <- c(min(cor.dat.rand)-0.02,max(cor.dat.rand)+0.02)
+lims2 <- c(min(ns.dat.rand),max(ns.dat.rand))
+gg.list1 <- vector(mode="list",length=9)
+gg.list2 <- vector(mode="list",length=9)
+
+labbs <- c("Body\nDR vs HS\nrelative to C",
+           "Body\nC vs HS\nrelative to DR",
+           "Body\nC vs DR\nrelative to HS",
+           "Head\nDR vs HS\nrelative to C",
+           "Head\nC vs HS\nrelative to DR",
+           "Head\nC vs DR\nrelative to HS",
+           "Ovary\nDR vs HS\nrelative to C",
+           "Ovary\nC vs HS\nrelative to DR",
+           "Ovary\nC vs DR\nrelative to HS")
+
+
+
+for(ii in 1:9)
+{
+  xx.cor <- data.frame("Correlation"= cor.dat.rand[,ii])
+  gg.list1[[ii]] <- ggplot(xx.cor, aes(x=Correlation)) +
+    geom_histogram(binwidth=0.025) +
+    geom_vline(xintercept = cor.dat[ii], color='red') +
+     annotate("text",y= Inf, x= lims[1]+0.01, label=labbs[ii],hjust= "left",vjust=1.5, size=2) +
+    coord_cartesian(xlim=lims)+
+    ylab("Count")+
+    theme_half_open() +
+    my_theme
+  
+xx.ns <- data.frame("Proportion"= ns.dat.rand[,ii])
+  gg.list2[[ii]] <- ggplot(xx.ns, aes(x=Proportion)) +
+    geom_histogram(binwidth=0.025) +
+    geom_vline(xintercept = ns.dat[ii], color='red') +
+    annotate("text",y= Inf, x= lims2[1]+0.01, label=labbs[ii],hjust= "left",vjust=1.5, size=2) +
+    coord_cartesian(xlim=lims2)+
+    ylab("Count")+
+    theme_half_open() +
+    my_theme
+}
+
+finalp<-plot_grid(plotlist=gg.list1,nrow=3, ncol=3,
+          labels=c('a.','b.','c.','d.','e.','f.','g.','h.','i.'), 
+          label_size=9)
+
+
+ggsave(finalp, filename="../../plots/FC_sim_cor.pdf", height=6.5,width=6.5)
+
+finalp<-plot_grid(plotlist=gg.list2,nrow=3, ncol=3,
+          labels=c('a.','b.','c.','d.','e.','f.','g.','h.','i.'), 
+          label_size=9)
+
+
+ggsave(finalp, filename="../../plots/FC_sim_ns.pdf", height=6.5,width=6.5)
+
+#Empirical P value
+
+cor.dat.p <- rbind(cor.dat, cor.dat.rand)
+ns.dat.p <- rbind(ns.dat, ns.dat.rand)
+
+apply(cor.dat.p, 2, function(x) mean(x>=x[1]))
+
+apply(ns.dat.p, 2, function(x) mean(x>=x[1]))
+
+
+
+```
+
+
+##Look at averages and the correlation between those
+
+```{r}
+
+cc <- counts(dds, normalized=TRUE)
+gmeans <- rowMeans(cc)
+
+C_B <- rowMeans(cc[,1:6])
+C_H <- rowMeans(cc[,19:24])
+C_O <- rowMeans(cc[,37:42])
+
+DR_B <- rowMeans(cc[,7:12])
+DR_H <- rowMeans(cc[,25:30])
+DR_O <- rowMeans(cc[,43:48])
+
+HS_B <- rowMeans(cc[,13:18])
+HS_H <- rowMeans(cc[,31:36])
+HS_O <- rowMeans(cc[,49:54])
+
+cor(C_B, DR_B)
+cor(C_B, HS_B)
+cor(HS_B, DR_B)
+
+cor(C_H, DR_H)
+cor(C_H, HS_H)
+cor(HS_H, DR_H)
+
+cor(C_O, DR_O)
+cor(C_O, HS_O)
+cor(HS_O, DR_O)
+
+
+
+
+ww <- which(all.fc.dat$padj <=0.05)
+cc <- cc[ww,]
+
+gmeans <- rowMeans(cc)
+
+C_B <- rowMeans(cc[,1:6])
+C_H <- rowMeans(cc[,19:24])
+C_O <- rowMeans(cc[,37:42])
+
+DR_B <- rowMeans(cc[,7:12])
+DR_H <- rowMeans(cc[,25:30])
+DR_O <- rowMeans(cc[,43:48])
+
+HS_B <- rowMeans(cc[,13:18])
+HS_H <- rowMeans(cc[,31:36])
+HS_O <- rowMeans(cc[,49:54])
+
+cor(C_B, DR_B)
+cor(C_B, HS_B)
+cor(HS_B, DR_B)
+
+cor(C_H, DR_H)
+cor(C_H, HS_H)
+cor(HS_H, DR_H)
+
+cor(C_O, DR_O)
+cor(C_O, HS_O)
+cor(HS_O, DR_O)
+
+
+bc.mat <- read.csv(file = "../../processed/DESEQ/rlogtrt_batchCor.csv", row.names = 1, header=TRUE)
+
+bc.mat <- bc.mat[,c(seq(1,54, by=3), seq(2,54, by=3), seq(3,54, by=3))]
+
+all.equal(rownames(bc.mat), rownames(all.fc.dat))
+
+
+cc.c <- bc.mat[,1:18]
+vv <- apply(cc.c, 1, var)
+cc.c <- cc.c[vv>0,]
+pp <- prcomp(t(cc.c), scale=TRUE)
+
+pp.plot <- data.frame("PC1"=pp$x[,1],"PC2"=pp$x[,2],"treatment"=c(rep('C',6),rep('DR',6),rep('HS',6)))
+
+#16,15,17
+
+gg1 <- ggplot(pp.plot, aes(PC1, PC2, color=treatment)) + 
+  geom_point(size=3, alpha = 0.6, shape = 16) + 
+   theme_half_open() +
+  scale_colour_OkabeIto() +
+  theme(axis.title = element_text(size = 10),
+                text = element_text(size = 10))+
+    theme(legend.position="none")+
+
+  my_theme 
+
+cc.c <- bc.mat[,19:36]
+vv <- apply(cc.c, 1, var)
+cc.c <- cc.c[vv>0,]
+pp <- prcomp(t(cc.c), scale=TRUE)
+
+pp.plot <- data.frame("PC1"=pp$x[,1],"PC2"=pp$x[,2],"treatment"=c(rep('C',6),rep('DR',6),rep('HS',6)))
+
+#16,15,17
+
+gg2 <- ggplot(pp.plot, aes(PC1, PC2, color=treatment)) + 
+  geom_point(size=3, alpha = 0.6, shape = 17) + 
+    theme_half_open() +
+  scale_colour_OkabeIto() +
+  theme(axis.title = element_text(size = 10),
+                text = element_text(size = 10))+
+    theme(legend.position="none")+
+  my_theme 
+
+cc.c <- bc.mat[,37:54]
+vv <- apply(cc.c, 1, var)
+cc.c <- cc.c[vv>0,]
+pp <- prcomp(t(cc.c), scale=TRUE)
+
+pp.plot <- data.frame("PC1"=pp$x[,1],"PC2"=pp$x[,2],"treatment"=c(rep('C',6),rep('DR',6),rep('HS',6)))
+
+
+
+gg3 <- ggplot(pp.plot, aes(PC1, PC2, color=treatment)) + 
+  geom_point(size=3, alpha = 0.6, shape = 15) + 
+  theme_half_open() +
+  scale_colour_OkabeIto() +
+  theme(axis.title = element_text(size = 10),
+                text = element_text(size = 10))+
+  theme(legend.position="none")+
+  my_theme 
+  
+
+pp.plot <- data.frame("PC1"=pp$x[,1],"PC2"=pp$x[,2],"treatment"=c(rep('C',6),rep('DR',6),rep('HS',6)), 'tissue' = rep(c("Body","Head","Ovary"),6))
+
+
+ggL <- ggplot(pp.plot, aes(PC1, PC2, color=treatment, shape=tissue)) + 
+  geom_point(size=3, alpha = 0.6) + 
+    theme_half_open() +
+  theme(axis.title = element_text(size = 10),
+                text = element_text(size = 10))+
+  scale_colour_OkabeIto() +
+  labs(color="Treatment", shape="Tissue") +
+  my_theme 
+
+ggL <- g_legend(ggL)
+
+finalp <- plot_grid(gg1, gg2,gg3,ggL,nrow=1,rel_widths = c(1,1,1,0.5),labels=c('a.','b.','c.'), 
+          label_size=9)
+ggsave(finalp, filename="../../plots/pcas_by_diet.pdf", height=2,width=6.5)
+
+
+```
+
+
