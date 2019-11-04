@@ -8,7 +8,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(cowplot)
-
+library(colorblindr)
 ```
 
 # Plot gene expression for each module
@@ -52,9 +52,9 @@ pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tiss
   geom_point(alpha=0.5, position = position_jitter(width = 0.15)) +
   stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
   stat_summary(fun.y=mean, geom ="line") + 
-  scale_y_continuous(limits = c(-0.65, 0.65)) +
-  scale_colour_OkabeIto() +
   theme_half_open() +
+  #scale_y_continuous(limits = c(-0.65, 0.65)) +
+  scale_colour_OkabeIto() +
   theme(legend.position="none", axis.title.x = element_blank()) +
       my_theme +
   ylab("Eigengene expression")
@@ -69,9 +69,9 @@ pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tiss
   geom_point(alpha=0.5, position = position_jitter(width = 0.15)) +
   stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
   stat_summary(fun.y=mean, geom ="line") +
-  scale_y_continuous(limits = c(-0.65, 0.65)) +
-  scale_colour_OkabeIto() +
+  #scale_y_continuous(limits = c(-0.65, 0.65)) +
   theme_half_open() +
+  scale_colour_OkabeIto() +
   theme(legend.position="none", axis.title.y = element_blank()) +
     my_theme +
   xlab("Diet")
@@ -85,9 +85,9 @@ pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tiss
   geom_point(alpha=0.5, position = position_jitter(width = 0.15)) +
   stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
   stat_summary(fun.y=mean, geom ="line") +
-  scale_y_continuous(limits = c(-0.65, 0.65)) +
-  scale_colour_OkabeIto() +
+  #scale_y_continuous(limits = c(-0.65, 0.65)) +
   theme_half_open() +
+  scale_colour_OkabeIto() +
   theme(legend.position="none") +
     my_theme +
   xlab("Diet") +
@@ -96,16 +96,16 @@ pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tiss
   
 all.plots[[cc]] <- pp
     }else{
-    pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tissue")) +
+pp<- ggplot(all.dat, aes_string(x="treatment", y=cc, color="tissue", group="tissue")) +
   geom_point(alpha=0.5, position = position_jitter(width = 0.15)) +
   stat_summary(fun.y = mean, geom = "point", size = 3, pch=2) +
   stat_summary(fun.y=mean, geom ="line") +
-  scale_y_continuous(limits = c(-0.65, 0.65)) +
-  scale_colour_OkabeIto() +
+  #scale_y_continuous(limits = c(-0.65, 0.65)) +
   theme_half_open() +
-      theme(legend.position="none", axis.title.x = element_blank(), 
+  scale_colour_OkabeIto() +
+  theme(legend.position="none", axis.title.x = element_blank(), 
         axis.title.y = element_blank()) +
-      my_theme 
+  my_theme 
   
 
 all.plots[[cc]] <- pp
@@ -122,8 +122,10 @@ jj <- jj+1
 #get legend
 p1 <- ggplot(all.dat, aes("treatment", cc, color = tissue)) +
   geom_point(alpha=0.5) +
+  theme_half_open() +
   theme(legend.margin=margin(t=0,r=0,b=0,l=4, unit = 'cm')) +
   labs(color = "Tissue") +
+  scale_colour_OkabeIto() +
   my_theme
 
 #get legend - add to list

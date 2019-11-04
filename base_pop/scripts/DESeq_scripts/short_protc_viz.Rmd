@@ -20,8 +20,7 @@ library(gridExtra)
 library(RColorBrewer)
 library(tidyverse)
 library(cowplot)
-#library(colorblindr)
-library(viridis)
+library(colorblindr)
 
 source("modified_plotPCA_function.R")
 #source("../color_map_blindr.R")
@@ -81,7 +80,7 @@ b1 <- ggplot(tbg, aes(x=as.factor(prep), y=fpkm,color=treatment)) +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
   xlab("Samples")+
   facet_grid(tissue~.) +
-  scale_color_viridis(option = "cividis") +
+  scale_color_OkabeIto() +
   theme_half_open() +
   my_theme
   #tx_color_map() 
@@ -99,7 +98,7 @@ b2 <- ggplot(tbg, aes(x=as.factor(trep), y=fpkm,color=tissue)) +
   ylab(expression("log"[2]*"(FPKM + 1)")) +
   xlab("Tissue") +
   facet_grid(treatment~.) +
-  scale_color_viridis(option = "cividis") +
+  scale_color_OkabeIto() +
   theme_half_open() +
   my_theme 
 b2 <- b2 + theme(legend.position="none")
@@ -157,21 +156,21 @@ p2 <- ggplot(full.tab, aes(length)) +
 p2
 ```
 
-# Tranform data to visualize global trends
+# Transform data to visualize global trends
 
 ```{r}
-# Models created in DESeq_DExpr.Rmd
-load("../../processed/DESEQ/dds_deseq01.Rda")
-#load("../../processed/DESEQ/dds_deseq.02.Rda")
-
-# log transform null DESeq model: design ~ SV1 + batch + treatment + tissue
-rlog.trt <- rlog(dds_deseq.01, blind = FALSE, fitType = "parametric")
-#rlog.int <- rlog(dds_deseq.02, blind = FALSE, fitType = "parametric")
-
-save(rlog.trt, file = "../../processed/DESEQ/rlog.trt.Rda")
-
-# rlog.trt <- read.table(
-#              file="../../processed/DESEQ/rlog.trt.txt", sep="\t")
+# # Models created in DESeq_DExpr.Rmd
+# load("../../processed/DESEQ/dds_deseq01.Rda")
+# #load("../../processed/DESEQ/dds_deseq.02.Rda")
+# 
+# # log transform null DESeq model: design ~ SV1 + batch + treatment + tissue
+# rlog.trt <- rlog(dds_deseq.01, blind = FALSE, fitType = "parametric")
+# #rlog.int <- rlog(dds_deseq.02, blind = FALSE, fitType = "parametric")
+# 
+# save(rlog.trt, file = "../../processed/DESEQ/rlog.trt.Rda")
+# 
+# # rlog.trt <- read.table(
+# #              file="../../processed/DESEQ/rlog.trt.txt", sep="\t")
 ```
 
 # Sample info
@@ -203,17 +202,17 @@ ll <- ggplot(uncor.pca, aes(PC1, PC2, color=treatment, shape=tissue)) +
   coord_cartesian(ylim = c(-100, 100), xlim=c(-110,150)) +
   my_theme +
   theme_half_open() +
-  scale_color_viridis(option = "cividis") +
-  #tx_fill_map() +
-  #theme(legend.position="none") +
+  scale_color_OkabeIto() +
+  theme(legend.position="none") +
   labs(color="Treatment", shape="Tissue") 
-#ll
-ll <- ll + theme(
-  legend.title = element_text(size = 8),
-  legend.text = element_text(size = 7)
-  )
 ll
-ggsave(last_plot(),file = "../../plots/PCAplot_rlog_uncorrected_trt.pdf",width = 3,height=3)
+# ll <- ll + theme(
+#   legend.title = element_text(size = 8),
+#   legend.text = element_text(size = 7)
+#   )
+# ll
+# ggsave(last_plot(),file = "../../plots/PCAplot_rlog_uncorrected_trt.pdf",
+#        width = 3,height=3)
 
 ```
 
@@ -221,7 +220,7 @@ ggsave(last_plot(),file = "../../plots/PCAplot_rlog_uncorrected_trt.pdf",width =
 
 ```{r}
 # check variation in size factors
-hist(dds_deseq.01$sizeFactor)
+#hist(dds_deseq.01$sizeFactor)
 
 d.mat <- model.matrix(~ treatment * tissue, phenDat.sva)
 
@@ -245,17 +244,17 @@ gg <- ggplot(bcor.pca, aes(PC1, PC2, color=treatment, shape=tissue)) +
   coord_cartesian(ylim = c(-100, 100), xlim=c(-110,150)) +
   my_theme +
   theme_half_open() +
-  scale_color_viridis(alpha = 1,option = "cividis") +
-  #tx_fill_map() +
+  scale_color_OkabeIto() +
   labs(color="Treatment", shape="Tissue") 
-#gg
-gg <- gg + theme(
-  legend.title = element_text(size = 9),
-  legend.text = element_text(size = 8)
-  )
 gg
+# gg <- gg + theme(
+#   legend.title = element_text(size = 9),
+#   legend.text = element_text(size = 8)
+#   )
+# gg
 
-ggsave(gg,file = "../../plots/PCAplot_rlog_corrected_trt.pdf",width = 3.8,height=2.5)
+# ggsave(gg,file = "../../plots/PCAplot_rlog_corrected_trt.pdf",
+       width = 3.8,height=2.5)
 
 #pcaplot <- plot_grid(ll, gg, nrow = 1)
 pcaplot <- plot_grid(ll,gg, align = 'h',rel_widths = c(1.2,1.5), label_size = 10)
@@ -274,8 +273,10 @@ library(ggpubr)
 #           nrow = 2,
 #           labels = "a")
 
-cir <- ggarrange(b2, p1, ll, p2, ncol = 2, nrow = 2, labels = c("a", "c", "d", "b"))
+cir <- ggarrange(b2, p1, ll, p2, ncol = 2, nrow = 2, 
+                 labels = c("a", "c", "d", "b"))
 
-ggplot2::ggsave(cir,file = "../../plots/transcripts_stat.pdf",width = 8,height=6)
+ggplot2::ggsave(cir,file = "../../plots/transcripts_stat.pdf",
+                width = 8,height=6)
 ```
 

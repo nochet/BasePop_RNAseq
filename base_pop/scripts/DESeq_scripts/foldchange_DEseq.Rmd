@@ -20,8 +20,8 @@ options(scipen=10)
 source("../ggplot_theme.R")
 
 # palette_OkabeIto
-# pal <- c("#E69F00","#56B4E9","#009E73","#F0E442",
-#          "#0072B2","#D55E00","#CC79A7","#999999")
+pal <- c("#E69F00","#56B4E9","#009E73","#F0E442",
+        "#0072B2","#D55E00","#CC79A7","#999999")
 
 ```
 
@@ -159,7 +159,7 @@ pp<-ggplot(plot.dat, aes(FoldChangeDR,FoldChangeHS, color=log10(BaseMean))) +
   ylab("Fold Change (HS)")+
   xlab("Fold Change (DR)")+
   theme_half_open() +
-  scale_color_viridis(option = "cividis", colors = 1, begin = 0, end = 1, direction = 1) +
+  scale_color_viridis(option = "plasma") +
   theme(legend.position="none", plot.title = element_text(color="grey50")) +
   ggtitle("Bodies") +
   my_theme
@@ -177,7 +177,7 @@ if(oo=='H')
   xlim(c(-ax.top,ax.top))+
   ylab("Fold Change (HS)")+
   xlab("Fold Change (DR)")+
-    scale_color_viridis(option = "cividis") +
+    scale_color_viridis(option = "plasma") +
     ggtitle("Heads") +
     theme_half_open() +
   theme(legend.position="none", axis.title.y=element_blank(),plot.title = element_text(color="grey50")) +
@@ -197,11 +197,14 @@ if(oo=='O')
   xlim(c(-ax.top,ax.top))+
   ylab("Fold Change (HS)")+
   xlab("Fold Change (DR)")+
+    labs() +
   #scale_color_continuous(name=expression("-log"[10]*"(P-value)"))+
-    ggtitle("Ovaries") +
+  ggtitle("Ovaries") +
+    theme_half_open() +
+    scale_color_viridis(option = "plasma", breaks = c(1:5), 
+                        labels = 10^seq(1,5), 
+                        name = "Mean\nExpression") +
     theme(axis.title.y=element_blank(), plot.title = element_text(color="grey50")) +
-    scale_color_viridis(option = "cividis", breaks = c(1:5), labels = 10^seq(1,5), name = "Mean\nExpression") +
-  theme_half_open() +
   my_theme
   
 }
@@ -249,10 +252,10 @@ pp <- ggplot(na.omit(plot.dat), aes(y=-log10(padj), x=FC, color=log10(baseMean))
   xlim(c(-9,9)) +
   ylim(c(0,51)) +
   ggtitle(p.titles[jj]) +
-  theme(plot.title = element_text(color="grey50"))+
   theme_half_open() +
+  theme(plot.title = element_text(color="grey50"))+
   my_theme +
-  scale_color_viridis(option = "cividis",breaks = c(1:5), labels = 10^seq(1,5), name = "Mean\nExpression") 
+  scale_color_viridis(option = "plasma",breaks = c(1:5), labels = 10^seq(1,5), name = "Mean\nExpression") 
   
   
   if(st.ind %in% c(7,12,22,27,37,42))
