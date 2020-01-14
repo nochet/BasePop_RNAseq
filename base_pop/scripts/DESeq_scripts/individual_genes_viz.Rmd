@@ -9,6 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(cowplot)
+library(DESeq2)
+library(colorblindr)
 
 g_legend<-function(a.gplot){
   tmp <- ggplot_gtable(ggplot_build(a.gplot))
@@ -109,9 +111,9 @@ pl <- ggplot(d, aes(x=treatment, y=count, color=tissue, group = tissue)) +
   my_theme
 pl <- g_legend(pl)
 ps[[14]] <-pl 
-pall <- plot_grid(plotlist=ps,ncol=2,rel_widths = c(1.08,1), rel_heights = c(rep(1,5),1.1,1.1),
+pall <- plot_grid(plotlist=ps,ncol=2,rel_widths = c(1.1,1), rel_heights = c(rep(1,5),1.1,1.1),
                   labels=c('a.','b.','c.','d.','e.','f.','g.','h.','i.','j.',
-                   'k.','l.','m.'), label_size = 9, vjust = 1.2,hjust=1.2)
+                   'k.','l.','m.'), label_size = 9, vjust = 1.25, hjust = -1)
 
 ggplot2::ggsave(pall, filename = "../../plots/Individualgenes.pdf", height = 10, width=3.5)
 ```
