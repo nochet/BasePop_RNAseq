@@ -24,7 +24,7 @@ for(run in runs)
   
 cat("", file=paste("S01_Align_cmd_run",run,".txt",sep=""))
   
-ffs <- list.files(paste("/home/kingeg/Projects/RNA_SEQ_BasePop/Data/run",run,"/",sep=""), pattern="fastq.gz$")
+ffs <- list.files(paste("/home/kingeg/incoming/Projects/RNA_SEQ_BasePop/Data/run",run,"/",sep=""), pattern="fastq.gz$")
 
 for(ii in 1:length(ffs))
 {
