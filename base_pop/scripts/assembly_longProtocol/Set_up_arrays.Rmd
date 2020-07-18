@@ -16,6 +16,9 @@ library(tidyverse)
 ## Step 1: Align
 
 ```{r}
+# test 1 sample
+# hisat2 --dta -q -x ~/MyGithub/BasePop_RNAseq/base_pop/indexes/bdgp6_tran/genome_tran -U C-1_B_run1.fastq.gz -S C-1_B_run1_run1.sam >temp.txt 2>error.txt &
+  
 ll<-character(length=0)
 
 runs<-c(1,2,3)
@@ -24,15 +27,15 @@ for(run in runs)
   
 cat("", file=paste("S01_Align_cmd_run",run,".txt",sep=""))
   
-ffs <- list.files(paste("/home/kingeg/incoming/Projects/RNA_SEQ_BasePop/Data/run",run,"/",sep=""), pattern="fastq.gz$")
+ffs <- list.files(paste("/home/kingeg/Projects/RNA_SEQ_BasePop/Data/run",run,"/",sep=""), pattern="fastq.gz$")
 
 for(ii in 1:length(ffs))
 {
-st.s <- "hisat2 --dta -q -x /group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/indexes/bdgp6_tran/genome_tran -U " 
+st.s <- "hisat2 --dta -q -x /group/kinglab/enoch/MyGithub/indexes/bdgp6_tran/genome_tran -U " 
 
-st.p <- paste("/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/samples/run",run,"/",sep="")
+st.p <- paste("/group/kinglab/enoch/MyGithub/samples/run",run,"/",sep="")
 
-outf <- paste("/group/kinglab/enoch/MyGithub/BasePop_RNAseq/base_pop/processed/dotsams/",strsplit(ffs[ii], ".", fixed=TRUE)[[1]][1],"_run",run,sep="")
+outf <- paste("/group/kinglab/enoch/MyGithub/dotsams/",strsplit(ffs[ii], ".", fixed=TRUE)[[1]][1],"_run",run,sep="")
 
 cat(paste(st.s, st.p, ffs[ii], " -S ", outf,".sam",sep=""),"\n", file=paste("S01_Align_cmd_run",run,".txt",sep=""),append=TRUE)
 

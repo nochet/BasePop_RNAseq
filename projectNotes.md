@@ -11,7 +11,9 @@ date: "7/9/2018"
 ### RNA read mapping
 
 - Locate these resources:
-1. Download reference files: gtf files from Index of ftp://ftp.flybase.org/genomes/dmel/current/
+1. Download reference files:  wget    ftp://ftp.ccb.jhu.edu/pub/infphilo/hisat2/data/bdgp6_tran.tar.gz
+ - then: gunzip bdgp6_tran.tar.gz 
+ - then: tar -xvf bdgp6_tran.tar 
 2. Sequence assembly (ref. Pertea et al 2016)
 3. `/scripts/assembly_shortProtocol/SetUpArrays_short.Rmd` for use with the short pipeline leading to DESeq2
 4. `/scripts/assembly_longProtocol/Set_up_arrays.Rmd` for use with the long pipeline leading to Ballgown
@@ -21,7 +23,7 @@ date: "7/9/2018"
 #### STEP 1: Align reads to reference - Hisat2
 
 - To test, align one sample to genome:
-`hisat2 --dta -q -x indexes/bdgp6_tran/genome_tran -U samples/run1/HS-6_O_S53_R1_001.fastq.gzHS-6_O_S53_R1_001.fastq.gz -S HS6O_1.sam >temp.txt 2>error.txt &`
+`hisat2 --dta -q -x bdgp6_tran/genome_tran -U C-1_B_run1.fastq.gz -S C-1_B_run1_run1.sam >temp.txt 2>error.txt &`
 
 - Run Step 1 Align in `/base_pop/scripts/assembly_longProtocol/Set_up_arrays.Rmd`
 - Output are 3 text lists of hisat commands: 
